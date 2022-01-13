@@ -1,7 +1,10 @@
 
 
-#include "BG/breaky_bg2.h" // generated with NES Screen Tool, with RLE option on
-#include "CSV/c1.csv" // collision data, hand typed
+// Levels - generated with NES Screen Tool, with RLE option on
+#include "Nametable/Dungeon/level01.h"
+
+// collision data, hand typed
+#include "Collision/dungeon.h"
 
 #define PADDLE_MIN 0x10
 #define PADDLE_MAX 0xd0
@@ -10,7 +13,6 @@
 #define MAX_DOWN 0xe0
 #define BALL_MIN 0x10
 #define BALL_MAX 0xea
-
 
 #pragma bss-name(push, "ZEROPAGE")
 
@@ -59,31 +61,9 @@ struct SpObject {
 struct SpObject Paddle = {0x75,PADDLE_Y,0x1f,7};
 struct SpObject Ball = {0xff,0xff,5,5}; // balls x and x will be init later
 
+const unsigned char palette_bg[16]={ 0x0f,0x15,0x3d,0x03,0x0f,0x37,0x17,0x03,0x0f,0x22,0x12,0x03,0x0f,0x00,0x10,0x03 };
 
-
-
-
-
-
-
-
-
-const unsigned char palette_bg[]={
-0x0f,0x00,0x10,0x30,
-0x0f,0x01,0x21,0x39,
-0x0f,0x04,0x24,0x36,
-0x0f,0x09,0x29,0x38 
-};
-
-
-
-const unsigned char palette_sp[]={
-0x0f, 0x00, 0x10, 0x30, // greys
-0,0,0,0,
-0,0,0,0,
-0,0,0,0
-}; 
-
+const unsigned char palette_sp[16]={ 0x0f, 0x00, 0x10, 0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
 
 // PROTOTYPES
 void draw_bg(void);

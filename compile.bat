@@ -2,7 +2,7 @@
 
 set name="skullquest"
 
-set path=%path%;..\bin\
+set path="c:\cc65\bin\"
 
 set CC65_HOME=..\
 

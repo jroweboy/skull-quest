@@ -1,24 +1,13 @@
-/*	example code for cc65, for NES
- *  a break the blocks clone, simplified
- *	using neslib
- *	Doug Fraker 2018
- */	
- 
-
-
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h"
-#include "Sprites.h" // holds our metasprite data
+#include "Sprites.h" // metasprite data
 #include "skullquest.h"
-
-
-	
 	
 void main (void) {
 	
-	ppu_off(); // screen off
+	ppu_off();
 	
-	// load the palettes
+	// load palettes
 	pal_bg(palette_bg);
 	pal_spr(palette_sp);
 	
@@ -35,7 +24,6 @@ void main (void) {
 	
 	// turn on screen
 	// ppu_on_all(); // already done in draw_bg()
-
 	
 	while (1){
 		// infinite loop
@@ -65,34 +53,11 @@ void draw_bg(void){
 	vram_adr(NAMETABLE_A);
 	// this sets a start position on the BG, top left of screen
 	
-	vram_unrle(breaky_bg2);
+	vram_unrle(level01);
 	// this unpacks a compressed full nametable
 	
-	memcpy (c_map, c1, 256);
+	// memcpy (c_map, c1, 256);
 	// copy the collision map to c_map
-	
-	vram_adr(NTADR_A(0,6));
-	// sets a start address, skipping the top of the screen
-	
-	for(temp_y = 0; temp_y < 16; ++temp_y){
-		for(temp_x = 0; temp_x < 16; ++temp_x){
-			temp1 = (temp_y << 4) + temp_x;
-			if((temp_x == 0) || (temp_x == 15)) {
-				vram_put(0x10); // wall at the edges
-				vram_put(0x10);
-			}
-			else {
-				if(c_map[temp1]){ // if block = yes
-					vram_put(0x11); // draw block
-					vram_put(0x12);
-				}
-				else{
-					vram_put(0); // else draw blank
-					vram_put(0);
-				}
-			}
-		}
-	}
 	
 	ppu_on_all();
 }
