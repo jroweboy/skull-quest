@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "skullquest.h": "c"
-    }
+        "skullquest.h": "c",
+        "master_colmaps.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -2,13 +2,13 @@
 #include "LIB/nesdoug.h"
 #include "Sprites.h" // metasprite data
 #include "skullquest.h"
-	
+
 void main (void) {
 	
 	ppu_off();
 	
 	// load palettes
-	pal_bg(palette_bg);
+	pal_bg(pal_forest);
 	pal_spr(palette_sp);
 	
 	// use the second set of tiles for sprites
@@ -20,11 +20,7 @@ void main (void) {
 	draw_bg();
 	
 	set_vram_buffer(); // do at least once, sets a pointer to a buffer
-	clear_vram_buffer();
-	
-	// turn on screen
-	// ppu_on_all(); // already done in draw_bg()
-	
+		
 	while (1){
 		// infinite loop
 		ppu_wait_nmi(); // wait till beginning of the frame
@@ -32,7 +28,6 @@ void main (void) {
 		pad1 = pad_poll(0); // read the first controller
 		pad1_new = get_pad_new(0); // newly pressed button. do pad_poll first
 		
-		clear_vram_buffer(); // do at the beginning of each frame
 		score_lives_draw();
 		
 		if(lives01){

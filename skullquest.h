@@ -1,10 +1,8 @@
-
-
 // Levels - generated with NES Screen Tool, with RLE option on
-#include "Nametable/Dungeon/level01.h"
+#include "Nametable/master_levels.h"
 
 // collision data, hand typed
-#include "Collision/dungeon.h"
+// #include "Collision/master_colmaps.h"
 
 #define PADDLE_MIN 0x10
 #define PADDLE_MAX 0xd0
@@ -45,7 +43,7 @@ enum{
 
 #pragma bss-name(push, "BSS")
 
-unsigned char c_map[256];
+unsigned char c_map[368];
 // collision map 
 // 16 wide has easier math than 14 wide, so sides are padded with 0
 
@@ -64,6 +62,9 @@ struct SpObject Ball = {0xff,0xff,5,5}; // balls x and x will be init later
 const unsigned char palette_bg[16]={ 0x0f,0x15,0x3d,0x03,0x0f,0x37,0x17,0x03,0x0f,0x22,0x12,0x03,0x0f,0x00,0x10,0x03 };
 
 const unsigned char palette_sp[16]={ 0x0f, 0x00, 0x10, 0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
+
+const unsigned char pal_forest[16]={ 0x0f,0x15,0x20,0x09,0x0f,0x29,0x1a,0x09,0x0f,0x08,0x17,0x27,0x0f,0x37,0x17,0x09 };
+
 
 // PROTOTYPES
 void draw_bg(void);

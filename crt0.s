@@ -286,4 +286,4 @@ sounds_data:
 
 .segment "CHARS"
 
-	.incbin "Nametable/Dungeon/level_01.chr"
+	.incbin "Nametable/Forest/chrblock.chr"
