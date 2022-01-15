@@ -1,210 +1,150 @@
 #include "LIB/neslib.h"
 #include "LIB/nesdoug.h"
-#include "Sprites.h" // metasprite data
-#include "skullquest.h"
 
-void main (void) {
-	
-	ppu_off();
-	
-	// load palettes
-	pal_bg(pal_forest);
-	pal_spr(palette_sp);
-	
-	// use the second set of tiles for sprites
-	// both bg and sprites are set to 0 by default
-	bank_spr(1);
-	
-	set_scroll_y(0xff); // shift the bg down 1 pixel
-	
-	draw_bg();
-	
-	set_vram_buffer(); // do at least once, sets a pointer to a buffer
-		
-	while (1){
-		// infinite loop
-		ppu_wait_nmi(); // wait till beginning of the frame
-		
-		pad1 = pad_poll(0); // read the first controller
-		pad1_new = get_pad_new(0); // newly pressed button. do pad_poll first
-		
-		score_lives_draw();
-		
-		if(lives01){
-			movement();
-			draw_sprites();
-		}
-		else{
-			oam_clear(); // game over, just turn everything off
-		}
+// LEVEL NAMETABLES AND COLLISION
+#include "Nametable/Forest/level01.h"
+#include "Collision/master_collision.h"
+#include "Nametable/title_screen.h"
+
+#define LEVEL_TOTAL 1
+#define MAX_HEALTH 8
+
+#define TILE_BACK 0x10
+#define TILE_HEART_FULL 0x5b
+#define TILE_HEART_EMPTY 0x5c
+
+const unsigned char pal_forest_bg[16] = {0x0f, 0x15, 0x20, 0x09, 0x0f, 0x29, 0x1a, 0x09, 0x0f, 0x08, 0x17, 0x27, 0x0f, 0x37, 0x17, 0x09};
+const unsigned char pal_palette_spr[16] = {0x0f, 0x20, 0x15, 0x12, 0x0f, 0x11, 0x22, 0x32, 0x0f, 0x13, 0x23, 0x33, 0x0f, 0x14, 0x24, 0x34};
+
+const unsigned char *const level_list[LEVEL_TOTAL * 3] = {
+	forest_level_01, forest_col_01, pal_forest_bg // LEVEL 01
+};
+
+unsigned char pad1;
+unsigned char pad1_new;
+
+static unsigned char i, j;
+
+static unsigned char current_level;
+static unsigned char p1_health;
+static unsigned char p1_max_health;
+
+static unsigned char game_state;
+
+enum game_states
+{
+	TITLE,
+	MAIN,
+	STORY,
+	PAUSE,
+	GAME_OVER
+};
+
+void update_health()
+{
+	for (i = 0; i < p1_max_health; ++i)
+	{
+		one_vram_buffer((i > p1_health) ? TILE_HEART_EMPTY : TILE_HEART_FULL, NTADR_A(i + 2, 2));
 	}
 }
 
+void show_HUD()
+{
+	// HEALTH
+	update_health();
 
+	// XP
+	// update_xp();
 
-void draw_bg(void){
-	ppu_off(); // screen off
+	// ITEM BOX:
+	one_vram_buffer(0x5d, NTADR_A(22, 2));
+	one_vram_buffer(0x5e, NTADR_A(23, 2));
+	one_vram_buffer(0x5f, NTADR_A(24, 2));
+	one_vram_buffer(0x7e, NTADR_A(23, 3));
+	one_vram_buffer(0x7f, NTADR_A(23, 4));
+	// show sprite
+
+	// COINS
+	// update_coins();
+
+	// OTHER??
+}
+
+void show_title_screen()
+{
+	// show press start
+	// wait for input
+}
+
+void show_game_over()
+{
+	// TODO
+}
+
+void show_screen()
+{
+	ppu_off();
 
 	vram_adr(NAMETABLE_A);
-	// this sets a start position on the BG, top left of screen
-	
-	vram_unrle(level01);
-	// this unpacks a compressed full nametable
-	
-	// memcpy (c_map, c1, 256);
-	// copy the collision map to c_map
-	
+	vram_unrle(level_list[current_level]);
+
 	ppu_on_all();
+
+	if (game_state == MAIN)
+		show_HUD();
 }
 
-
-
-void draw_sprites(void){
-	// clear all sprites from sprite buffer
-	oam_clear();
-	
-	// draw 2 metasprites
-	oam_meta_spr(Paddle.X, Paddle.Y, PaddleSpr);
-	oam_meta_spr(Ball.X, Ball.Y, BallSpr);
-}
-	
-	
-	
-void movement(void){
-	// paddle move
-	if(pad1 & PAD_LEFT){
-		Paddle.X -= 2;
-		if(Paddle.X < PADDLE_MIN) Paddle.X = PADDLE_MIN;
-		
-	}
-	if(pad1 & PAD_RIGHT){
-		Paddle.X += 2;
-		if(Paddle.X > PADDLE_MAX) Paddle.X = PADDLE_MAX;
-
-	}
-	
-
-	
-	
-	if(ball_state == BALL_OFF){ // ball is inactive, wait a second
-		++ball_count;
-		if(ball_count > 60){
-			ball_state = BALL_STUCK;
-			ball_x_rel = 0x0d;
-			ball_count = 0;
-			return;
-		}
-		Ball.Y = 0xff; // off screen
-	}
-	
-	if(ball_state == BALL_STUCK){ // ball is stuck to the paddle
-		Ball.X = Paddle.X + ball_x_rel;
-		Ball.Y = Paddle.Y - 4;
-	
-		if(pad1_new & (PAD_A | PAD_B)){ // any new a or b press to start
-			ball_state = BALL_ACTIVE;
-			ball_direction = GOING_UP;
-			if(Ball.X < BALL_MIN) Ball.X = BALL_MIN;
-			if(Ball.X > BALL_MAX) Ball.X = BALL_MAX;
-			return;
-		}
-		
-	}
-	
-	if(ball_state == BALL_ACTIVE){
-		if(ball_direction == GOING_UP){
-			Ball.Y -= 3;
-			if(Ball.Y < MAX_UP){
-				ball_direction = GOING_DOWN;
-			}
-		}
-		else { // going down
-			Ball.Y += 3;
-			if(Ball.Y > MAX_DOWN){
-				--lives01;
-				ball_state = BALL_OFF;
-			}
-			
-			// collision w paddle = stuck
-			collision = check_collision(&Ball, &Paddle);
-			if(collision){
-				ball_state = BALL_STUCK;
-				ball_x_rel = Ball.X - Paddle.X;
-			}
-		}
-		
-		
-		
-		
-		// collision w blocks
-		
-		temp_x = (Ball.X + 1) & 0xf0; // tiles are 16 px wide
-		temp_y = (Ball.Y + 2) & 0xf8; // tiles only 8 px high
-		if(temp_y < 0xaf){ // Y of 0x30 + 16*8 = b0. Ball.Y>b0 = off the c_map
-			
-			temp1 = (temp_x>>4) + (((temp_y-0x30) << 1) & 0xf0);
-			// << 1 because tiles only 8 px high
-			
-			if(c_map[temp1]){ // hit a block
-				hit_block();
-				return;
-			}
-		}
-		
-		// check a little more to the right
-		temp_x = (Ball.X + 4) & 0xf0; // tiles are 16 px wide
-		temp_y = (Ball.Y + 2) & 0xf8; // tiles only 8 px high
-		if(temp_y < 0xaf){ // Y of 0x30 + 16*8 = b0. Ball.Y>b0 = off the c_map
-			
-			temp1 = (temp_x>>4) + (((temp_y-0x30) << 1) & 0xf0);
-			// << 1 because tiles only 8 px high
-			
-			if(c_map[temp1]){ // hit a block
-				hit_block();
-			}
-		}
-		
-	}
-}	
-
-
-
-void hit_block(void) {
-	score01 += 1;
-	adjust_score();
-	ball_direction = GOING_DOWN;
-	Ball.Y +=3;
-	c_map[temp1] = 0;
-	
-	address = get_ppu_addr(0, temp_x, temp_y);
-	address = address & 0xfffe; // start with the left tile
-	one_vram_buffer(0, address); // tile 0 = blank
-	++address;
-	one_vram_buffer(0, address); // also the one to the right of it
+void load_title_screen()
+{
+	pal_bg(pal_forest_bg);
+	pal_spr(pal_palette_spr);
+	vram_adr(NAMETABLE_A);
+	vram_unrle(title_screen);
+	game_state = TITLE;
 }
 
+void main()
+{
+	// famitone_init(&music_data);
+	// sfx_init(&sound_data);
+	// nmi_set_callback(famitone_update);
 
+	ppu_off();
 
-void score_lives_draw(void){
-	temp1 = score10 + '0';
-	one_vram_buffer(temp1, NTADR_A(10,3));
-	
-	temp1 = score01 + '0';
-	one_vram_buffer(temp1, NTADR_A(11,3));
-	
-	temp1 = '0';
-	one_vram_buffer(temp1, NTADR_A(26,3));
-	
-	temp1 = lives01 + '0';
-	one_vram_buffer(temp1, NTADR_A(27,3));
-}
+	bank_spr(1);
+	set_vram_buffer();
 
+	load_title_screen();
 
+	ppu_on_all();
 
-void adjust_score(void){
-	if (score01 >= 10){
-		score01 -= 10;
-		++score10;
+	while (1)
+	{
+		ppu_wait_nmi();
+
+		while (game_state == TITLE)
+		{
+			pad1 = pad_poll(0); // read the first controller
+			pad1_new = get_pad_new(0);
+			if (pad1_new & PAD_START)
+			{
+				game_state = MAIN;
+				current_level = 0;
+				p1_health = 3;
+				p1_max_health = 3;
+
+				show_screen();
+			}
+		}
+
+		while (p1_health)
+		{
+
+			// game_loop();
+
+			// if(game_over) ++current_level; else show_game_over();
+		}
+
+		// show_screen(!game_lives?SCREEN_GAMEOVER:SCREEN_WELLDONE);//show game results
 	}
 }
-

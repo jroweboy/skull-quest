@@ -16,8 +16,6 @@
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
-	.import		_oam_clear
-	.import		_oam_meta_spr
 	.import		_pad_poll
 	.import		_bank_spr
 	.import		_vram_adr
@@ -25,115 +23,29 @@
 	.import		_set_vram_buffer
 	.import		_one_vram_buffer
 	.import		_get_pad_new
-	.import		_check_collision
-	.import		_set_scroll_y
-	.import		_get_ppu_addr
-	.export		_PaddleSpr
-	.export		_BallSpr
-	.export		_level01
+	.export		_forest_level_01
+	.export		_forest_col_01
+	.export		_title_screen
+	.export		_pal_forest_bg
+	.export		_pal_palette_spr
+	.export		_level_list
 	.export		_pad1
 	.export		_pad1_new
-	.export		_collision
-	.export		_temp1
-	.export		_temp_x
-	.export		_temp_y
-	.export		_address
-	.export		_lives01
-	.export		_score10
-	.export		_score01
-	.export		_ball_state
-	.export		_ball_x_rel
-	.export		_ball_count
-	.export		_ball_direction
-	.export		_c_map
-	.export		_Paddle
-	.export		_Ball
-	.export		_palette_bg
-	.export		_palette_sp
-	.export		_pal_forest
-	.export		_draw_bg
-	.export		_draw_sprites
-	.export		_movement
-	.export		_score_lives_draw
-	.export		_adjust_score
-	.export		_hit_block
+	.export		_update_health
+	.export		_show_HUD
+	.export		_show_title_screen
+	.export		_show_game_over
+	.export		_show_screen
+	.export		_load_title_screen
 	.export		_main
-
-.segment	"DATA"
-
-_lives01:
-	.byte	$03
-_Paddle:
-	.byte	$75
-	.byte	$D0
-	.byte	$1F
-	.byte	$07
-_Ball:
-	.byte	$FF
-	.byte	$FF
-	.byte	$05
-	.byte	$05
 
 .segment	"RODATA"
 
-_PaddleSpr:
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$08
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$18
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$80
-_BallSpr:
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$00
-	.byte	$80
-_level01:
+_forest_level_01:
 	.byte	$01
 	.byte	$00
 	.byte	$01
-	.byte	$41
-	.byte	$5B
-	.byte	$01
-	.byte	$02
-	.byte	$5C
-	.byte	$01
-	.byte	$04
-	.byte	$00
-	.byte	$00
-	.byte	$30
-	.byte	$01
-	.byte	$07
-	.byte	$00
-	.byte	$00
-	.byte	$5D
-	.byte	$5E
-	.byte	$5F
-	.byte	$00
-	.byte	$00
-	.byte	$20
-	.byte	$30
-	.byte	$30
-	.byte	$00
-	.byte	$01
-	.byte	$18
-	.byte	$7E
-	.byte	$7F
-	.byte	$00
-	.byte	$01
-	.byte	$27
+	.byte	$A0
 	.byte	$05
 	.byte	$05
 	.byte	$09
@@ -313,153 +225,159 @@ _level01:
 	.byte	$05
 	.byte	$09
 	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$15
-	.byte	$10
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
 	.byte	$01
 	.byte	$02
-	.byte	$08
-	.byte	$09
-	.byte	$11
-	.byte	$01
-	.byte	$13
-	.byte	$08
-	.byte	$09
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
 	.byte	$11
 	.byte	$01
 	.byte	$11
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$18
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$19
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$18
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$19
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$11
 	.byte	$10
+	.byte	$01
+	.byte	$02
+	.byte	$18
+	.byte	$05
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$01
+	.byte	$02
+	.byte	$08
+	.byte	$09
+	.byte	$10
+	.byte	$10
+	.byte	$11
 	.byte	$01
 	.byte	$0F
+	.byte	$10
+	.byte	$10
+	.byte	$08
+	.byte	$09
+	.byte	$05
+	.byte	$01
+	.byte	$02
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$05
+	.byte	$08
+	.byte	$18
+	.byte	$19
+	.byte	$09
+	.byte	$10
+	.byte	$01
+	.byte	$11
+	.byte	$08
+	.byte	$18
+	.byte	$19
+	.byte	$09
+	.byte	$05
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$08
+	.byte	$18
+	.byte	$08
+	.byte	$09
+	.byte	$19
+	.byte	$09
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$08
+	.byte	$18
+	.byte	$08
+	.byte	$09
+	.byte	$19
+	.byte	$09
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$18
+	.byte	$08
+	.byte	$18
+	.byte	$19
+	.byte	$09
+	.byte	$19
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$18
+	.byte	$08
+	.byte	$18
+	.byte	$19
+	.byte	$09
+	.byte	$19
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$08
+	.byte	$18
+	.byte	$08
+	.byte	$09
+	.byte	$19
+	.byte	$09
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$08
+	.byte	$18
+	.byte	$08
+	.byte	$09
+	.byte	$19
+	.byte	$09
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$05
+	.byte	$08
+	.byte	$18
+	.byte	$19
+	.byte	$09
+	.byte	$10
+	.byte	$01
 	.byte	$11
 	.byte	$08
 	.byte	$18
@@ -474,9 +392,13 @@ _level01:
 	.byte	$02
 	.byte	$06
 	.byte	$07
+	.byte	$10
+	.byte	$10
 	.byte	$11
 	.byte	$01
-	.byte	$13
+	.byte	$0F
+	.byte	$10
+	.byte	$10
 	.byte	$06
 	.byte	$07
 	.byte	$05
@@ -489,8 +411,8 @@ _level01:
 	.byte	$02
 	.byte	$16
 	.byte	$17
+	.byte	$10
 	.byte	$11
-	.byte	$11
 	.byte	$02
 	.byte	$03
 	.byte	$02
@@ -508,7 +430,7 @@ _level01:
 	.byte	$02
 	.byte	$03
 	.byte	$11
-	.byte	$11
+	.byte	$10
 	.byte	$16
 	.byte	$17
 	.byte	$05
@@ -520,9 +442,9 @@ _level01:
 	.byte	$05
 	.byte	$09
 	.byte	$10
-	.byte	$11
 	.byte	$01
 	.byte	$02
+	.byte	$11
 	.byte	$12
 	.byte	$13
 	.byte	$12
@@ -540,9 +462,9 @@ _level01:
 	.byte	$12
 	.byte	$13
 	.byte	$11
-	.byte	$11
 	.byte	$10
-	.byte	$10
+	.byte	$01
+	.byte	$02
 	.byte	$08
 	.byte	$05
 	.byte	$05
@@ -667,7 +589,11 @@ _level01:
 	.byte	$1D
 	.byte	$00
 	.byte	$01
-	.byte	$28
+	.byte	$20
+	.byte	$55
+	.byte	$01
+	.byte	$06
+	.byte	$51
 	.byte	$55
 	.byte	$A5
 	.byte	$A5
@@ -707,41 +633,438 @@ _level01:
 	.byte	$05
 	.byte	$01
 	.byte	$00
-_palette_bg:
-	.byte	$0F
-	.byte	$15
-	.byte	$3D
-	.byte	$03
-	.byte	$0F
-	.byte	$37
-	.byte	$17
-	.byte	$03
-	.byte	$0F
+_forest_col_01:
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$06
+	.byte	$66
+	.byte	$66
+	.byte	$60
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$06
+	.byte	$66
+	.byte	$66
+	.byte	$60
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$06
+	.byte	$66
+	.byte	$66
+	.byte	$60
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$06
+	.byte	$66
+	.byte	$66
+	.byte	$60
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
 	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+_title_screen:
+	.byte	$01
+	.byte	$00
+	.byte	$01
+	.byte	$FE
+	.byte	$00
+	.byte	$01
+	.byte	$29
+	.byte	$53
+	.byte	$6B
+	.byte	$75
+	.byte	$6C
+	.byte	$6C
+	.byte	$00
+	.byte	$01
+	.byte	$03
+	.byte	$51
+	.byte	$75
+	.byte	$65
+	.byte	$73
+	.byte	$74
+	.byte	$00
+	.byte	$01
+	.byte	$FE
+	.byte	$00
+	.byte	$01
+	.byte	$FE
+	.byte	$00
+	.byte	$01
 	.byte	$12
-	.byte	$03
-	.byte	$0F
+	.byte	$54
+	.byte	$68
+	.byte	$65
 	.byte	$00
-	.byte	$10
-	.byte	$03
-_palette_sp:
-	.byte	$0F
+	.byte	$6F
+	.byte	$6C
+	.byte	$64
 	.byte	$00
-	.byte	$10
+	.byte	$67
+	.byte	$61
+	.byte	$6D
+	.byte	$65
+	.byte	$00
+	.byte	$6D
+	.byte	$61
+	.byte	$6B
+	.byte	$65
+	.byte	$72
+	.byte	$00
+	.byte	$01
+	.byte	$13
+	.byte	$40
+	.byte	$32
 	.byte	$30
+	.byte	$32
+	.byte	$32
 	.byte	$00
+	.byte	$01
+	.byte	$8B
 	.byte	$00
+	.byte	$01
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-_pal_forest:
+_pal_forest_bg:
 	.byte	$0F
 	.byte	$15
 	.byte	$20
@@ -758,52 +1081,203 @@ _pal_forest:
 	.byte	$37
 	.byte	$17
 	.byte	$09
+_pal_palette_spr:
+	.byte	$0F
+	.byte	$20
+	.byte	$15
+	.byte	$12
+	.byte	$0F
+	.byte	$11
+	.byte	$22
+	.byte	$32
+	.byte	$0F
+	.byte	$13
+	.byte	$23
+	.byte	$33
+	.byte	$0F
+	.byte	$14
+	.byte	$24
+	.byte	$34
+_level_list:
+	.addr	_forest_level_01
+	.addr	_forest_col_01
+	.addr	_pal_forest_bg
 
 .segment	"BSS"
 
-.segment	"ZEROPAGE"
 _pad1:
 	.res	1,$00
 _pad1_new:
 	.res	1,$00
-_collision:
+_i:
 	.res	1,$00
-_temp1:
+_j:
 	.res	1,$00
-_temp_x:
+_current_level:
 	.res	1,$00
-_temp_y:
+_p1_health:
 	.res	1,$00
-_address:
-	.res	2,$00
-_score10:
+_p1_max_health:
 	.res	1,$00
-_score01:
+_game_state:
 	.res	1,$00
-_ball_state:
-	.res	1,$00
-_ball_x_rel:
-	.res	1,$00
-_ball_count:
-	.res	1,$00
-_ball_direction:
-	.res	1,$00
-.segment	"BSS"
-_c_map:
-	.res	368,$00
 
 ; ---------------------------------------------------------------
-; void __near__ draw_bg (void)
+; void __near__ update_health (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_draw_bg: near
+.proc	_update_health: near
 
 .segment	"CODE"
 
 ;
-; ppu_off(); // screen off
+; for (i = 0; i < p1_max_health; ++i)
+;
+	lda     #$00
+	sta     _i
+L0009:	lda     _i
+	cmp     _p1_max_health
+	bcs     L0003
+;
+; one_vram_buffer((i > p1_health) ? TILE_HEART_EMPTY : TILE_HEART_FULL, NTADR_A(i + 2, 2));
+;
+	cmp     _p1_health
+	bcc     L000A
+	beq     L000A
+	lda     #$5C
+	jmp     L000B
+L000A:	lda     #$5B
+L000B:	jsr     pusha
+	ldx     #$00
+	lda     _i
+	clc
+	adc     #$02
+	bcc     L0008
+	inx
+L0008:	ora     #$40
+	pha
+	txa
+	ora     #$20
+	tax
+	pla
+	jsr     _one_vram_buffer
+;
+; for (i = 0; i < p1_max_health; ++i)
+;
+	inc     _i
+	jmp     L0009
+;
+; }
+;
+L0003:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ show_HUD (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_show_HUD: near
+
+.segment	"CODE"
+
+;
+; update_health();
+;
+	jsr     _update_health
+;
+; one_vram_buffer(0x5d, NTADR_A(22, 2));
+;
+	lda     #$5D
+	jsr     pusha
+	ldx     #$20
+	lda     #$56
+	jsr     _one_vram_buffer
+;
+; one_vram_buffer(0x5e, NTADR_A(23, 2));
+;
+	lda     #$5E
+	jsr     pusha
+	ldx     #$20
+	lda     #$57
+	jsr     _one_vram_buffer
+;
+; one_vram_buffer(0x5f, NTADR_A(24, 2));
+;
+	lda     #$5F
+	jsr     pusha
+	ldx     #$20
+	lda     #$58
+	jsr     _one_vram_buffer
+;
+; one_vram_buffer(0x7e, NTADR_A(23, 3));
+;
+	lda     #$7E
+	jsr     pusha
+	ldx     #$20
+	lda     #$77
+	jsr     _one_vram_buffer
+;
+; one_vram_buffer(0x7f, NTADR_A(23, 4));
+;
+	lda     #$7F
+	jsr     pusha
+	ldx     #$20
+	lda     #$97
+	jmp     _one_vram_buffer
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ show_title_screen (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_show_title_screen: near
+
+.segment	"CODE"
+
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ show_game_over (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_show_game_over: near
+
+.segment	"CODE"
+
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ show_screen (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_show_screen: near
+
+.segment	"CODE"
+
+;
+; ppu_off();
 ;
 	jsr     _ppu_off
 ;
@@ -813,492 +1287,39 @@ _c_map:
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_unrle(level01);
+; vram_unrle(level_list[current_level]);
 ;
-	lda     #<(_level01)
-	ldx     #>(_level01)
+	ldx     #$00
+	lda     _current_level
+	asl     a
+	bcc     L0004
+	inx
+	clc
+L0004:	adc     #<(_level_list)
+	sta     ptr1
+	txa
+	adc     #>(_level_list)
+	sta     ptr1+1
+	ldy     #$01
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
 	jsr     _vram_unrle
 ;
 ; ppu_on_all();
 ;
-	jmp     _ppu_on_all
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ draw_sprites (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_draw_sprites: near
-
-.segment	"CODE"
-
+	jsr     _ppu_on_all
 ;
-; oam_clear();
+; if (game_state == MAIN)
 ;
-	jsr     _oam_clear
-;
-; oam_meta_spr(Paddle.X, Paddle.Y, PaddleSpr);
-;
-	jsr     decsp2
-	lda     _Paddle
-	ldy     #$01
-	sta     (sp),y
-	lda     _Paddle+1
-	dey
-	sta     (sp),y
-	lda     #<(_PaddleSpr)
-	ldx     #>(_PaddleSpr)
-	jsr     _oam_meta_spr
-;
-; oam_meta_spr(Ball.X, Ball.Y, BallSpr);
-;
-	jsr     decsp2
-	lda     _Ball
-	ldy     #$01
-	sta     (sp),y
-	lda     _Ball+1
-	dey
-	sta     (sp),y
-	lda     #<(_BallSpr)
-	ldx     #>(_BallSpr)
-	jmp     _oam_meta_spr
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ movement (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_movement: near
-
-.segment	"CODE"
-
-;
-; if(pad1 & PAD_LEFT){
-;
-	lda     _pad1
-	and     #$02
-	beq     L0023
-;
-; Paddle.X -= 2;
-;
-	lda     _Paddle
-	sec
-	sbc     #$02
-	sta     _Paddle
-;
-; if(Paddle.X < PADDLE_MIN) Paddle.X = PADDLE_MIN;
-;
-	cmp     #$10
-	bcs     L0023
-	lda     #$10
-	sta     _Paddle
-;
-; if(pad1 & PAD_RIGHT){
-;
-L0023:	lda     _pad1
-	and     #$01
-	beq     L0024
-;
-; Paddle.X += 2;
-;
-	lda     #$02
-	clc
-	adc     _Paddle
-	sta     _Paddle
-;
-; if(Paddle.X > PADDLE_MAX) Paddle.X = PADDLE_MAX;
-;
-	cmp     #$D1
-	bcc     L0024
-	lda     #$D0
-	sta     _Paddle
-;
-; if(ball_state == BALL_OFF){ // ball is inactive, wait a second
-;
-L0024:	lda     _ball_state
-	bne     L0026
-;
-; ++ball_count;
-;
-	inc     _ball_count
-;
-; if(ball_count > 60){
-;
-	lda     _ball_count
-	cmp     #$3D
-	bcc     L0025
-;
-; ball_state = BALL_STUCK;
-;
-	lda     #$01
-	sta     _ball_state
-;
-; ball_x_rel = 0x0d;
-;
-	lda     #$0D
-	sta     _ball_x_rel
-;
-; ball_count = 0;
-;
-	lda     #$00
-	sta     _ball_count
-;
-; return;
-;
-	rts
-;
-; Ball.Y = 0xff; // off screen
-;
-L0025:	lda     #$FF
-	sta     _Ball+1
-;
-; if(ball_state == BALL_STUCK){ // ball is stuck to the paddle
-;
-L0026:	lda     _ball_state
+	lda     _game_state
 	cmp     #$01
-	bne     L0028
+	bne     L0002
 ;
-; Ball.X = Paddle.X + ball_x_rel;
+; show_HUD();
 ;
-	lda     _Paddle
-	clc
-	adc     _ball_x_rel
-	sta     _Ball
-;
-; Ball.Y = Paddle.Y - 4;
-;
-	lda     _Paddle+1
-	sec
-	sbc     #$04
-	sta     _Ball+1
-;
-; if(pad1_new & (PAD_A | PAD_B)){ // any new a or b press to start
-;
-	lda     _pad1_new
-	and     #$C0
-	beq     L0028
-;
-; ball_state = BALL_ACTIVE;
-;
-	lda     #$02
-	sta     _ball_state
-;
-; ball_direction = GOING_UP;
-;
-	lda     #$00
-	sta     _ball_direction
-;
-; if(Ball.X < BALL_MIN) Ball.X = BALL_MIN;
-;
-	lda     _Ball
-	cmp     #$10
-	bcs     L0027
-	lda     #$10
-	sta     _Ball
-;
-; if(Ball.X > BALL_MAX) Ball.X = BALL_MAX;
-;
-L0027:	lda     _Ball
-	cmp     #$EB
-	bcs     L002C
-;
-; } 
-;
-	rts
-;
-; if(Ball.X > BALL_MAX) Ball.X = BALL_MAX;
-;
-L002C:	lda     #$EA
-	sta     _Ball
-;
-; return;
-;
-	rts
-;
-; if(ball_state == BALL_ACTIVE){
-;
-L0028:	lda     _ball_state
-	cmp     #$02
-	beq     L002D
-;
-; } 
-;
-	rts
-;
-; if(ball_direction == GOING_UP){
-;
-L002D:	lda     _ball_direction
-	bne     L0029
-;
-; Ball.Y -= 3;
-;
-	lda     _Ball+1
-	sec
-	sbc     #$03
-	sta     _Ball+1
-;
-; if(Ball.Y < MAX_UP){
-;
-	cmp     #$30
-	bcs     L002A
-;
-; ball_direction = GOING_DOWN;
-;
-	lda     #$01
-	sta     _ball_direction
-;
-; else { // going down
-;
-	jmp     L002A
-;
-; Ball.Y += 3;
-;
-L0029:	lda     #$03
-	clc
-	adc     _Ball+1
-	sta     _Ball+1
-;
-; if(Ball.Y > MAX_DOWN){
-;
-	cmp     #$E1
-	bcc     L0011
-;
-; --lives01;
-;
-	dec     _lives01
-;
-; ball_state = BALL_OFF;
-;
-	lda     #$00
-	sta     _ball_state
-;
-; collision = check_collision(&Ball, &Paddle);
-;
-L0011:	lda     #<(_Ball)
-	ldx     #>(_Ball)
-	jsr     pushax
-	lda     #<(_Paddle)
-	ldx     #>(_Paddle)
-	jsr     _check_collision
-	sta     _collision
-;
-; if(collision){
-;
-	lda     _collision
-	beq     L002A
-;
-; ball_state = BALL_STUCK;
-;
-	lda     #$01
-	sta     _ball_state
-;
-; ball_x_rel = Ball.X - Paddle.X;
-;
-	lda     _Ball
-	sec
-	sbc     _Paddle
-	sta     _ball_x_rel
-;
-; temp_x = (Ball.X + 1) & 0xf0; // tiles are 16 px wide
-;
-L002A:	lda     _Ball
-	clc
-	adc     #$01
-	and     #$F0
-	sta     _temp_x
-;
-; temp_y = (Ball.Y + 2) & 0xf8; // tiles only 8 px high
-;
-	lda     _Ball+1
-	clc
-	adc     #$02
-	and     #$F8
-	sta     _temp_y
-;
-; if(temp_y < 0xaf){ // Y of 0x30 + 16*8 = b0. Ball.Y>b0 = off the c_map
-;
-	cmp     #$AF
-	bcs     L002B
-;
-; temp1 = (temp_x>>4) + (((temp_y-0x30) << 1) & 0xf0);
-;
-	lda     _temp_x
-	lsr     a
-	lsr     a
-	lsr     a
-	lsr     a
-	sta     ptr1
-	lda     _temp_y
-	sec
-	sbc     #$30
-	asl     a
-	and     #$F0
-	clc
-	adc     ptr1
-	sta     _temp1
-;
-; if(c_map[temp1]){ // hit a block
-;
-	ldy     _temp1
-	lda     _c_map,y
-;
-; return;
-;
-	bne     L0022
-;
-; temp_x = (Ball.X + 4) & 0xf0; // tiles are 16 px wide
-;
-L002B:	lda     _Ball
-	clc
-	adc     #$04
-	and     #$F0
-	sta     _temp_x
-;
-; temp_y = (Ball.Y + 2) & 0xf8; // tiles only 8 px high
-;
-	lda     _Ball+1
-	clc
-	adc     #$02
-	and     #$F8
-	sta     _temp_y
-;
-; if(temp_y < 0xaf){ // Y of 0x30 + 16*8 = b0. Ball.Y>b0 = off the c_map
-;
-	cmp     #$AF
-	bcs     L001D
-;
-; temp1 = (temp_x>>4) + (((temp_y-0x30) << 1) & 0xf0);
-;
-	lda     _temp_x
-	lsr     a
-	lsr     a
-	lsr     a
-	lsr     a
-	sta     ptr1
-	lda     _temp_y
-	sec
-	sbc     #$30
-	asl     a
-	and     #$F0
-	clc
-	adc     ptr1
-	sta     _temp1
-;
-; if(c_map[temp1]){ // hit a block
-;
-	ldy     _temp1
-	lda     _c_map,y
-	beq     L001D
-;
-; hit_block();
-;
-L0022:	jmp     _hit_block
-;
-; } 
-;
-L001D:	rts
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ score_lives_draw (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_score_lives_draw: near
-
-.segment	"CODE"
-
-;
-; temp1 = score10 + '0';
-;
-	lda     _score10
-	clc
-	adc     #$30
-	sta     _temp1
-;
-; one_vram_buffer(temp1, NTADR_A(10,3));
-;
-	jsr     pusha
-	ldx     #$20
-	lda     #$6A
-	jsr     _one_vram_buffer
-;
-; temp1 = score01 + '0';
-;
-	lda     _score01
-	clc
-	adc     #$30
-	sta     _temp1
-;
-; one_vram_buffer(temp1, NTADR_A(11,3));
-;
-	jsr     pusha
-	ldx     #$20
-	lda     #$6B
-	jsr     _one_vram_buffer
-;
-; temp1 = '0';
-;
-	lda     #$30
-	sta     _temp1
-;
-; one_vram_buffer(temp1, NTADR_A(26,3));
-;
-	jsr     pusha
-	ldx     #$20
-	lda     #$7A
-	jsr     _one_vram_buffer
-;
-; temp1 = lives01 + '0';
-;
-	lda     _lives01
-	clc
-	adc     #$30
-	sta     _temp1
-;
-; one_vram_buffer(temp1, NTADR_A(27,3));
-;
-	jsr     pusha
-	ldx     #$20
-	lda     #$7B
-	jmp     _one_vram_buffer
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ adjust_score (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_adjust_score: near
-
-.segment	"CODE"
-
-;
-; if (score01 >= 10){
-;
-	lda     _score01
-	cmp     #$0A
-	bcc     L0002
-;
-; score01 -= 10;
-;
-	sec
-	sbc     #$0A
-	sta     _score01
-;
-; ++score10;
-;
-	inc     _score10
+	jmp     _show_HUD
 ;
 ; }
 ;
@@ -1307,83 +1328,48 @@ L0002:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ hit_block (void)
+; void __near__ load_title_screen (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_hit_block: near
+.proc	_load_title_screen: near
 
 .segment	"CODE"
 
 ;
-; score01 += 1;
+; pal_bg(pal_forest_bg);
 ;
-	inc     _score01
+	lda     #<(_pal_forest_bg)
+	ldx     #>(_pal_forest_bg)
+	jsr     _pal_bg
 ;
-; adjust_score();
+; pal_spr(pal_palette_spr);
 ;
-	jsr     _adjust_score
+	lda     #<(_pal_palette_spr)
+	ldx     #>(_pal_palette_spr)
+	jsr     _pal_spr
 ;
-; ball_direction = GOING_DOWN;
+; vram_adr(NAMETABLE_A);
 ;
-	lda     #$01
-	sta     _ball_direction
-;
-; Ball.Y +=3;
-;
-	lda     #$03
-	clc
-	adc     _Ball+1
-	sta     _Ball+1
-;
-; c_map[temp1] = 0;
-;
-	ldy     _temp1
+	ldx     #$20
 	lda     #$00
-	sta     _c_map,y
+	jsr     _vram_adr
 ;
-; address = get_ppu_addr(0, temp_x, temp_y);
+; vram_unrle(title_screen);
 ;
-	jsr     decsp2
-	lda     #$00
-	ldy     #$01
-	sta     (sp),y
-	lda     _temp_x
-	dey
-	sta     (sp),y
-	lda     _temp_y
-	jsr     _get_ppu_addr
-	sta     _address
-	stx     _address+1
+	lda     #<(_title_screen)
+	ldx     #>(_title_screen)
+	jsr     _vram_unrle
 ;
-; address = address & 0xfffe; // start with the left tile
-;
-	and     #$FE
-	sta     _address
-	stx     _address+1
-;
-; one_vram_buffer(0, address); // tile 0 = blank
+; game_state = TITLE;
 ;
 	lda     #$00
-	jsr     pusha
-	lda     _address
-	ldx     _address+1
-	jsr     _one_vram_buffer
+	sta     _game_state
 ;
-; ++address;
+; }
 ;
-	inc     _address
-	bne     L0003
-	inc     _address+1
-;
-; one_vram_buffer(0, address); // also the one to the right of it
-;
-L0003:	lda     #$00
-	jsr     pusha
-	lda     _address
-	ldx     _address+1
-	jmp     _one_vram_buffer
+	rts
 
 .endproc
 
@@ -1402,79 +1388,81 @@ L0003:	lda     #$00
 ;
 	jsr     _ppu_off
 ;
-; pal_bg(pal_forest);
-;
-	lda     #<(_pal_forest)
-	ldx     #>(_pal_forest)
-	jsr     _pal_bg
-;
-; pal_spr(palette_sp);
-;
-	lda     #<(_palette_sp)
-	ldx     #>(_palette_sp)
-	jsr     _pal_spr
-;
 ; bank_spr(1);
 ;
 	lda     #$01
 	jsr     _bank_spr
 ;
-; set_scroll_y(0xff); // shift the bg down 1 pixel
-;
-	ldx     #$00
-	lda     #$FF
-	jsr     _set_scroll_y
-;
-; draw_bg();
-;
-	jsr     _draw_bg
-;
-; set_vram_buffer(); // do at least once, sets a pointer to a buffer
+; set_vram_buffer();
 ;
 	jsr     _set_vram_buffer
 ;
-; ppu_wait_nmi(); // wait till beginning of the frame
+; load_title_screen();
+;
+	jsr     _load_title_screen
+;
+; ppu_on_all();
+;
+	jsr     _ppu_on_all
+;
+; ppu_wait_nmi();
 ;
 L0002:	jsr     _ppu_wait_nmi
 ;
+; while (game_state == TITLE)
+;
+	jmp     L000E
+;
 ; pad1 = pad_poll(0); // read the first controller
 ;
-	lda     #$00
-	jsr     _pad_poll
+L000D:	jsr     _pad_poll
 	sta     _pad1
 ;
-; pad1_new = get_pad_new(0); // newly pressed button. do pad_poll first
+; pad1_new = get_pad_new(0);
 ;
 	lda     #$00
 	jsr     _get_pad_new
 	sta     _pad1_new
 ;
-; score_lives_draw();
+; if (pad1_new & PAD_START)
 ;
-	jsr     _score_lives_draw
+	and     #$10
+	beq     L000E
 ;
-; if(lives01){
+; game_state = MAIN;
 ;
-	lda     _lives01
-	beq     L0005
+	lda     #$01
+	sta     _game_state
 ;
-; movement();
+; current_level = 0;
 ;
-	jsr     _movement
+	lda     #$00
+	sta     _current_level
 ;
-; draw_sprites();
+; p1_health = 3;
 ;
-	jsr     _draw_sprites
+	lda     #$03
+	sta     _p1_health
 ;
-; else{
+; p1_max_health = 3;
 ;
-	jmp     L0002
+	sta     _p1_max_health
 ;
-; oam_clear(); // game over, just turn everything off
+; show_screen();
 ;
-L0005:	jsr     _oam_clear
+	jsr     _show_screen
 ;
-; while (1){
+; while (game_state == TITLE)
+;
+L000E:	lda     _game_state
+	beq     L000D
+;
+; while (p1_health)
+;
+L0009:	lda     _p1_health
+	bne     L0009
+;
+; while (1)
 ;
 	jmp     L0002
 
