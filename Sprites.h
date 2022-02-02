@@ -9,7 +9,7 @@ const unsigned char PaddleSpr[]={
 };
 
 
-const unsigned char BallSpr[]={
+const unsigned char SkullSpr[]={
 	  0,  0,0x01,0,
 	128
 };

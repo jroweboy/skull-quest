@@ -16,9 +16,12 @@
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
+	.import		_oam_clear
+	.import		_oam_meta_spr
 	.import		_pad_poll
 	.import		_bank_spr
 	.import		_vram_adr
+	.import		_vram_fill
 	.import		_vram_unrle
 	.import		_set_vram_buffer
 	.import		_one_vram_buffer
@@ -26,18 +29,49 @@
 	.export		_forest_level_01
 	.export		_forest_col_01
 	.export		_title_screen
+	.export		_PaddleSpr
+	.export		_SkullSpr
 	.export		_pal_forest_bg
-	.export		_pal_palette_spr
+	.export		_pal_spr_01
 	.export		_level_list
+	.export		_dx
+	.export		_dy
 	.export		_pad1
 	.export		_pad1_new
+	.export		_c_map
+	.export		_i
+	.export		_j
+	.export		_temp
+	.export		_current_level
+	.export		_p1_health
+	.export		_p1_max_health
+	.export		_game_state
+	.export		_Paddle
+	.export		_Skull
 	.export		_update_health
 	.export		_show_HUD
 	.export		_show_title_screen
 	.export		_show_game_over
 	.export		_show_screen
 	.export		_load_title_screen
+	.export		_check_input
+	.export		_draw_sprites
 	.export		_main
+
+.segment	"DATA"
+
+_Paddle:
+	.byte	$75
+	.byte	$D0
+	.byte	$1F
+	.byte	$07
+	.res	2,$00
+_Skull:
+	.byte	$FF
+	.byte	$FF
+	.byte	$05
+	.byte	$05
+	.res	2,$00
 
 .segment	"RODATA"
 
@@ -1025,13 +1059,24 @@ _title_screen:
 	.byte	$74
 	.byte	$00
 	.byte	$01
-	.byte	$FE
+	.byte	$B3
+	.byte	$50
+	.byte	$72
+	.byte	$65
+	.byte	$73
+	.byte	$73
+	.byte	$00
+	.byte	$53
+	.byte	$74
+	.byte	$61
+	.byte	$72
+	.byte	$74
 	.byte	$00
 	.byte	$01
 	.byte	$FE
 	.byte	$00
 	.byte	$01
-	.byte	$12
+	.byte	$32
 	.byte	$54
 	.byte	$68
 	.byte	$65
@@ -1052,7 +1097,7 @@ _title_screen:
 	.byte	$72
 	.byte	$00
 	.byte	$01
-	.byte	$13
+	.byte	$33
 	.byte	$40
 	.byte	$32
 	.byte	$30
@@ -1064,6 +1109,30 @@ _title_screen:
 	.byte	$00
 	.byte	$01
 	.byte	$00
+_PaddleSpr:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$18
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$80
+_SkullSpr:
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$00
+	.byte	$80
 _pal_forest_bg:
 	.byte	$0F
 	.byte	$15
@@ -1081,7 +1150,7 @@ _pal_forest_bg:
 	.byte	$37
 	.byte	$17
 	.byte	$09
-_pal_palette_spr:
+_pal_spr_01:
 	.byte	$0F
 	.byte	$20
 	.byte	$15
@@ -1105,13 +1174,21 @@ _level_list:
 
 .segment	"BSS"
 
+_dx:
+	.res	1,$00
+_dy:
+	.res	1,$00
 _pad1:
 	.res	1,$00
 _pad1_new:
 	.res	1,$00
+_c_map:
+	.res	368,$00
 _i:
 	.res	1,$00
 _j:
+	.res	1,$00
+_temp:
 	.res	1,$00
 _current_level:
 	.res	1,$00
@@ -1186,6 +1263,20 @@ L0003:	rts
 .segment	"CODE"
 
 ;
+; vram_adr(0x23C0);
+;
+	ldx     #$23
+	lda     #$C0
+	jsr     _vram_adr
+;
+; vram_fill(0x00, 8);
+;
+	lda     #$00
+	jsr     pusha
+	tax
+	lda     #$08
+	jsr     _vram_fill
+;
 ; update_health();
 ;
 	jsr     _update_health
@@ -1222,12 +1313,12 @@ L0003:	rts
 	lda     #$77
 	jsr     _one_vram_buffer
 ;
-; one_vram_buffer(0x7f, NTADR_A(23, 4));
+; one_vram_buffer(0x7f, NTADR_A(24, 3));
 ;
 	lda     #$7F
 	jsr     pusha
 	ldx     #$20
-	lda     #$97
+	lda     #$78
 	jmp     _one_vram_buffer
 
 .endproc
@@ -1344,10 +1435,10 @@ L0002:	rts
 	ldx     #>(_pal_forest_bg)
 	jsr     _pal_bg
 ;
-; pal_spr(pal_palette_spr);
+; pal_spr(pal_spr_01);
 ;
-	lda     #<(_pal_palette_spr)
-	ldx     #>(_pal_palette_spr)
+	lda     #<(_pal_spr_01)
+	ldx     #>(_pal_spr_01)
 	jsr     _pal_spr
 ;
 ; vram_adr(NAMETABLE_A);
@@ -1370,6 +1461,143 @@ L0002:	rts
 ; }
 ;
 	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ check_input (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_check_input: near
+
+.segment	"CODE"
+
+;
+; dx = 0;
+;
+	lda     #$00
+	sta     _dx
+;
+; if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -MAX_SPEED)) {
+;
+	lda     _pad1
+	and     #$02
+	beq     L001E
+	lda     _Paddle+4
+	sec
+	sbc     #$F8
+	bvs     L0005
+	eor     #$80
+L0005:	bpl     L001E
+;
+; dx -= 2;
+;
+	lda     _dx
+	sec
+	sbc     #$02
+	sta     _dx
+;
+; if ((pad1 & PAD_RIGHT) && (Paddle.xSpeed < MAX_SPEED)) {
+;
+L001E:	lda     _pad1
+	and     #$01
+	beq     L0022
+	lda     _Paddle+4
+	sec
+	sbc     #$09
+	bvc     L000C
+	eor     #$80
+L000C:	bpl     L0022
+;
+; dx += 2;
+;
+	lda     #$02
+	clc
+	adc     _dx
+	sta     _dx
+;
+; Paddle.xSpeed += dx;
+;
+L0022:	lda     _dx
+	cmp     #$80
+	clc
+	adc     _Paddle+4
+	sta     _Paddle+4
+;
+; Paddle.x += Paddle.xSpeed;
+;
+	clc
+	adc     _Paddle
+	sta     _Paddle
+;
+; if (Paddle.xSpeed) {
+;
+	lda     _Paddle+4
+	beq     L001A
+;
+; Paddle.xSpeed += Paddle.xSpeed > 0 ?  -1 : 1;
+;
+	sec
+	sbc     #$01
+	bvs     L0016
+	eor     #$80
+L0016:	bpl     L0028
+	lda     #$FF
+	jmp     L0018
+L0028:	lda     #$01
+L0018:	cmp     #$80
+	clc
+	adc     _Paddle+4
+	sta     _Paddle+4
+;
+; }
+;
+L001A:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_sprites (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_sprites: near
+
+.segment	"CODE"
+
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
+; oam_meta_spr(Paddle.x, Paddle.y, PaddleSpr);
+;
+	jsr     decsp2
+	lda     _Paddle
+	ldy     #$01
+	sta     (sp),y
+	lda     _Paddle+1
+	dey
+	sta     (sp),y
+	lda     #<(_PaddleSpr)
+	ldx     #>(_PaddleSpr)
+	jsr     _oam_meta_spr
+;
+; oam_meta_spr(Skull.x, Skull.y, SkullSpr);
+;
+	jsr     decsp2
+	lda     _Skull
+	ldy     #$01
+	sta     (sp),y
+	lda     _Skull+1
+	dey
+	sta     (sp),y
+	lda     #<(_SkullSpr)
+	ldx     #>(_SkullSpr)
+	jmp     _oam_meta_spr
 
 .endproc
 
@@ -1405,17 +1633,18 @@ L0002:	rts
 ;
 	jsr     _ppu_on_all
 ;
-; ppu_wait_nmi();
-;
-L0002:	jsr     _ppu_wait_nmi
-;
 ; while (game_state == TITLE)
 ;
-	jmp     L000E
+	jmp     L000C
 ;
-; pad1 = pad_poll(0); // read the first controller
+; ppu_wait_nmi();
 ;
-L000D:	jsr     _pad_poll
+L0005:	jsr     _ppu_wait_nmi
+;
+; pad1 = pad_poll(0);
+;
+	lda     #$00
+	jsr     _pad_poll
 	sta     _pad1
 ;
 ; pad1_new = get_pad_new(0);
@@ -1427,7 +1656,7 @@ L000D:	jsr     _pad_poll
 ; if (pad1_new & PAD_START)
 ;
 	and     #$10
-	beq     L000E
+	beq     L000C
 ;
 ; game_state = MAIN;
 ;
@@ -1454,17 +1683,46 @@ L000D:	jsr     _pad_poll
 ;
 ; while (game_state == TITLE)
 ;
-L000E:	lda     _game_state
-	beq     L000D
+L000C:	lda     _game_state
+	beq     L0005
 ;
-; while (p1_health)
+; while (game_state == MAIN)
 ;
-L0009:	lda     _p1_health
-	bne     L0009
+	jmp     L000D
+;
+; ppu_wait_nmi();
+;
+L0009:	jsr     _ppu_wait_nmi
+;
+; pad1 = pad_poll(0);
+;
+	lda     #$00
+	jsr     _pad_poll
+	sta     _pad1
+;
+; pad1_new = get_pad_new(0);
+;
+	lda     #$00
+	jsr     _get_pad_new
+	sta     _pad1_new
+;
+; check_input();
+;
+	jsr     _check_input
+;
+; draw_sprites();
+;
+	jsr     _draw_sprites
+;
+; while (game_state == MAIN)
+;
+L000D:	lda     _game_state
+	cmp     #$01
+	beq     L0009
 ;
 ; while (1)
 ;
-	jmp     L0002
+	jmp     L000C
 
 .endproc
 
