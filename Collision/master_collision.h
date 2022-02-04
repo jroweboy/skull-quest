@@ -1,4 +1,5 @@
 // Forest
+// 0 = No collision
 // 1 = Solid
 // 2 = Hurt
 // 3 = Left Brick
