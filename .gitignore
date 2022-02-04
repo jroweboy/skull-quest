@@ -22,3 +22,6 @@ $RECYCLE.BIN/
 # Operating System Files
 # =========================
 BUILD/
+BUILD/labels.txt
+BUILD/skullquest.nes
+BUILD/skullquest.s
