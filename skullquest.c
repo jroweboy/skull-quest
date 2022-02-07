@@ -10,7 +10,8 @@
 #define LEVEL_TOTAL 1
 #define MAX_HEALTH 8
 #define MAX_SPEED 7
-
+#define FALSE 0
+#define TRUE 1
 #define TILE_BACK 0x10
 #define TILE_HEART_FULL 0x5b
 #define TILE_HEART_EMPTY 0x5c
@@ -27,25 +28,23 @@ const unsigned char pal_spr_01[16] = {
     0x0f, 0x13, 0x23, 0x33, 0x0f, 0x14, 0x24, 0x34  //
 };
 
-
 const unsigned char *const level_list[LEVEL_TOTAL * 3] = {
     forest_level_01, forest_col_01, pal_forest_bg  // LEVEL 01
 };
 
-signed char dx, dy, direction;
-
-unsigned char debug[16];
+signed char dx, dy;
+unsigned char debug1, debug2;
 unsigned char pad1;
 unsigned char pad1_new;
 unsigned char c_map[368];
 
-unsigned char i, j, temp, temp_x, temp_y, next_x, next_y, tile_index;
-int col_index;
+int collision_index;
+unsigned char i, j, temp, temp_x, temp_y, next_x, next_y, collision_type,
+    skull_launched;
 unsigned char p1_health;
 unsigned char p1_max_health;
 
-char current_level;
-unsigned char game_state;
+unsigned char game_state, current_level;
 
 struct Actor {
     unsigned char x;
@@ -56,10 +55,33 @@ struct Actor {
     unsigned char bbox_y;
     signed char xSpeed;
     signed char ySpeed;
+    unsigned char col_direction;
 };
 
-struct Actor Paddle = {0x75, 0xCF, 0x1F, 7, 0, 1, 0, 0};
-struct Actor Skull = {0xFF, 0xFF, 5, 5};
+// signed char directions_x[12] = {  1,  3,  3,}
+// signed char directions_y[12] = { -3, -3, -1,}
+
+struct Actor Paddle = {
+    0x75,  // x
+    0xCF,  // y
+    0x1F,  // width
+    7,     // height
+    0,     // bbox_x
+    1,     // bbox_y
+    0,     // xSpeed
+    0      // ySpeed
+};
+
+struct Actor Skull = {
+    0xFF,  // x
+    0xFF,  // y
+    7,     // width
+    7,     // height
+    2,     // bbox_x
+    2,     // bbox_y
+    0,     // xSpeed
+    0      // ySpeed
+};
 
 enum GameStates { TITLE, MAIN, STORY, PAUSE, GAME_OVER };
 
@@ -116,7 +138,10 @@ void show_screen() {
 
     ppu_on_all();
 
-    if (game_state == MAIN) show_HUD();
+    if (game_state == MAIN) {
+        show_HUD();
+        skull_launched = FALSE;
+    }
 }
 
 void load_title_screen() {
@@ -127,50 +152,252 @@ void load_title_screen() {
     game_state = TITLE;
 }
 
-int get_collision_type() {
-    col_index = (temp_x >> 4) + (((temp_y >> 3) - 5) * 16);
-    // tile_index = (temp_x >> 3) % 2 ? c_map[col_index] >> 4 : c_map[col_index] << 4;	
-	// return tile_index;
+int get_collision_type(char param_x, char param_y) {
+    collision_index = (param_x >> 4) + (((param_y >> 3) - 5) * 16);
+    collision_type = (param_x >> 3) % 2 ? c_map[collision_index] & 0x0F
+                                        : (c_map[collision_index] & 0xF0) >> 4;
 
-    return (temp_x >> 3) % 2 ? c_map[col_index] & 0x0F : c_map[col_index] & 0xF0;
+    return collision_type;
 }
 
-void check_input() {
-    dx = 0;
+void do_collision() {
+    switch (collision_type) {
+        case 0x01:
+        case 0x02:
+        case 0x03:
+        case 0x04:
+        case 0x05:
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        case 0x08:
+            break;
+        case 0x09:
+            break;
+        case 0x0A:
+            break;
+        case 0x0B:
+            break;
+        case 0x0C:
+            break;
+        case 0x0D:
+            break;
+        case 0x0E:
+            break;
+        case 0x0F:
+            break;
+    }
+}
 
+void check_paddle_input() {
     if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -MAX_SPEED)) {
-        dx -= 2;
+        Paddle.xSpeed -= 2;
     }
     if ((pad1 & PAD_RIGHT) && (Paddle.xSpeed < MAX_SPEED)) {
-        dx += 2;
+        Paddle.xSpeed += 2;
+    }
+    if (pad1 & PAD_A) {
+        if (!skull_launched) {
+            skull_launched = TRUE;
+            Skull.xSpeed = 1;
+            Skull.ySpeed = -1;
+        }
+
+        // WHAT DOES BUTTON A DO?? WEAPON? SPEED_UP THE PADDLE?
+    }
+    if (pad1 & PAD_B) {
+        // WHAT DOES BUTTON B DO?? WEAPON? SPEED_UP THE PADDLE?
     }
 
-    Paddle.xSpeed += dx;
-    next_x = Paddle.x + Paddle.xSpeed;
-    temp_x = next_x; // Bounding box?
-    temp_y = Paddle.y; // Bounding box?
+    temp_x = Paddle.x + Paddle.xSpeed;  // Bounding box?
+    temp_y = Paddle.y;                  // Bounding box?
 
     // Check collision:
     if (Paddle.xSpeed > 0) {
-        temp_x += Paddle.width;
-        while (get_collision_type()) {
+        while (get_collision_type(temp_x + Paddle.width, temp_y)) {
             --temp_x;
-			--next_x;
         }
     } else if (Paddle.xSpeed < 0) {
-        while (get_collision_type()) {
+        while (get_collision_type(temp_x, temp_y)) {
             ++temp_x;
-			++next_x;
         }
     }
 
-    Paddle.x = next_x;
+    Paddle.x = temp_x;
     // FRICTION
     if (Paddle.xSpeed) {
         Paddle.xSpeed += Paddle.xSpeed > 0 ? -1 : 1;
     }
+}
 
-    // If skull not launched update skull x and y as well
+void update_skull() {
+    if (skull_launched) {
+        if (Skull.xSpeed == 0) {
+            ++Skull.xSpeed;
+        }
+        if (Skull.ySpeed == 0) {
+            ++Skull.ySpeed;
+        }
+
+        temp_x = Skull.x + Skull.xSpeed;
+        temp_y = Skull.y + Skull.ySpeed;
+        collision_type = 0;
+        Skull.col_direction = 0;
+
+        if (Skull.xSpeed > 0) {
+            if (Skull.ySpeed > 0) {
+                // Going down right
+                // Check down
+                if (get_collision_type(temp_x, temp_y + Skull.height)) {
+                    Skull.col_direction = Skull.col_direction | PAD_DOWN;
+                    do_collision();
+
+                    while (get_collision_type(temp_x, temp_y + Skull.height)) {
+                        --temp_x;
+                        --temp_y;
+                    }
+                } else {
+                    // Check right
+                    if (get_collision_type(temp_x + Skull.width, temp_y)) {
+                        Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+                        do_collision();
+
+                        while (
+                            get_collision_type(temp_x + Skull.width, temp_y)) {
+                            --temp_x;
+                        }
+                        // Check down-right
+                    } else if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+                        Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+                        Skull.col_direction = Skull.col_direction | PAD_DOWN;
+                        do_collision();
+
+                        while (
+                            get_collision_type(temp_x + Skull.width, temp_y)) {
+                            --temp_x;
+                            --temp_y;
+                        }
+                    }
+                }
+            } else {
+                // Going up right
+                // Check up
+                if (get_collision_type(temp_x, temp_y)) {
+                    Skull.col_direction = Skull.col_direction | PAD_UP;
+                    do_collision();
+
+                    while (get_collision_type(temp_x, temp_y)) {
+                        --temp_x;
+                        ++temp_y;
+                    }
+                } else {
+                    // Check right
+                    if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+                        Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+
+                        while (
+                            get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+                            --temp_x;
+                        }
+                        // Check up-right
+                    } else if (get_collision_type(temp_x + Skull.width, temp_y)) {
+                        Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+                        Skull.col_direction = Skull.col_direction | PAD_UP;
+                        do_collision();
+
+                        while (
+                            get_collision_type(temp_x + Skull.width, temp_y)) {
+                            --temp_x;
+                            ++temp_y;
+                        }
+                    }
+                }
+            }
+        } else {
+            if (Skull.ySpeed > 0) {
+                // Going left down
+                // Check down
+                if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+                    Skull.col_direction = Skull.col_direction | PAD_DOWN;
+                    do_collision();
+
+                    while (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+                        ++temp_x;
+                        --temp_y;
+                    }
+                } else {
+                    // Check left
+                    if (get_collision_type(temp_x, temp_y)) {
+                        Skull.col_direction = Skull.col_direction | PAD_LEFT;
+                        do_collision();
+
+                        while (get_collision_type(temp_x, temp_y)) {
+                            ++temp_x;
+                        }
+                        // Check down-left
+                    } else if (get_collision_type(temp_x, temp_y + Skull.height)) {
+                        Skull.col_direction = Skull.col_direction | PAD_LEFT;
+                        Skull.col_direction = Skull.col_direction | PAD_DOWN;
+                        do_collision();
+
+                        while (
+                            get_collision_type(temp_x, temp_y + Skull.height)) {
+                            ++temp_x;
+                            ++temp_y;
+                        }
+                    }
+                }
+            } else {
+                // Going left up
+                // Check up
+                if (get_collision_type(temp_x + Skull.width, temp_y)) {
+                    Skull.col_direction = Skull.col_direction | PAD_UP;
+                    do_collision();
+
+                    while (get_collision_type(temp_x + Skull.width, temp_y)) {
+                        ++temp_x;
+                        ++temp_y;
+                    }
+                } else {
+                    // Check left
+                    if (get_collision_type(temp_x, temp_y + Skull.height)) {
+                        Skull.col_direction = Skull.col_direction | PAD_LEFT;
+                        do_collision();
+
+                        while (get_collision_type(temp_x, temp_y)) {
+                            ++temp_x;
+                        }
+                        // Check up-left
+                    } else if (get_collision_type(temp_x, temp_y)) {
+                        Skull.col_direction = Skull.col_direction | PAD_LEFT;
+                        Skull.col_direction = Skull.col_direction | PAD_DOWN;
+                        do_collision();
+
+                        while (get_collision_type(temp_x, temp_y)) {
+                            ++temp_y;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ((Skull.col_direction & PAD_DOWN) ||
+            (Skull.col_direction & PAD_UP)) {
+            Skull.ySpeed = -Skull.ySpeed;
+        }
+        if ((Skull.col_direction & PAD_RIGHT) ||
+            (Skull.col_direction & PAD_LEFT)) {
+            Skull.xSpeed = -Skull.xSpeed;
+        }
+
+        Skull.x = temp_x;
+        Skull.y = temp_y;
+    } else {
+        Skull.x = Paddle.x + (Paddle.width >> 1) - (Skull.width >> 1);
+        Skull.y = Paddle.y - Skull.height;
+    }
 }
 
 void draw_sprites(void) {
@@ -219,7 +446,8 @@ void main() {
             pad1 = pad_poll(0);
             pad1_new = get_pad_new(0);
 
-            check_input();
+            check_paddle_input();
+            update_skull();
             draw_sprites();
 
             // game_loop();
@@ -227,7 +455,7 @@ void main() {
             // if(game_over) ++current_level; else show_game_over();
         }
 
-        // show_screen(!game_lives?SCREEN_GAMEOVER:SCREEN_WELLDONE);//show game
-        // results
+        // show_screen(!game_lives?SCREEN_GAMEOVER:SCREEN_WELLDONE);//show
+        // game results
     }
 }

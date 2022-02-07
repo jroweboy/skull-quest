@@ -37,11 +37,12 @@
 	.export		_level_list
 	.export		_dx
 	.export		_dy
-	.export		_direction
-	.export		_debug
+	.export		_debug1
+	.export		_debug2
 	.export		_pad1
 	.export		_pad1_new
 	.export		_c_map
+	.export		_collision_index
 	.export		_i
 	.export		_j
 	.export		_temp
@@ -49,12 +50,12 @@
 	.export		_temp_y
 	.export		_next_x
 	.export		_next_y
-	.export		_tile_index
-	.export		_col_index
+	.export		_collision_type
+	.export		_skull_launched
 	.export		_p1_health
 	.export		_p1_max_health
-	.export		_current_level
 	.export		_game_state
+	.export		_current_level
 	.export		_Paddle
 	.export		_Skull
 	.export		_update_health
@@ -64,7 +65,9 @@
 	.export		_show_screen
 	.export		_load_title_screen
 	.export		_get_collision_type
-	.export		_check_input
+	.export		_do_collision
+	.export		_check_paddle_input
+	.export		_update_skull
 	.export		_draw_sprites
 	.export		_main
 
@@ -79,12 +82,17 @@ _Paddle:
 	.byte	$01
 	.byte	$00
 	.byte	$00
+	.res	1,$00
 _Skull:
 	.byte	$FF
 	.byte	$FF
-	.byte	$05
-	.byte	$05
-	.res	4,$00
+	.byte	$07
+	.byte	$07
+	.byte	$02
+	.byte	$02
+	.byte	$00
+	.byte	$00
+	.res	1,$00
 
 .segment	"RODATA"
 
@@ -427,6 +435,22 @@ _forest_col_01:
 	.byte	$11
 	.byte	$11
 	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
 	.byte	$22
 	.byte	$22
 	.byte	$22
@@ -439,22 +463,6 @@ _forest_col_01:
 	.byte	$22
 	.byte	$22
 	.byte	$22
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
 	.byte	$11
 	.byte	$11
 _forest_level_01:
@@ -1191,16 +1199,18 @@ _dx:
 	.res	1,$00
 _dy:
 	.res	1,$00
-_direction:
+_debug1:
 	.res	1,$00
-_debug:
-	.res	16,$00
+_debug2:
+	.res	1,$00
 _pad1:
 	.res	1,$00
 _pad1_new:
 	.res	1,$00
 _c_map:
 	.res	368,$00
+_collision_index:
+	.res	2,$00
 _i:
 	.res	1,$00
 _j:
@@ -1215,17 +1225,17 @@ _next_x:
 	.res	1,$00
 _next_y:
 	.res	1,$00
-_tile_index:
+_collision_type:
 	.res	1,$00
-_col_index:
-	.res	2,$00
+_skull_launched:
+	.res	1,$00
 _p1_health:
 	.res	1,$00
 _p1_max_health:
 	.res	1,$00
-_current_level:
-	.res	1,$00
 _game_state:
+	.res	1,$00
+_current_level:
 	.res	1,$00
 
 ; ---------------------------------------------------------------
@@ -1464,12 +1474,20 @@ L0002:	stx     tmp1
 ;
 	jsr     _ppu_on_all
 ;
-; if (game_state == MAIN) show_HUD();
+; if (game_state == MAIN) {
 ;
 	lda     _game_state
 	cmp     #$01
 	bne     L0003
-	jmp     _show_HUD
+;
+; show_HUD();
+;
+	jsr     _show_HUD
+;
+; skull_launched = FALSE;
+;
+	lda     #$00
+	sta     _skull_launched
 ;
 ; }
 ;
@@ -1524,7 +1542,7 @@ L0003:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; int __near__ get_collision_type (void)
+; int __near__ get_collision_type (char param_x, char param_y)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
@@ -1534,15 +1552,21 @@ L0003:	rts
 .segment	"CODE"
 
 ;
-; col_index = (temp_x >> 4) + (((temp_y >> 3) - 5) * 16);
+; int get_collision_type(char param_x, char param_y) {
 ;
-	lda     _temp_x
+	jsr     pusha
+;
+; collision_index = (param_x >> 4) + (((param_y >> 3) - 5) * 16);
+;
+	ldy     #$01
+	lda     (sp),y
 	lsr     a
 	lsr     a
 	lsr     a
 	lsr     a
 	jsr     pusha0
-	lda     _temp_y
+	ldy     #$02
+	lda     (sp),y
 	lsr     a
 	lsr     a
 	lsr     a
@@ -1552,12 +1576,13 @@ L0003:	rts
 	ldx     #$FF
 L0002:	jsr     aslax4
 	jsr     tosaddax
-	sta     _col_index
-	stx     _col_index+1
+	sta     _collision_index
+	stx     _collision_index+1
 ;
-; return (temp_x >> 3) % 2 ? c_map[col_index] & 0x0F : c_map[col_index] & 0xF0;
+; collision_type = (param_x >> 3) % 2 ? c_map[collision_index] & 0x0F
 ;
-	lda     _temp_x
+	ldy     #$01
+	lda     (sp),y
 	lsr     a
 	lsr     a
 	lsr     a
@@ -1567,107 +1592,188 @@ L0002:	jsr     aslax4
 	stx     tmp1
 	ora     tmp1
 	beq     L0003
-	lda     _col_index
+	lda     _collision_index
 	sta     ptr1
-	lda     _col_index+1
+	lda     _collision_index+1
 	clc
 	adc     #>(_c_map)
 	sta     ptr1+1
 	ldy     #<(_c_map)
 	lda     (ptr1),y
-	ldx     #$00
+;
+; : (c_map[collision_index] & 0xF0) >> 4;
+;
 	and     #$0F
-	rts
-L0003:	lda     _col_index
+	jmp     L0005
+L0003:	lda     _collision_index
 	sta     ptr1
-	lda     _col_index+1
+	lda     _collision_index+1
 	clc
 	adc     #>(_c_map)
 	sta     ptr1+1
 	ldy     #<(_c_map)
 	lda     (ptr1),y
-	ldx     #$00
 	and     #$F0
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+L0005:	sta     _collision_type
+;
+; return collision_type;
+;
+	ldx     #$00
+	lda     _collision_type
 ;
 ; }
 ;
-	rts
+	jmp     incsp2
 
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ check_input (void)
+; void __near__ do_collision (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_check_input: near
+.proc	_do_collision: near
 
 .segment	"CODE"
 
 ;
-; dx = 0;
+; switch (collision_type) {
 ;
-	lda     #$00
-	sta     _dx
+	lda     _collision_type
+;
+; }
+;
+	cmp     #$01
+	beq     L0003
+	cmp     #$02
+	beq     L0003
+	cmp     #$03
+	beq     L0003
+	cmp     #$04
+	beq     L0003
+	cmp     #$05
+	beq     L0003
+	cmp     #$06
+	beq     L0003
+	cmp     #$07
+	beq     L0003
+	cmp     #$08
+	beq     L0003
+	cmp     #$09
+	beq     L0003
+	cmp     #$0A
+	beq     L0003
+	cmp     #$0B
+	beq     L0003
+	cmp     #$0C
+	beq     L0003
+	cmp     #$0D
+	beq     L0003
+	cmp     #$0E
+	beq     L0003
+	cmp     #$0F
+;
+; }
+;
+L0003:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ check_paddle_input (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_check_paddle_input: near
+
+.segment	"CODE"
+
 ;
 ; if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -MAX_SPEED)) {
 ;
 	lda     _pad1
 	and     #$02
-	beq     L002B
+	beq     L002C
 	lda     _Paddle+6
 	sec
 	sbc     #$FA
 	bvs     L0005
 	eor     #$80
-L0005:	bpl     L002B
+L0005:	bpl     L002C
 ;
-; dx -= 2;
+; Paddle.xSpeed -= 2;
 ;
-	lda     _dx
+	lda     _Paddle+6
 	sec
 	sbc     #$02
-	sta     _dx
+	sta     _Paddle+6
 ;
 ; if ((pad1 & PAD_RIGHT) && (Paddle.xSpeed < MAX_SPEED)) {
 ;
-L002B:	lda     _pad1
+L002C:	lda     _pad1
 	and     #$01
-	beq     L002F
+	beq     L0030
 	lda     _Paddle+6
 	sec
 	sbc     #$07
 	bvc     L000C
 	eor     #$80
-L000C:	bpl     L002F
+L000C:	bpl     L0030
 ;
-; dx += 2;
+; Paddle.xSpeed += 2;
 ;
 	lda     #$02
-	clc
-	adc     _dx
-	sta     _dx
-;
-; Paddle.xSpeed += dx;
-;
-L002F:	lda     _dx
-	cmp     #$80
 	clc
 	adc     _Paddle+6
 	sta     _Paddle+6
 ;
-; next_x = Paddle.x + Paddle.xSpeed;
+; if (pad1 & PAD_A) {
 ;
+L0030:	lda     _pad1
+	and     #$80
+	beq     L0031
+;
+; if (!skull_launched) {
+;
+	lda     _skull_launched
+	bne     L0031
+;
+; skull_launched = TRUE;
+;
+	lda     #$01
+	sta     _skull_launched
+;
+; Skull.xSpeed = 1;
+;
+	sta     _Skull+6
+;
+; Skull.ySpeed = -1;
+;
+	lda     #$FF
+	sta     _Skull+7
+;
+; if (pad1 & PAD_B) {
+;
+L0031:	lda     _pad1
+	ldx     #$00
+	and     #$40
+	stx     tmp1
+	ora     tmp1
+;
+; temp_x = Paddle.x + Paddle.xSpeed;  // Bounding box?
+;
+	lda     _Paddle+6
 	clc
 	adc     _Paddle
-	sta     _next_x
-;
-; temp_x = next_x; // Bounding box?
-;
 	sta     _temp_x
 ;
-; temp_y = Paddle.y; // Bounding box?
+; temp_y = Paddle.y;                  // Bounding box?
 ;
 	lda     _Paddle+1
 	sta     _temp_y
@@ -1679,30 +1785,24 @@ L002F:	lda     _dx
 	sbc     #$01
 	bvs     L0016
 	eor     #$80
-L0016:	bpl     L0034
+L0016:	bpl     L0033
 ;
-; temp_x += Paddle.width;
+; while (get_collision_type(temp_x + Paddle.width, temp_y)) {
 ;
-	lda     _Paddle+2
-	clc
-	adc     _temp_x
-	sta     _temp_x
-;
-; while (get_collision_type()) {
-;
-	jmp     L0019
+	jmp     L0032
 ;
 ; --temp_x;
 ;
 L0017:	dec     _temp_x
 ;
-; --next_x;
+; while (get_collision_type(temp_x + Paddle.width, temp_y)) {
 ;
-	dec     _next_x
-;
-; while (get_collision_type()) {
-;
-L0019:	jsr     _get_collision_type
+L0032:	lda     _temp_x
+	clc
+	adc     _Paddle+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
 	stx     tmp1
 	ora     tmp1
 	bne     L0017
@@ -1710,32 +1810,31 @@ L0019:	jsr     _get_collision_type
 ; } else if (Paddle.xSpeed < 0) {
 ;
 	jmp     L0035
-L0034:	lda     _Paddle+6
+L0033:	lda     _Paddle+6
 	asl     a
 	bcc     L0035
 ;
-; while (get_collision_type()) {
+; while (get_collision_type(temp_x, temp_y)) {
 ;
-	jmp     L001F
+	jmp     L0034
 ;
 ; ++temp_x;
 ;
 L001D:	inc     _temp_x
 ;
-; ++next_x;
+; while (get_collision_type(temp_x, temp_y)) {
 ;
-	inc     _next_x
-;
-; while (get_collision_type()) {
-;
-L001F:	jsr     _get_collision_type
+L0034:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
 	stx     tmp1
 	ora     tmp1
 	bne     L001D
 ;
-; Paddle.x = next_x;
+; Paddle.x = temp_x;
 ;
-L0035:	lda     _next_x
+L0035:	lda     _temp_x
 	sta     _Paddle
 ;
 ; if (Paddle.xSpeed) {
@@ -1761,6 +1860,752 @@ L0024:	cmp     #$80
 ; }
 ;
 L0026:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ update_skull (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_update_skull: near
+
+.segment	"CODE"
+
+;
+; if (skull_launched) {
+;
+	lda     _skull_launched
+	jeq     L0002
+;
+; if (Skull.xSpeed == 0) {
+;
+	lda     _Skull+6
+	bne     L0074
+;
+; ++Skull.xSpeed;
+;
+	inc     _Skull+6
+;
+; if (Skull.ySpeed == 0) {
+;
+L0074:	lda     _Skull+7
+	bne     L0076
+;
+; ++Skull.ySpeed;
+;
+	inc     _Skull+7
+;
+; temp_x = Skull.x + Skull.xSpeed;
+;
+L0076:	lda     _Skull+6
+	clc
+	adc     _Skull
+	sta     _temp_x
+;
+; temp_y = Skull.y + Skull.ySpeed;
+;
+	lda     _Skull+7
+	clc
+	adc     _Skull+1
+	sta     _temp_y
+;
+; collision_type = 0;
+;
+	lda     #$00
+	sta     _collision_type
+;
+; Skull.col_direction = 0;
+;
+	sta     _Skull+8
+;
+; if (Skull.xSpeed > 0) {
+;
+	lda     _Skull+6
+	sec
+	sbc     #$01
+	bvs     L000D
+	eor     #$80
+L000D:	jpl     L0079
+;
+; if (Skull.ySpeed > 0) {
+;
+	lda     _Skull+7
+	sec
+	sbc     #$01
+	bvs     L0010
+	eor     #$80
+L0010:	jpl     L0077
+;
+; if (get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0011
+;
+; Skull.col_direction = Skull.col_direction | PAD_DOWN;
+;
+	lda     _Skull+8
+	ora     #$04
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+	jmp     L0014
+;
+; --temp_x;
+;
+L0012:	dec     _temp_x
+;
+; --temp_y;
+;
+	dec     _temp_y
+;
+; while (get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+L0014:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0012
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L0011:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0016
+;
+; Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+;
+	lda     _Skull+8
+	ora     #$01
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (
+;
+	jmp     L0019
+;
+; --temp_x;
+;
+L0017:	dec     _temp_x
+;
+; get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L0019:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0017
+;
+; } else if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+	jmp     L004D
+L0016:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	jeq     L004D
+;
+; Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+;
+	lda     _Skull+8
+	ora     #$01
+	sta     _Skull+8
+;
+; Skull.col_direction = Skull.col_direction | PAD_DOWN;
+;
+	ora     #$04
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (
+;
+	jmp     L001E
+;
+; --temp_x;
+;
+L001C:	dec     _temp_x
+;
+; --temp_y;
+;
+	dec     _temp_y
+;
+; get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L001E:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L001C
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x, --temp_y)) {
+;
+L0077:	lda     _temp_x
+	jsr     pusha
+	dec     _temp_y
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0020
+;
+; Skull.col_direction = Skull.col_direction | PAD_UP;
+;
+	lda     _Skull+8
+	ora     #$08
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x, --temp_y)) {
+;
+	jmp     L0023
+;
+; --temp_x;
+;
+L0021:	dec     _temp_x
+;
+; ++temp_y;
+;
+	inc     _temp_y
+;
+; while (get_collision_type(temp_x, --temp_y)) {
+;
+L0023:	lda     _temp_x
+	jsr     pusha
+	dec     _temp_y
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0021
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+L0020:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0025
+;
+; Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+;
+	lda     _Skull+8
+	ora     #$01
+	sta     _Skull+8
+;
+; while (
+;
+	jmp     L0078
+;
+; --temp_x;
+;
+L0026:	dec     _temp_x
+;
+; get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+L0078:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0026
+;
+; } else if (get_collision_type(temp_x + Skull.width, --temp_y)) {
+;
+	jmp     L004D
+L0025:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	dec     _temp_y
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	jeq     L004D
+;
+; Skull.col_direction = Skull.col_direction | PAD_RIGHT;
+;
+	lda     _Skull+8
+	ora     #$01
+	sta     _Skull+8
+;
+; Skull.col_direction = Skull.col_direction | PAD_UP;
+;
+	ora     #$08
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (
+;
+	jmp     L002D
+;
+; --temp_x;
+;
+L002B:	dec     _temp_x
+;
+; ++temp_y;
+;
+	inc     _temp_y
+;
+; get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L002D:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L002B
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (Skull.ySpeed > 0) {
+;
+L0079:	lda     _Skull+7
+	sec
+	sbc     #$01
+	bvs     L0031
+	eor     #$80
+L0031:	jpl     L007A
+;
+; if (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0032
+;
+; Skull.col_direction = Skull.col_direction | PAD_DOWN;
+;
+	lda     _Skull+8
+	ora     #$04
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+	jmp     L0035
+;
+; ++temp_x;
+;
+L0033:	inc     _temp_x
+;
+; --temp_y;
+;
+	dec     _temp_y
+;
+; while (get_collision_type(temp_x + Skull.width, temp_y + Skull.height)) {
+;
+L0035:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0033
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x, temp_y)) {
+;
+L0032:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0037
+;
+; Skull.col_direction = Skull.col_direction | PAD_LEFT;
+;
+	lda     _Skull+8
+	ora     #$02
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+	jmp     L003A
+;
+; ++temp_x;
+;
+L0038:	inc     _temp_x
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+L003A:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0038
+;
+; } else if (get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+	jmp     L004D
+L0037:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	jeq     L004D
+;
+; Skull.col_direction = Skull.col_direction | PAD_LEFT;
+;
+	lda     _Skull+8
+	ora     #$02
+	sta     _Skull+8
+;
+; Skull.col_direction = Skull.col_direction | PAD_DOWN;
+;
+	ora     #$04
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (
+;
+	jmp     L003F
+;
+; ++temp_x;
+;
+L003D:	inc     _temp_x
+;
+; ++temp_y;
+;
+	inc     _temp_y
+;
+; get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+L003F:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L003D
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L007A:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0041
+;
+; Skull.col_direction = Skull.col_direction | PAD_UP;
+;
+	lda     _Skull+8
+	ora     #$08
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+	jmp     L0044
+;
+; ++temp_x;
+;
+L0042:	inc     _temp_x
+;
+; ++temp_y;
+;
+	inc     _temp_y
+;
+; while (get_collision_type(temp_x + Skull.width, temp_y)) {
+;
+L0044:	lda     _temp_x
+	clc
+	adc     _Skull+2
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0042
+;
+; } else {
+;
+	jmp     L004D
+;
+; if (get_collision_type(temp_x, temp_y + Skull.height)) {
+;
+L0041:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	clc
+	adc     _Skull+3
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L0046
+;
+; Skull.col_direction = Skull.col_direction | PAD_LEFT;
+;
+	lda     _Skull+8
+	ora     #$02
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+	jmp     L0049
+;
+; ++temp_x;
+;
+L0047:	inc     _temp_x
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+L0049:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L0047
+;
+; } else if (get_collision_type(temp_x, temp_y)) {
+;
+	jmp     L004D
+L0046:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	beq     L004D
+;
+; Skull.col_direction = Skull.col_direction | PAD_LEFT;
+;
+	lda     _Skull+8
+	ora     #$02
+	sta     _Skull+8
+;
+; Skull.col_direction = Skull.col_direction | PAD_DOWN;
+;
+	ora     #$04
+	sta     _Skull+8
+;
+; do_collision();
+;
+	jsr     _do_collision
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+	jmp     L004E
+;
+; ++temp_y;
+;
+L004C:	inc     _temp_y
+;
+; while (get_collision_type(temp_x, temp_y)) {
+;
+L004E:	lda     _temp_x
+	jsr     pusha
+	lda     _temp_y
+	jsr     _get_collision_type
+	stx     tmp1
+	ora     tmp1
+	bne     L004C
+;
+; if ((Skull.col_direction & PAD_DOWN) ||
+;
+L004D:	lda     _Skull+8
+	and     #$04
+	bne     L007B
+;
+; (Skull.col_direction & PAD_UP)) {
+;
+	lda     _Skull+8
+	and     #$08
+	beq     L007C
+;
+; Skull.ySpeed = -Skull.ySpeed;
+;
+L007B:	lda     _Skull+7
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     _Skull+7
+;
+; if ((Skull.col_direction & PAD_RIGHT) ||
+;
+L007C:	lda     _Skull+8
+	and     #$01
+	bne     L007D
+;
+; (Skull.col_direction & PAD_LEFT)) {
+;
+	lda     _Skull+8
+	and     #$02
+	beq     L007E
+;
+; Skull.xSpeed = -Skull.xSpeed;
+;
+L007D:	lda     _Skull+6
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     _Skull+6
+;
+; Skull.x = temp_x;
+;
+L007E:	lda     _temp_x
+	sta     _Skull
+;
+; Skull.y = temp_y;
+;
+	lda     _temp_y
+;
+; } else {
+;
+	jmp     L0073
+;
+; Skull.x = Paddle.x + (Paddle.width >> 1) - (Skull.width >> 1);
+;
+L0002:	tax
+	lda     _Paddle+2
+	lsr     a
+	clc
+	adc     _Paddle
+	bcc     L0072
+	inx
+L0072:	jsr     pushax
+	lda     _Skull+2
+	lsr     a
+	jsr     tossuba0
+	sta     _Skull
+;
+; Skull.y = Paddle.y - Skull.height;
+;
+	lda     _Paddle+1
+	sec
+	sbc     _Skull+3
+L0073:	sta     _Skull+1
+;
+; }
+;
+	rts
 
 .endproc
 
@@ -1912,9 +2757,13 @@ L0009:	jsr     _ppu_wait_nmi
 	jsr     _get_pad_new
 	sta     _pad1_new
 ;
-; check_input();
+; check_paddle_input();
 ;
-	jsr     _check_input
+	jsr     _check_paddle_input
+;
+; update_skull();
+;
+	jsr     _update_skull
 ;
 ; draw_sprites();
 ;
