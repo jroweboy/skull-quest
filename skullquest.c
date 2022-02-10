@@ -13,8 +13,10 @@
 #define FALSE 0
 #define TRUE 1
 #define TILE_BACK 0x10
-#define TILE_HEART_FULL 0x5b
-#define TILE_HEART_EMPTY 0x5c
+#define TILE_BACK_GRASS 0x23
+#define TILE_HEART_FULL 0x5B
+#define TILE_HEART_EMPTY 0x5C
+#define COL_TYPE_SOFT 0x06
 
 const unsigned char pal_forest_bg[16] = {
     0x0f, 0x15, 0x20, 0x09,  // GUID Palette
@@ -32,6 +34,8 @@ const unsigned char *const level_list[LEVEL_TOTAL * 3] = {
     forest_level_01, forest_col_01, pal_forest_bg  // LEVEL 01
 };
 
+unsigned char exp_1, exp_10, exp_100, exp_1000, exp_10000, exp_100000;
+
 unsigned char debug1, debug2;
 unsigned char pad1;
 unsigned char pad1_new;
@@ -42,8 +46,8 @@ unsigned char collision_mask, backup_col_mask;
 unsigned char i, j, temp, temp_x, temp_y, collision_type, backup_col_type, skull_launched;
 unsigned char p1_health;
 unsigned char p1_max_health;
-
-unsigned char game_state, current_level;
+unsigned char col_x, col_y;
+unsigned char game_state, current_level, is_soft_hit;
 
 struct Actor {
     unsigned char x;
@@ -55,15 +59,16 @@ struct Actor {
     signed char xSpeed;
     signed char ySpeed;
     unsigned char col_direction;
+    unsigned char speed_float;
 };
 
 struct Actor Paddle = {
     0x75,  // x
     0xCF,  // y
     0x1F,  // width
-    7,     // height
+    4,     // height
     0,     // bbox_x
-    1,     // bbox_y
+    2,     // bbox_y
     0,     // xSpeed
     0      // ySpeed
 };
@@ -71,10 +76,10 @@ struct Actor Paddle = {
 struct Actor Skull = {
     0xFF,  // x
     0xFF,  // y
-    7,     // width
-    7,     // height
-    2,     // bbox_x
-    2,     // bbox_y
+    6,     // width
+    6,     // height
+    1,     // bbox_x
+    1,     // bbox_y
     0,     // xSpeed
     0      // ySpeed
 };
@@ -94,12 +99,16 @@ enum ActorStates { IDLE,
                    ATTACKING };
 
 void update_health() {
-    if (p1_health) {
+    if (p1_health > 0) {
         for (i = 0; i < p1_max_health; ++i) {
-            one_vram_buffer((i > p1_health) ? TILE_HEART_EMPTY : TILE_HEART_FULL, NTADR_A(i + 2, 2));
+            one_vram_buffer((i < p1_health) ? TILE_HEART_FULL : TILE_HEART_EMPTY, NTADR_A(i + 2, 2));
         }
     } else {
         // DEATH!!!
+        one_vram_buffer(TILE_HEART_EMPTY, NTADR_A(2, 2));
+        // TODO
+        // play death sound / animation
+        // change game_state
     }
 }
 
@@ -110,7 +119,7 @@ void show_HUD() {
     update_health();
 
     // XP
-    // update_xp();
+    // TODO update_xp();
 
     // ITEM BOX:
     one_vram_buffer(0x5d, NTADR_A(22, 2));
@@ -119,10 +128,10 @@ void show_HUD() {
     one_vram_buffer(0x7e, NTADR_A(23, 3));
     one_vram_buffer(0x7f, NTADR_A(24, 3));
 
-    // show item sprite
+    // TODO show item sprite
 
     // COINS
-    // update_coins();
+    // TODO update_coins();
 
     // OTHER??
 }
@@ -166,6 +175,7 @@ void remove_brick(char tile_type) {
 
 void hit_brick(char tile_type) {
     remove_brick(tile_type);
+    is_soft_hit = FALSE;
     // Play sound
     // Update score
     // Spawn random coin ??
@@ -217,7 +227,8 @@ void do_collision() {
             break;
         case 0x06:
             // Foliage
-            hit_brick(0x11);
+            hit_brick(TILE_BACK_GRASS);
+            is_soft_hit = TRUE;
             break;
         case 0x07:
             break;
@@ -240,12 +251,21 @@ void do_collision() {
     }
 }
 
+char paddle_collision() {
+    return (col_x < Paddle.x + Paddle.width + Paddle.bbox_x &&
+            col_x + Skull.width > Paddle.x + Paddle.bbox_x &&
+            col_y + Skull.bbox_y < Paddle.y + Paddle.height + Paddle.bbox_y &&
+            col_y + Skull.bbox_y + Skull.height > Paddle.y + Paddle.bbox_y);
+}
+
 void check_paddle_input() {
+    Paddle.speed_float += 128;
+    temp = Paddle.speed_float ? 1 : 2;
     if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -MAX_SPEED)) {
-        Paddle.xSpeed -= 2;
+        Paddle.xSpeed -= temp;
     }
     if ((pad1 & PAD_RIGHT) && (Paddle.xSpeed < MAX_SPEED)) {
-        Paddle.xSpeed += 2;
+        Paddle.xSpeed += temp;
     }
     if (pad1 & PAD_A) {
         if (!skull_launched) {
@@ -263,7 +283,7 @@ void check_paddle_input() {
     temp_x = Paddle.x + Paddle.xSpeed;  // Bounding box?
     temp_y = Paddle.y;                  // Bounding box?
 
-    // Check collision:
+    // Check wall collision:
     if (Paddle.xSpeed > 0) {
         while (set_collision_data(temp_x + Paddle.width, temp_y)) {
             --temp_x;
@@ -283,6 +303,8 @@ void check_paddle_input() {
 
 void update_skull() {
     if (skull_launched) {
+        Skull.col_direction = 0;
+
         if (Skull.xSpeed == 0) {
             ++Skull.xSpeed;
         }
@@ -292,66 +314,92 @@ void update_skull() {
 
         temp_x = Skull.x + Skull.xSpeed;
         temp_y = Skull.y + Skull.ySpeed;
-        Skull.col_direction = 0;
+
+        col_x = temp_x;
+        col_y = temp_y;
+
+        // bbox of skull is 1, so we increment:
+        ++col_x;
+        ++col_y;
 
         if (Skull.xSpeed > 0) {
             // Going right
             if (Skull.ySpeed > 0) {
                 // Check down
-                if (set_collision_data(temp_x, temp_y + Skull.height)) {
+                if (set_collision_data(col_x, col_y + Skull.height)) {
                     Skull.col_direction |= PAD_DOWN;
                     backup_collision_info();
-                    while (set_collision_data(temp_x, temp_y + Skull.height)) {
-                        --temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x, col_y + Skull.height)) {
+                            --temp_y;
+                            --col_y;
+                        }
                     }
                     do_collision();
                 }
                 // Check right
-                if (set_collision_data(temp_x + Skull.width, temp_y)) {
+                if (set_collision_data(col_x + Skull.width, col_y)) {
                     Skull.col_direction |= PAD_RIGHT;
                     backup_collision_info();
-                    while (set_collision_data(temp_x + Skull.width, temp_y)) {
-                        --temp_x;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x + Skull.width, col_y)) {
+                            --temp_x;
+                            --col_x;
+                        }
                     }
                     do_collision();
                     // Check down-right
-                } else if (Skull.col_direction == 0 && set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
+                } else if (Skull.col_direction == 0 && set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
                     Skull.col_direction |= PAD_RIGHT;
                     // Skull.col_direction |= PAD_DOWN;
                     backup_collision_info();
-                    while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
-                        --temp_x;
-                        --temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
+                            --temp_x;
+                            --col_x;
+                            --temp_y;
+                            --col_y;
+                        }
                     }
                     do_collision();
                 }
             } else {
                 // Check up
-                if (set_collision_data(temp_x, temp_y)) {
+                if (set_collision_data(col_x, col_y)) {
                     Skull.col_direction |= PAD_UP;
                     backup_collision_info();
-                    while (set_collision_data(temp_x, temp_y)) {
-                        ++temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x, col_y)) {
+                            ++temp_y;
+                            ++col_y;
+                        }
                     }
                     do_collision();
                 }
                 // Check right
-                if (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
+                if (set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
                     Skull.col_direction |= PAD_RIGHT;
                     backup_collision_info();
-                    while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
-                        --temp_x;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
+                            --temp_x;
+                            --col_x;
+                        }
                     }
                     do_collision();
                     // Check up-right
-                } else if (Skull.col_direction == 0 && set_collision_data(temp_x + Skull.width, temp_y)) {
+                } else if (Skull.col_direction == 0 && set_collision_data(col_x + Skull.width, col_y)) {
                     // Skull.col_direction |= PAD_UP; SET TO RANDOM
                     Skull.col_direction |= PAD_RIGHT;
                     backup_collision_info();
-                    while (
-                        set_collision_data(temp_x + Skull.width, temp_y)) {
-                        --temp_x;
-                        ++temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (
+                            set_collision_data(col_x + Skull.width, col_y)) {
+                            --temp_x;
+                            --col_x;
+                            ++temp_y;
+                            ++col_y;
+                        }
                     }
                     do_collision();
                 }
@@ -360,75 +408,105 @@ void update_skull() {
             // Going left
             if (Skull.ySpeed > 0) {
                 // Check down
-                if (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
+                if (set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
                     Skull.col_direction |= PAD_DOWN;
                     backup_collision_info();
-                    while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
-                        --temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x + Skull.width, col_y + Skull.height)) {
+                            --temp_y;
+                            --col_y;
+                        }
                     }
                     do_collision();
                 }
                 // Check left
-                if (set_collision_data(temp_x, temp_y)) {
+                if (set_collision_data(col_x, col_y)) {
                     Skull.col_direction |= PAD_LEFT;
                     backup_collision_info();
-                    while (set_collision_data(temp_x, temp_y)) {
-                        ++temp_x;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x, col_y)) {
+                            ++temp_x;
+                            ++col_x;
+                        }
                     }
                     do_collision();
                     // Check down-left
-                } else if (Skull.col_direction == 0 && set_collision_data(temp_x, temp_y + Skull.height)) {
-                    Skull.col_direction |= PAD_DOWN;
-                    // Skull.col_direction |= PAD_LEFT;
+                } else if (Skull.col_direction == 0 && set_collision_data(col_x, col_y + Skull.height)) {
+                    // Skull.col_direction |= PAD_DOWN;
+                    Skull.col_direction |= PAD_LEFT;
                     backup_collision_info();
-                    while (
-                        set_collision_data(temp_x, temp_y + Skull.height)) {
-                        ++temp_x;
-                        ++temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (
+                            set_collision_data(col_x, col_y + Skull.height)) {
+                            ++temp_x;
+                            ++col_x;
+                            --temp_y;
+                            --col_y;
+                        }
                     }
                     do_collision();
                 }
             } else {
                 // Check up
-                if (set_collision_data(temp_x + Skull.width, temp_y)) {
+                if (set_collision_data(col_x + Skull.width, col_y)) {
                     Skull.col_direction |= PAD_UP;
                     backup_collision_info();
-                    while (set_collision_data(temp_x + Skull.width, temp_y)) {
-                        ++temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x + Skull.width, col_y)) {
+                            ++temp_y;
+                            ++col_y;
+                        }
                     }
                     do_collision();
                 }
                 // Check left
-                if (set_collision_data(temp_x, temp_y + Skull.height)) {
+                if (set_collision_data(col_x, col_y + Skull.height)) {
                     Skull.col_direction |= PAD_LEFT;
                     backup_collision_info();
-                    while (set_collision_data(temp_x, temp_y + Skull.height)) {
-                        ++temp_x;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x, col_y + Skull.height)) {
+                            ++temp_x;
+                            ++col_x;
+                        }
                     }
                     do_collision();
                     // Check up-left
-                } else if (Skull.col_direction == 0 && set_collision_data(temp_x, temp_y)) {
+                } else if (Skull.col_direction == 0 && set_collision_data(col_x, col_y)) {
                     // Skull.col_direction |= PAD_UP; SET TO RANDOM
                     Skull.col_direction |= PAD_LEFT;
                     backup_collision_info();
-                    while (set_collision_data(temp_x, temp_y)) {
-                        ++temp_x;
-                        ++temp_y;
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        while (set_collision_data(col_x, col_y)) {
+                            ++temp_x;
+                            ++col_x;
+                            ++temp_y;
+                            ++col_y;
+                        }
                     }
                     do_collision();
                 }
             }
         }
 
-        if ((Skull.col_direction & PAD_DOWN) || (Skull.col_direction & PAD_UP)) {
-            Skull.ySpeed = -Skull.ySpeed;
-        }
-        if ((Skull.col_direction & PAD_RIGHT) || (Skull.col_direction & PAD_LEFT)) {
-            Skull.xSpeed = -Skull.xSpeed;
+        if (paddle_collision()) {
+            Skull.col_direction |= PAD_DOWN;
+            --temp_y;
+            // ADD Paddle velocity???
         }
 
+        // Don't change direction if soft collision
+        if (backup_col_type != COL_TYPE_SOFT) {
+            if ((Skull.col_direction & PAD_DOWN) || (Skull.col_direction & PAD_UP)) {
+                Skull.ySpeed = -Skull.ySpeed;
+            }
+            if ((Skull.col_direction & PAD_RIGHT) || (Skull.col_direction & PAD_LEFT)) {
+                Skull.xSpeed = -Skull.xSpeed;
+            }
+        }
         Skull.x = temp_x;
         Skull.y = temp_y;
+
+        is_soft_hit = FALSE;
     } else {
         // Skull not launched, follow the paddle
         Skull.x = Paddle.x + (Paddle.width >> 1) - (Skull.width >> 1);
