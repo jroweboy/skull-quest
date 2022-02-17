@@ -7,6 +7,15 @@
 #include "Nametable/title_screen.h"
 #include "sprites.h"
 
+#define ONES 7
+#define TENS 6
+#define HUNDREDS 5
+#define THOUSANDS 4
+#define TEN_THOUSANDS 3
+#define HUNDRED_THOUSANDS 2
+#define MILLIONS 1
+#define TEN_MILLIONS 0
+
 #define LEVEL_TOTAL 1
 #define MAX_HEALTH 8
 #define PADDLE_MAX_SPEED 7
@@ -46,7 +55,7 @@ const unsigned char* const level_list[LEVEL_TOTAL * 3] = {
 unsigned char speed_float;
 signed char dir, xCollisionDir, yCollisionDir;
 
-unsigned char exp_1, exp_10, exp_100, exp_1000, exp_10000, exp_100000;
+unsigned char exp[] = "00000000";
 
 unsigned char debug1, debug2;
 unsigned char pad1;
@@ -139,14 +148,33 @@ void update_health() {
     }
 }
 
+void update_xp() {
+    multi_vram_buffer_horz(exp, sizeof(exp), NTADR_A(12, 2));
+}
+
+void add_xp(unsigned char value, unsigned char pos) {
+    unsigned char result = exp[pos] + value - 0x30;
+    if (result > 9) {
+        if (pos == TEN_MILLIONS) {
+            result = 9;
+        } else {
+            add_xp(1, pos - 1);
+            result -= 10;
+        }
+    }
+    exp[pos] = 0x30 + result;
+    update_xp();
+}
+
 void show_HUD() {
     vram_adr(0x23C0);
     vram_fill(0x00, 8);
+
     // HEALTH
     update_health();
 
     // XP
-    // TODO update_xp();
+    update_xp();
 
     // ITEM BOX:
     one_vram_buffer(0x5d, NTADR_A(22, 2));
@@ -279,16 +307,19 @@ void do_tile_collision() {
             remove_brick(TILE_BACK);
             ++backup_nt_index;
             hit_brick(TILE_BACK);
+            add_xp(1, HUNDREDS);
             break;
         case 0x04:
             // Right brick
             remove_brick(TILE_BACK);
             --backup_nt_index;
             hit_brick(TILE_BACK);
+            add_xp(1, HUNDREDS);
             break;
         case 0x05:
             // Dot brick
             hit_brick(0x11);
+            add_xp(5, TENS);
             break;
         case 0x06:
             // Foliage
