@@ -13,6 +13,7 @@
 	.forceimport	__STARTUP__
 	.import		_set_vram_buffer
 	.import		_one_vram_buffer
+	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
 	.import		_pal_bg
 	.import		_pal_spr
@@ -39,12 +40,7 @@
 	.export		_dir
 	.export		_xCollisionDir
 	.export		_yCollisionDir
-	.export		_exp_1
-	.export		_exp_10
-	.export		_exp_100
-	.export		_exp_1000
-	.export		_exp_10000
-	.export		_exp_100000
+	.export		_exp
 	.export		_debug1
 	.export		_debug2
 	.export		_pad1
@@ -60,6 +56,7 @@
 	.export		_i
 	.export		_j
 	.export		_temp
+	.export		_temp2
 	.export		_temp_x
 	.export		_temp_y
 	.export		_collision_type
@@ -76,6 +73,8 @@
 	.export		_Paddle
 	.export		_Skull
 	.export		_update_health
+	.export		_update_xp
+	.export		_add_xp
 	.export		_show_HUD
 	.export		_show_title_screen
 	.export		_show_game_over
@@ -90,7 +89,8 @@
 	.export		_set_collision_data
 	.export		_backup_collision_info
 	.export		_do_tile_collision
-	.export		_is_paddle_skull_collision
+	.export		_is_skull_collision_paddle
+	.export		_is_paddle_collision_skull
 	.export		_check_paddle_input
 	.export		_check_paddle_collision
 	.export		_check_main_input
@@ -102,6 +102,8 @@
 
 .segment	"DATA"
 
+_exp:
+	.byte	$30,$30,$30,$30,$30,$30,$30,$30,$00
 _Paddle:
 	.byte	$75
 	.byte	$CF
@@ -109,6 +111,8 @@ _Paddle:
 	.byte	$04
 	.byte	$00
 	.byte	$02
+	.byte	$00
+	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -129,6 +133,8 @@ _Skull:
 	.byte	$FF
 	.byte	$64
 	.byte	$64
+	.byte	$00
+	.byte	$00
 	.res	2,$00
 
 .segment	"RODATA"
@@ -1240,18 +1246,6 @@ _xCollisionDir:
 	.res	1,$00
 _yCollisionDir:
 	.res	1,$00
-_exp_1:
-	.res	1,$00
-_exp_10:
-	.res	1,$00
-_exp_100:
-	.res	1,$00
-_exp_1000:
-	.res	1,$00
-_exp_10000:
-	.res	1,$00
-_exp_100000:
-	.res	1,$00
 _debug1:
 	.res	1,$00
 _debug2:
@@ -1281,6 +1275,8 @@ _i:
 _j:
 	.res	1,$00
 _temp:
+	.res	1,$00
+_temp2:
 	.res	1,$00
 _temp_x:
 	.res	1,$00
@@ -1375,6 +1371,132 @@ L000A:	rts
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ update_xp (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_update_xp: near
+
+.segment	"CODE"
+
+;
+; multi_vram_buffer_horz(exp, sizeof(exp), NTADR_A(12, 2));
+;
+	jsr     decsp3
+	lda     #<(_exp)
+	ldy     #$01
+	sta     (sp),y
+	iny
+	lda     #>(_exp)
+	sta     (sp),y
+	lda     #$09
+	ldy     #$00
+	sta     (sp),y
+	ldx     #$20
+	lda     #$4C
+	jmp     _multi_vram_buffer_horz
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ add_xp (unsigned char value, unsigned char pos)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_add_xp: near
+
+.segment	"CODE"
+
+;
+; void add_xp(unsigned char value, unsigned char pos) {
+;
+	jsr     pusha
+;
+; unsigned char result = exp[pos] + value - 0x30;
+;
+	ldy     #$00
+	lda     (sp),y
+	tay
+	lda     _exp,y
+	sta     ptr1
+	ldy     #$01
+	lda     (sp),y
+	clc
+	adc     ptr1
+	sec
+	sbc     #$30
+	jsr     pusha
+;
+; if (result > 9) {
+;
+	ldy     #$00
+	lda     (sp),y
+	cmp     #$0A
+	bcc     L0004
+;
+; if (pos == TEN_MILLIONS) {
+;
+	iny
+	lda     (sp),y
+	bne     L000C
+;
+; result = 9;
+;
+	lda     #$09
+	dey
+;
+; } else {
+;
+	jmp     L000B
+;
+; add_xp(1, pos - 1);
+;
+L000C:	tya
+	jsr     pusha
+	ldy     #$02
+	lda     (sp),y
+	sec
+	sbc     #$01
+	jsr     _add_xp
+;
+; result -= 10;
+;
+	ldy     #$00
+	lda     (sp),y
+	sec
+	sbc     #$0A
+L000B:	sta     (sp),y
+;
+; exp[pos] = 0x30 + result;
+;
+L0004:	lda     #<(_exp)
+	ldx     #>(_exp)
+	iny
+	clc
+	adc     (sp),y
+	bcc     L0008
+	inx
+L0008:	sta     ptr1
+	stx     ptr1+1
+	dey
+	lda     (sp),y
+	clc
+	adc     #$30
+	sta     (ptr1),y
+;
+; update_xp();
+;
+	jsr     _update_xp
+;
+; }
+;
+	jmp     incsp3
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ show_HUD (void)
 ; ---------------------------------------------------------------
 
@@ -1402,6 +1524,10 @@ L000A:	rts
 ; update_health();
 ;
 	jsr     _update_health
+;
+; update_xp();
+;
+	jsr     _update_xp
 ;
 ; one_vram_buffer(0x5d, NTADR_A(22, 2));
 ;
@@ -2158,16 +2284,37 @@ L001A:	cmp     #$02
 	cmp     #$04
 	beq     L0017
 	cmp     #$05
-	beq     L0018
+	jeq     L0018
 	cmp     #$06
-	beq     L0019
+	jeq     L0019
 	cmp     #$07
-	beq     L0003
-	cmp     #$08
-	beq     L0003
-	cmp     #$09
-	beq     L0003
-	cmp     #$0A
+	bne     L001B
+;
+; }
+;
+	rts
+;
+; }
+;
+L001B:	cmp     #$08
+	bne     L001C
+;
+; }
+;
+	rts
+;
+; }
+;
+L001C:	cmp     #$09
+	bne     L001D
+;
+; }
+;
+	rts
+;
+; }
+;
+L001D:	cmp     #$0A
 	beq     L0003
 	cmp     #$0B
 	beq     L0003
@@ -2208,7 +2355,14 @@ L0016:	lda     #$10
 ; hit_brick(TILE_BACK);
 ;
 L0008:	lda     #$10
-	jmp     _hit_brick
+	jsr     _hit_brick
+;
+; add_xp(1, HUNDREDS);
+;
+	lda     #$01
+	jsr     pusha
+	lda     #$05
+	jmp     _add_xp
 ;
 ; remove_brick(TILE_BACK);
 ;
@@ -2227,12 +2381,26 @@ L0017:	lda     #$10
 ; hit_brick(TILE_BACK);
 ;
 L000A:	lda     #$10
-	jmp     _hit_brick
+	jsr     _hit_brick
+;
+; add_xp(1, HUNDREDS);
+;
+	lda     #$01
+	jsr     pusha
+	lda     #$05
+	jmp     _add_xp
 ;
 ; hit_brick(0x11);
 ;
 L0018:	lda     #$11
-	jmp     _hit_brick
+	jsr     _hit_brick
+;
+; add_xp(5, TENS);
+;
+	lda     #$05
+	jsr     pusha
+	lda     #$06
+	jmp     _add_xp
 ;
 ; hit_brick(TILE_BACK_GRASS);
 ;
@@ -2255,12 +2423,12 @@ L0003:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; char __near__ is_paddle_skull_collision (void)
+; char __near__ is_skull_collision_paddle (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_is_paddle_skull_collision: near
+.proc	_is_skull_collision_paddle: near
 
 .segment	"CODE"
 
@@ -2338,6 +2506,109 @@ L0003:	lda     #$01
 .endproc
 
 ; ---------------------------------------------------------------
+; char __near__ is_paddle_collision_skull (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_is_paddle_collision_skull: near
+
+.segment	"CODE"
+
+;
+; return (Skull.x + Skull.bbox_x < temp_x + Paddle.width &&
+;
+	ldx     #$00
+	lda     _Skull
+	clc
+	adc     _Skull+4
+	bcc     L0005
+	inx
+L0005:	jsr     pushax
+	ldx     #$00
+	lda     _temp_x
+	clc
+	adc     _Paddle+2
+	bcc     L0006
+	inx
+L0006:	jsr     tosicmp
+	bpl     L0002
+;
+; Skull.x + Skull.bbox_x + Skull.width > temp_x &&
+;
+	ldx     #$00
+	lda     _Skull
+	clc
+	adc     _Skull+4
+	bcc     L000F
+	inx
+	clc
+L000F:	adc     _Skull+2
+	bcc     L0008
+	inx
+L0008:	jsr     pushax
+	lda     _temp_x
+	jsr     tosicmp0
+	bmi     L0002
+	beq     L0002
+;
+; Skull.y + Skull.bbox_y < temp_y + Paddle.height + Paddle.bbox_y &&
+;
+	ldx     #$00
+	lda     _Skull+1
+	clc
+	adc     _Skull+5
+	bcc     L0009
+	inx
+L0009:	jsr     pushax
+	ldx     #$00
+	lda     _temp_y
+	clc
+	adc     _Paddle+3
+	bcc     L0010
+	inx
+	clc
+L0010:	adc     _Paddle+5
+	bcc     L000B
+	inx
+L000B:	jsr     tosicmp
+	bpl     L0002
+;
+; Skull.y + Skull.bbox_y + Skull.height > temp_y + Paddle.bbox_y);
+;
+	ldx     #$00
+	lda     _Skull+1
+	clc
+	adc     _Skull+5
+	bcc     L0011
+	inx
+	clc
+L0011:	adc     _Skull+3
+	bcc     L000D
+	inx
+L000D:	jsr     pushax
+	ldx     #$00
+	lda     _temp_y
+	clc
+	adc     _Paddle+5
+	bcc     L000E
+	inx
+L000E:	jsr     tosicmp
+	beq     L0002
+	bpl     L0003
+L0002:	ldx     #$00
+	txa
+	rts
+L0003:	lda     #$01
+	ldx     #$00
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ check_paddle_input (void)
 ; ---------------------------------------------------------------
 
@@ -2348,11 +2619,11 @@ L0003:	lda     #$01
 .segment	"CODE"
 
 ;
-; if (!is_paddle_skull_collision()) {
+; if (!is_skull_collision_paddle()) {
 ;
-	jsr     _is_paddle_skull_collision
+	jsr     _is_skull_collision_paddle
 	tax
-	beq     L003E
+	beq     L003F
 ;
 ; }
 ;
@@ -2360,7 +2631,7 @@ L0003:	lda     #$01
 ;
 ; Paddle.xSpeedFloat += 128;
 ;
-L003E:	lda     #$80
+L003F:	lda     #$80
 	clc
 	adc     _Paddle+10
 	sta     _Paddle+10
@@ -2368,23 +2639,23 @@ L003E:	lda     #$80
 ; temp = Paddle.xSpeedFloat ? 1 : 2;
 ;
 	lda     _Paddle+10
-	beq     L002B
+	beq     L002C
 	lda     #$01
-	jmp     L002C
-L002B:	lda     #$02
-L002C:	sta     _temp
+	jmp     L002D
+L002C:	lda     #$02
+L002D:	sta     _temp
 ;
 ; if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -PADDLE_MAX_SPEED)) {
 ;
 	lda     _pad1
 	and     #$02
-	beq     L0031
+	beq     L0032
 	lda     _Paddle+6
 	sec
 	sbc     #$FA
 	bvs     L0008
 	eor     #$80
-L0008:	bpl     L0031
+L0008:	bpl     L0032
 ;
 ; temp_x = Paddle.xSpeed -= temp;
 ;
@@ -2398,15 +2669,15 @@ L0008:	bpl     L0031
 ;
 ; if ((pad1 & PAD_RIGHT) && (Paddle.xSpeed < PADDLE_MAX_SPEED)) {
 ;
-L0031:	lda     _pad1
+L0032:	lda     _pad1
 	and     #$01
-	beq     L0037
+	beq     L0038
 	lda     _Paddle+6
 	sec
 	sbc     #$07
 	bvc     L0010
 	eor     #$80
-L0010:	bpl     L0037
+L0010:	bpl     L0038
 ;
 ; Paddle.xSpeed += temp;
 ;
@@ -2418,7 +2689,7 @@ L0010:	bpl     L0037
 ;
 ; temp_x = Paddle.x + Paddle.xSpeed;  // Bounding box?
 ;
-L0037:	lda     _Paddle+6
+L0038:	lda     _Paddle+6
 	clc
 	adc     _Paddle
 	sta     _temp_x
@@ -2435,11 +2706,11 @@ L0037:	lda     _Paddle+6
 	sbc     #$01
 	bvs     L0018
 	eor     #$80
-L0018:	bpl     L0039
+L0018:	bpl     L003A
 ;
 ; while (set_collision_data(temp_x + Paddle.width, temp_y)) {
 ;
-	jmp     L0038
+	jmp     L0039
 ;
 ; --temp_x;
 ;
@@ -2447,7 +2718,7 @@ L0019:	dec     _temp_x
 ;
 ; while (set_collision_data(temp_x + Paddle.width, temp_y)) {
 ;
-L0038:	lda     _temp_x
+L0039:	lda     _temp_x
 	clc
 	adc     _Paddle+2
 	jsr     pusha
@@ -2458,14 +2729,14 @@ L0038:	lda     _temp_x
 ;
 ; } else if (Paddle.xSpeed < 0) {
 ;
-	jmp     L003B
-L0039:	lda     _Paddle+6
+	jmp     L0020
+L003A:	lda     _Paddle+6
 	asl     a
-	bcc     L003B
+	bcc     L0020
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-	jmp     L003A
+	jmp     L003B
 ;
 ; ++temp_x;
 ;
@@ -2473,41 +2744,52 @@ L001F:	inc     _temp_x
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-L003A:	lda     _temp_x
+L003B:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
 	bne     L001F
 ;
+; if (is_paddle_collision_skull()) {  // && Skull.y + Skull.bbox_y < Paddle.y + Paddle.height + Paddle.bbox_y && Skull.y + Skull.bbox_y + Skull.height > Paddle.y + Paddle.bbox_y) {
+;
+L0020:	jsr     _is_paddle_collision_skull
+	tax
+	beq     L003C
+;
+; Skull.xVelocity = 80;
+;
+	lda     #$50
+	sta     _Skull+14
+;
 ; Paddle.x = temp_x;
 ;
-L003B:	lda     _temp_x
+L003C:	lda     _temp_x
 	sta     _Paddle
 ;
 ; if (Paddle.xSpeed) {
 ;
 	lda     _Paddle+6
-	beq     L0028
+	beq     L0029
 ;
 ; Paddle.xSpeed += Paddle.xSpeed > 0 ? -1 : 1;
 ;
 	sec
 	sbc     #$01
-	bvs     L0024
+	bvs     L0025
 	eor     #$80
-L0024:	bpl     L003C
+L0025:	bpl     L003D
 	lda     #$FF
-	jmp     L0026
-L003C:	lda     #$01
-L0026:	cmp     #$80
+	jmp     L0027
+L003D:	lda     #$01
+L0027:	cmp     #$80
 	clc
 	adc     _Paddle+6
 	sta     _Paddle+6
 ;
 ; }
 ;
-L0028:	rts
+L0029:	rts
 
 .endproc
 
@@ -2522,11 +2804,11 @@ L0028:	rts
 .segment	"CODE"
 
 ;
-; if (is_paddle_skull_collision()) {
+; if (is_skull_collision_paddle()) {
 ;
-	jsr     _is_paddle_skull_collision
+	jsr     _is_skull_collision_paddle
 	tax
-	bne     L004A
+	bne     L0051
 ;
 ; }
 ;
@@ -2534,56 +2816,56 @@ L0028:	rts
 ;
 ; if (Skull.y + Skull.bbox_y < Paddle.y + Paddle.height + Paddle.bbox_y && Skull.y + Skull.bbox_y + Skull.height > Paddle.y + Paddle.bbox_y) {
 ;
-L004A:	ldx     #$00
+L0051:	ldx     #$00
 	lda     _Skull+1
 	clc
 	adc     _Skull+5
-	bcc     L002E
+	bcc     L0034
 	inx
-L002E:	jsr     pushax
+L0034:	jsr     pushax
 	ldx     #$00
 	lda     _Paddle+1
 	clc
 	adc     _Paddle+3
-	bcc     L0041
+	bcc     L0047
 	inx
 	clc
-L0041:	adc     _Paddle+5
-	bcc     L0030
+L0047:	adc     _Paddle+5
+	bcc     L0036
 	inx
-L0030:	jsr     tosicmp
+L0036:	jsr     tosicmp
 	bpl     L0004
 	ldx     #$00
 	lda     _Skull+1
 	clc
 	adc     _Skull+5
-	bcc     L0042
+	bcc     L0048
 	inx
 	clc
-L0042:	adc     _Skull+3
-	bcc     L0032
+L0048:	adc     _Skull+3
+	bcc     L0038
 	inx
-L0032:	jsr     pushax
+L0038:	jsr     pushax
 	ldx     #$00
 	lda     _Paddle+1
 	clc
 	adc     _Paddle+5
-	bcc     L0033
+	bcc     L0039
 	inx
-L0033:	jsr     tosicmp
+L0039:	jsr     tosicmp
 	beq     L0004
 	bpl     L0005
-L0004:	jmp     L0044
+L0004:	jmp     L004E
 ;
-; add_x_speed(100);
+; Skull.xSpeedFloat = 150;
 ;
-L0005:	lda     #$64
-	jsr     _add_x_speed
+L0005:	lda     #$96
+	sta     _Skull+10
 ;
-; subtract_y_speed(100);
+; Skull.ySpeedFloat = 50;
 ;
-	lda     #$64
-	jsr     _subtract_y_speed
+	lda     #$32
+	sta     _Skull+11
 ;
 ; if (temp_x < Paddle.x + (Paddle.width >> 1)) {
 ;
@@ -2593,9 +2875,9 @@ L0005:	lda     #$64
 	lsr     a
 	clc
 	adc     _Paddle
-	bcc     L0039
+	bcc     L003F
 	inx
-L0039:	jsr     tosicmp
+L003F:	jsr     tosicmp
 	bpl     L0007
 ;
 ; xCollisionDir = RIGHT;
@@ -2612,7 +2894,7 @@ L0039:	jsr     tosicmp
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-	jmp     L0043
+	jmp     L004B
 ;
 ; ++temp_x;
 ;
@@ -2624,7 +2906,7 @@ L0008:	inc     _temp_x
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-L0043:	lda     _temp_x
+L004B:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
@@ -2633,27 +2915,27 @@ L0043:	lda     _temp_x
 ;
 ; } else {
 ;
-	rts
+	jmp     L004D
 ;
 ; xCollisionDir = LEFT;
 ;
 L0007:	lda     #$FF
 	sta     _xCollisionDir
 ;
-; while (set_collision_data(temp_x + Skull.width, temp_y)) {
-;
-	jmp     L000E
-;
 ; temp_x = Paddle.x + Paddle.width;
 ;
-L000C:	lda     _Paddle
+	lda     _Paddle
 	clc
 	adc     _Paddle+2
 	sta     _temp_x
 ;
+; while (set_collision_data(temp_x + Skull.width, temp_y)) {
+;
+	jmp     L004C
+;
 ; --temp_x;
 ;
-	dec     _temp_x
+L000C:	dec     _temp_x
 ;
 ; --Paddle.x;
 ;
@@ -2661,7 +2943,7 @@ L000C:	lda     _Paddle
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-L000E:	lda     _temp_x
+L004C:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
@@ -2670,169 +2952,207 @@ L000E:	lda     _temp_x
 	tax
 	bne     L000C
 ;
+; xCollisionDir = DOWN;
+;
+L004D:	lda     #$01
+	sta     _xCollisionDir
+;
 ; } else {
 ;
 	rts
 ;
 ; if (temp_x < Paddle.x + (Paddle.width >> 1)) {
 ;
-L0044:	lda     _temp_x
+L004E:	lda     _temp_x
 	jsr     pusha0
 	lda     _Paddle+2
 	lsr     a
 	clc
 	adc     _Paddle
-	bcc     L003A
+	bcc     L0040
 	inx
-L003A:	jsr     tosicmp
+L0040:	jsr     tosicmp
 	bpl     L0010
+;
+; if (temp_x <= Paddle.x + 4) {
+;
+	lda     _temp_x
+	jsr     pusha0
+	lda     _Paddle
+	clc
+	adc     #$04
+	bcc     L0012
+	ldx     #$01
+L0012:	jsr     tosicmp
+	beq     L0049
+	bpl     L0011
 ;
 ; if (Skull.xDir == RIGHT) {
 ;
-	lda     _Skull+8
+L0049:	lda     _Skull+8
 	cmp     #$01
-	bne     L0011
+	bne     L0013
 ;
 ; xCollisionDir = RIGHT;
 ;
 	sta     _xCollisionDir
 ;
-; if (temp_x < Paddle.x + 2) {
+; Skull.xSpeedFloat = 140;
 ;
+L0013:	lda     #$8C
+	sta     _Skull+10
+;
+; Skull.ySpeedFloat = 60;
+;
+	lda     #$3C
+;
+; } else if (temp_x <= Paddle.x + 8) {
+;
+	jmp     L0044
 L0011:	lda     _temp_x
-	jsr     pusha0
-	lda     _Paddle
-	clc
-	adc     #$02
-	bcc     L0014
-	ldx     #$01
-L0014:	jsr     tosicmp
-	bpl     L0013
-;
-; add_x_speed(96);
-;
-	lda     #$60
-	jsr     _add_x_speed
-;
-; subtract_y_speed(96);
-;
-	lda     #$60
-	jsr     _subtract_y_speed
-;
-; } else if (!(temp_x < Paddle.x + 8)) {
-;
-	jmp     L001E
-L0013:	lda     _temp_x
 	jsr     pusha0
 	lda     _Paddle
 	clc
 	adc     #$08
 	bcc     L0017
 	ldx     #$01
-L0017:	jsr     tosltax
+L0017:	jsr     tosicmp
+	beq     L004A
+	bpl     L0021
+;
+; if (Skull.xDir == RIGHT) {
+;
+L004A:	lda     _Skull+8
+	cmp     #$01
+	bne     L0018
+;
+; xCollisionDir = RIGHT;
+;
+	sta     _xCollisionDir
+;
+; Skull.xSpeedFloat = 100;
+;
+L0018:	lda     #$64
+	sta     _Skull+10
 ;
 ; } else {
 ;
-	jmp     L0049
+	jmp     L0044
+;
+; if (temp_x >= Paddle.x + Paddle.width - 4) {
+;
+L0010:	lda     _temp_x
+	jsr     pusha0
+	lda     _Paddle
+	clc
+	adc     _Paddle+2
+	bcc     L003C
+	ldx     #$01
+L003C:	sec
+	sbc     #$04
+	bcs     L001D
+	dex
+L001D:	jsr     tosicmp
+	bmi     L001C
 ;
 ; if (Skull.xDir == LEFT) {
 ;
-L0010:	lda     _Skull+8
+	lda     _Skull+8
 	cmp     #$FF
-	bne     L0019
+	bne     L001E
 ;
 ; xCollisionDir = LEFT;
 ;
 	sta     _xCollisionDir
 ;
-; if (temp_x > Paddle.x + Paddle.width - 2) {
+; Skull.xSpeedFloat = 140;
 ;
-L0019:	lda     _temp_x
+L001E:	lda     #$8C
+	sta     _Skull+10
+;
+; Skull.ySpeedFloat = 60;
+;
+	lda     #$3C
+;
+; } else if (temp_x >= Paddle.x + Paddle.width - 8) {
+;
+	jmp     L0044
+L001C:	lda     _temp_x
 	jsr     pusha0
 	lda     _Paddle
 	clc
 	adc     _Paddle+2
-	bcc     L0036
+	bcc     L003D
 	ldx     #$01
-L0036:	sec
-	sbc     #$02
-	bcs     L001C
-	dex
-L001C:	jsr     tosicmp
-	bmi     L001B
-	beq     L001B
-;
-; add_x_speed(96);
-;
-	lda     #$60
-	jsr     _add_x_speed
-;
-; subtract_y_speed(96);
-;
-	lda     #$60
-	jsr     _subtract_y_speed
-;
-; } else if (!(temp_x > Paddle.x + Paddle.width - 8)) {
-;
-	jmp     L001E
-L001B:	lda     _temp_x
-	jsr     pusha0
-	lda     _Paddle
-	clc
-	adc     _Paddle+2
-	bcc     L0037
-	ldx     #$01
-L0037:	sec
+L003D:	sec
 	sbc     #$08
-	bcs     L001F
+	bcs     L0022
 	dex
-L001F:	jsr     tosgtax
-L0049:	tax
-	bne     L001E
+L0022:	jsr     tosicmp
+	bmi     L0021
 ;
-; subtract_x_speed(64);
+; if (Skull.xDir == LEFT) {
 ;
-	lda     #$40
-	jsr     _subtract_x_speed
+	lda     _Skull+8
+	cmp     #$FF
+	bne     L0023
 ;
-; add_y_speed(64);
+; xCollisionDir = LEFT;
 ;
-	lda     #$40
-	jsr     _add_y_speed
+	sta     _xCollisionDir
+;
+; Skull.xSpeedFloat = 100;
+;
+L0023:	lda     #$64
+	sta     _Skull+10
+;
+; } else {
+;
+	jmp     L0044
+;
+; Skull.xSpeedFloat = 60;
+;
+L0021:	lda     #$3C
+	sta     _Skull+10
+;
+; Skull.ySpeedFloat = 140;
+;
+	lda     #$8C
+L0044:	sta     _Skull+11
 ;
 ; if (temp_y < Paddle.y + Paddle.bbox_y + (Paddle.height >> 1)) {
 ;
-L001E:	lda     _temp_y
+	lda     _temp_y
 	jsr     pusha0
 	lda     _Paddle+1
 	clc
 	adc     _Paddle+5
-	bcc     L0038
+	bcc     L003E
 	ldx     #$01
-L0038:	sta     ptr1
+L003E:	sta     ptr1
 	stx     ptr1+1
 	lda     _Paddle+3
 	lsr     a
 	clc
 	adc     ptr1
 	ldx     ptr1+1
-	bcc     L003B
+	bcc     L0041
 	inx
-L003B:	jsr     tosicmp
-	bpl     L0020
+L0041:	jsr     tosicmp
+	bpl     L0026
 ;
 ; yCollisionDir = DOWN;
 ;
 	lda     #$01
 	sta     _yCollisionDir
 ;
-; while (is_paddle_skull_collision()) {
+; while (is_skull_collision_paddle()) {
 ;
-	jmp     L0026
+	jmp     L002C
 ;
 ; --temp_y;
 ;
-L0021:	dec     _temp_y
+L0027:	dec     _temp_y
 ;
 ; if (set_collision_data(temp_x, temp_y)) {
 ;
@@ -2841,7 +3161,7 @@ L0021:	dec     _temp_y
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	beq     L0026
+	beq     L002C
 ;
 ; ++temp_y;
 ;
@@ -2855,19 +3175,19 @@ L0021:	dec     _temp_y
 	lsr     a
 	clc
 	adc     _Paddle
-	bcc     L003C
+	bcc     L0042
 	inx
-L003C:	jsr     tosicmp
-	bpl     L0025
+L0042:	jsr     tosicmp
+	bpl     L002B
 	dec     _temp_x
-	jmp     L0026
-L0025:	inc     _temp_x
+	jmp     L002C
+L002B:	inc     _temp_x
 ;
-; while (is_paddle_skull_collision()) {
+; while (is_skull_collision_paddle()) {
 ;
-L0026:	jsr     _is_paddle_skull_collision
+L002C:	jsr     _is_skull_collision_paddle
 	tax
-	bne     L0021
+	bne     L0027
 ;
 ; } else {
 ;
@@ -2875,16 +3195,16 @@ L0026:	jsr     _is_paddle_skull_collision
 ;
 ; yCollisionDir = UP;
 ;
-L0020:	lda     #$FF
+L0026:	lda     #$FF
 	sta     _yCollisionDir
 ;
-; while (is_paddle_skull_collision()) {
+; while (is_skull_collision_paddle()) {
 ;
-	jmp     L002D
+	jmp     L0033
 ;
 ; ++temp_y;
 ;
-L0028:	inc     _temp_y
+L002E:	inc     _temp_y
 ;
 ; if (set_collision_data(temp_x, temp_y)) {
 ;
@@ -2893,7 +3213,7 @@ L0028:	inc     _temp_y
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	beq     L002D
+	beq     L0033
 ;
 ; --temp_y;
 ;
@@ -2907,19 +3227,19 @@ L0028:	inc     _temp_y
 	lsr     a
 	clc
 	adc     _Paddle
-	bcc     L003D
+	bcc     L0043
 	inx
-L003D:	jsr     tosicmp
-	bpl     L002C
+L0043:	jsr     tosicmp
+	bpl     L0032
 	dec     _temp_x
-	jmp     L002D
-L002C:	inc     _temp_x
+	jmp     L0033
+L0032:	inc     _temp_x
 ;
-; while (is_paddle_skull_collision()) {
+; while (is_skull_collision_paddle()) {
 ;
-L002D:	jsr     _is_paddle_skull_collision
+L0033:	jsr     _is_skull_collision_paddle
 	tax
-	bne     L0028
+	bne     L002E
 ;
 ; }
 ;
@@ -3036,6 +3356,19 @@ L0009:	rts
 .segment	"CODE"
 
 ;
+; Skull.xSpeed = (Skull.xSpeedFloat >> 7);
+;
+	lda     _Skull+10
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	cmp     #$80
+	sta     _Skull+6
+;
 ; Skull.xRemain += Skull.xSpeedFloat & 0b01111111;  // MODULO 128
 ;
 	lda     _Skull+10
@@ -3044,29 +3377,81 @@ L0009:	rts
 	adc     _Skull+12
 	sta     _Skull+12
 ;
+; temp = 0;
+;
+	lda     #$00
+	sta     _temp
+;
+; temp2 = 0;
+;
+	sta     _temp2
+;
 ; if (Skull.xRemain > 127) {
 ;
+	lda     _Skull+12
 	cmp     #$80
-	lda     #$00
-	tax
-	rol     a
-	beq     L0002
+	bcc     L000F
 ;
 ; Skull.xRemain &= 0b01111111;
 ;
-	lda     _Skull+12
 	and     #$7F
 	sta     _Skull+12
 ;
-; return Skull.xDir;
+; temp = 1;
 ;
+	lda     #$01
+	sta     _temp
+;
+; temp2 = Skull.xVelocity > 40 ? 1 : Skull.xVelocity % 2 ? 1 : 0;
+;
+L000F:	lda     _Skull+14
+	cmp     #$29
+	bcc     L0010
+	ldx     #$00
+	jmp     L0014
+L0010:	lda     _Skull+14
+	ldx     #$00
+	and     #$01
+	beq     L0012
+L0014:	lda     #$01
+L0012:	sta     _temp2
+;
+; if (Skull.xVelocity) {
+;
+	lda     _Skull+14
+	beq     L0013
+;
+; --Skull.xVelocity;
+;
+	dec     _Skull+14
+;
+; return (Skull.xSpeed + temp + temp2) * Skull.xDir;
+;
+L0013:	lda     _Skull+6
+	bpl     L0009
+	dex
+L0009:	clc
+	adc     _temp
+	bcc     L000E
+	inx
+	clc
+L000E:	adc     _temp2
+	bcc     L000D
+	inx
+L000D:	jsr     pushax
+	ldx     #$00
 	lda     _Skull+8
-	bpl     L0002
+	bpl     L000A
+	dex
+L000A:	jsr     tosmulax
+	ldx     #$00
+	cmp     #$80
+	bcc     L0001
 	dex
 ;
 ; }
 ;
-L0002:	rts
+L0001:	rts
 
 .endproc
 
@@ -3081,6 +3466,29 @@ L0002:	rts
 .segment	"CODE"
 
 ;
+; temp = 0;
+;
+	lda     #$00
+	sta     _temp
+;
+; Skull.ySpeed = (Skull.ySpeedFloat >> 7) * Skull.yDir;
+;
+	lda     _Skull+11
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     pusha0
+	lda     _Skull+9
+	bpl     L0002
+	ldx     #$FF
+L0002:	jsr     tosmulax
+	cmp     #$80
+	sta     _Skull+7
+;
 ; Skull.yRemain += Skull.ySpeedFloat & 0b01111111;  // MODULO 128
 ;
 	lda     _Skull+11
@@ -3092,10 +3500,7 @@ L0002:	rts
 ; if (Skull.yRemain > 127) {
 ;
 	cmp     #$80
-	lda     #$00
-	tax
-	rol     a
-	beq     L0002
+	bcc     L0008
 ;
 ; Skull.yRemain &= 0b01111111;
 ;
@@ -3103,15 +3508,24 @@ L0002:	rts
 	and     #$7F
 	sta     _Skull+13
 ;
-; return Skull.yDir;
+; temp = Skull.yDir;
 ;
 	lda     _Skull+9
-	bpl     L0002
+	sta     _temp
+;
+; return Skull.ySpeed + temp;
+;
+L0008:	lda     _Skull+7
+	clc
+	adc     _temp
+	ldx     #$00
+	cmp     #$80
+	bcc     L0001
 	dex
 ;
 ; }
 ;
-L0002:	rts
+L0001:	rts
 
 .endproc
 
@@ -3147,33 +3561,20 @@ L0002:	rts
 ; if (skull_launched) {
 ;
 	lda     _skull_launched
-	jeq     L0098
+	jeq     L0094
 ;
-; temp_x = Skull.x + Skull.xSpeed + get_x_speed();
+; temp_x = Skull.x + get_x_speed();
 ;
-	lda     _Skull+6
-	bpl     L0003
-	dex
-L0003:	clc
-	adc     _Skull
-	bcc     L006B
-	inx
-L006B:	jsr     pushax
+	lda     _Skull
+	jsr     pusha0
 	jsr     _get_x_speed
 	jsr     tosaddax
 	sta     _temp_x
 ;
-; temp_y = Skull.y + Skull.ySpeed + get_y_speed();
+; temp_y = Skull.y + get_y_speed();
 ;
-	ldx     #$00
-	lda     _Skull+7
-	bpl     L0004
-	dex
-L0004:	clc
-	adc     _Skull+1
-	bcc     L006C
-	inx
-L006C:	jsr     pushax
+	lda     _Skull+1
+	jsr     pusha0
 	jsr     _get_y_speed
 	jsr     tosaddax
 	sta     _temp_y
@@ -3190,13 +3591,13 @@ L006C:	jsr     pushax
 ;
 	lda     _Skull+8
 	cmp     #$01
-	jne     L0005
+	jne     L0003
 ;
 ; if (Skull.yDir == DOWN) {
 ;
 	lda     _Skull+9
 	cmp     #$01
-	jne     L0007
+	jne     L0005
 ;
 ; if (set_collision_data(temp_x, temp_y + Skull.height)) {
 ;
@@ -3207,7 +3608,7 @@ L006C:	jsr     pushax
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	beq     L0073
+	beq     L006F
 ;
 ; yCollisionDir = DOWN;
 ;
@@ -3222,43 +3623,43 @@ L006C:	jsr     pushax
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L000C
+	beq     L000A
 ;
 ; while (set_collision_data(temp_x, temp_y + Skull.height)) {
 ;
-	jmp     L0072
+	jmp     L006E
 ;
 ; --temp_y;
 ;
-L000B:	dec     _temp_y
+L0009:	dec     _temp_y
 ;
 ; while (set_collision_data(temp_x, temp_y + Skull.height)) {
 ;
-L0072:	lda     _temp_x
+L006E:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	clc
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L000B
+	bne     L0009
 ;
 ; do_tile_collision();
 ;
-L000C:	jsr     _do_tile_collision
+L000A:	jsr     _do_tile_collision
 ;
 ; if (set_collision_data(temp_x + Skull.width, temp_y) || (backup_col_type == 0 && set_collision_data(temp_x + Skull.width, temp_y + Skull.height))) {
 ;
-L0073:	lda     _temp_x
+L006F:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L000F
+	bne     L000D
 	lda     _backup_col_type
-	jne     L0040
+	jne     L003E
 	lda     _temp_x
 	clc
 	adc     _Skull+2
@@ -3268,11 +3669,11 @@ L0073:	lda     _temp_x
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	jeq     L0040
+	jeq     L003E
 ;
 ; xCollisionDir = RIGHT;
 ;
-L000F:	lda     #$01
+L000D:	lda     #$01
 	sta     _xCollisionDir
 ;
 ; backup_collision_info();
@@ -3283,39 +3684,39 @@ L000F:	lda     #$01
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0048
+	jeq     L0046
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-	jmp     L007B
+	jmp     L0077
 ;
 ; --temp_x;
 ;
-L0015:	dec     _temp_x
+L0013:	dec     _temp_x
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-L007B:	lda     _temp_x
+L0077:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L0015
+	bne     L0013
 ;
 ; } else {
 ;
-	jmp     L0048
+	jmp     L0046
 ;
 ; if (set_collision_data(temp_x, temp_y)) {
 ;
-L0007:	lda     _temp_x
+L0005:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	beq     L007D
+	beq     L0079
 ;
 ; yCollisionDir = UP;
 ;
@@ -3330,32 +3731,32 @@ L0007:	lda     _temp_x
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L001C
+	beq     L001A
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-	jmp     L007C
+	jmp     L0078
 ;
 ; ++temp_y;
 ;
-L001B:	inc     _temp_y
+L0019:	inc     _temp_y
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-L007C:	lda     _temp_x
+L0078:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L001B
+	bne     L0019
 ;
 ; do_tile_collision();
 ;
-L001C:	jsr     _do_tile_collision
+L001A:	jsr     _do_tile_collision
 ;
 ; if (set_collision_data(temp_x + Skull.width, temp_y + Skull.height) || (backup_col_type == 0 && set_collision_data(temp_x + Skull.width, temp_y))) {
 ;
-L007D:	lda     _temp_x
+L0079:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
@@ -3364,9 +3765,9 @@ L007D:	lda     _temp_x
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L001F
+	bne     L001D
 	lda     _backup_col_type
-	jne     L0040
+	jne     L003E
 	lda     _temp_x
 	clc
 	adc     _Skull+2
@@ -3374,11 +3775,11 @@ L007D:	lda     _temp_x
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	jeq     L0040
+	jeq     L003E
 ;
 ; xCollisionDir = RIGHT;
 ;
-L001F:	lda     #$01
+L001D:	lda     #$01
 	sta     _xCollisionDir
 ;
 ; backup_collision_info();
@@ -3389,19 +3790,19 @@ L001F:	lda     #$01
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0048
+	jeq     L0046
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
 ;
-	jmp     L0085
+	jmp     L0081
 ;
 ; --temp_x;
 ;
-L0025:	dec     _temp_x
+L0023:	dec     _temp_x
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
 ;
-L0085:	lda     _temp_x
+L0081:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
@@ -3410,17 +3811,17 @@ L0085:	lda     _temp_x
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L0025
+	bne     L0023
 ;
 ; } else {
 ;
-	jmp     L0048
+	jmp     L0046
 ;
 ; if (Skull.yDir == DOWN) {
 ;
-L0005:	lda     _Skull+9
+L0003:	lda     _Skull+9
 	cmp     #$01
-	jne     L0029
+	jne     L0027
 ;
 ; if (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
 ;
@@ -3433,7 +3834,7 @@ L0005:	lda     _Skull+9
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	beq     L0087
+	beq     L0083
 ;
 ; yCollisionDir = DOWN;
 ;
@@ -3448,19 +3849,19 @@ L0005:	lda     _Skull+9
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L002E
+	beq     L002C
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
 ;
-	jmp     L0086
+	jmp     L0082
 ;
 ; --temp_y;
 ;
-L002D:	dec     _temp_y
+L002B:	dec     _temp_y
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y + Skull.height)) {
 ;
-L0086:	lda     _temp_x
+L0082:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
@@ -3469,22 +3870,22 @@ L0086:	lda     _temp_x
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L002D
+	bne     L002B
 ;
 ; do_tile_collision();
 ;
-L002E:	jsr     _do_tile_collision
+L002C:	jsr     _do_tile_collision
 ;
 ; if (set_collision_data(temp_x, temp_y) || (backup_col_type == 0 && set_collision_data(temp_x, temp_y + Skull.height))) {
 ;
-L0087:	lda     _temp_x
+L0083:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L008C
+	bne     L0088
 	lda     _backup_col_type
-	jne     L0040
+	jne     L003E
 	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
@@ -3492,11 +3893,11 @@ L0087:	lda     _temp_x
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	jeq     L0040
+	jeq     L003E
 ;
 ; xCollisionDir = LEFT;
 ;
-L008C:	lda     #$FF
+L0088:	lda     #$FF
 	sta     _xCollisionDir
 ;
 ; backup_collision_info();
@@ -3507,39 +3908,39 @@ L008C:	lda     #$FF
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0048
+	jeq     L0046
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-	jmp     L008D
+	jmp     L0089
 ;
 ; ++temp_x;
 ;
-L0037:	inc     _temp_x
+L0035:	inc     _temp_x
 ;
 ; while (set_collision_data(temp_x, temp_y)) {
 ;
-L008D:	lda     _temp_x
+L0089:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L0037
+	bne     L0035
 ;
 ; } else {
 ;
-	jmp     L0048
+	jmp     L0046
 ;
 ; if (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-L0029:	lda     _temp_x
+L0027:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	beq     L008F
+	beq     L008B
 ;
 ; yCollisionDir = UP;
 ;
@@ -3554,53 +3955,53 @@ L0029:	lda     _temp_x
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L003E
+	beq     L003C
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-	jmp     L008E
+	jmp     L008A
 ;
 ; ++temp_y;
 ;
-L003D:	inc     _temp_y
+L003B:	inc     _temp_y
 ;
 ; while (set_collision_data(temp_x + Skull.width, temp_y)) {
 ;
-L008E:	lda     _temp_x
+L008A:	lda     _temp_x
 	clc
 	adc     _Skull+2
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	bne     L003D
+	bne     L003B
 ;
 ; do_tile_collision();
 ;
-L003E:	jsr     _do_tile_collision
+L003C:	jsr     _do_tile_collision
 ;
 ; if (set_collision_data(temp_x, temp_y + Skull.height) || (backup_col_type == 0 && set_collision_data(temp_x, temp_y))) {
 ;
-L008F:	lda     _temp_x
+L008B:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	clc
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L0094
+	bne     L0090
 	lda     _backup_col_type
-	bne     L0040
+	bne     L003E
 	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	jsr     _set_collision_data
 	tax
-	beq     L0040
+	beq     L003E
 ;
 ; xCollisionDir = LEFT;
 ;
-L0094:	lda     #$FF
+L0090:	lda     #$FF
 	sta     _xCollisionDir
 ;
 ; backup_collision_info();
@@ -3611,45 +4012,45 @@ L0094:	lda     #$FF
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L0048
+	beq     L0046
 ;
 ; while (set_collision_data(temp_x, temp_y + Skull.height)) {
 ;
-	jmp     L0095
+	jmp     L0091
 ;
 ; ++temp_x;
 ;
-L0047:	inc     _temp_x
+L0045:	inc     _temp_x
 ;
 ; while (set_collision_data(temp_x, temp_y + Skull.height)) {
 ;
-L0095:	lda     _temp_x
+L0091:	lda     _temp_x
 	jsr     pusha
 	lda     _temp_y
 	clc
 	adc     _Skull+3
 	jsr     _set_collision_data
 	tax
-	bne     L0047
+	bne     L0045
 ;
 ; do_tile_collision();
 ;
-L0048:	jsr     _do_tile_collision
+L0046:	jsr     _do_tile_collision
 ;
 ; check_paddle_collision();
 ;
-L0040:	jsr     _check_paddle_collision
+L003E:	jsr     _check_paddle_collision
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L0096
+	beq     L0092
 ;
 ; if (xCollisionDir) {
 ;
 	lda     _xCollisionDir
-	beq     L004B
+	beq     L0049
 ;
 ; Skull.xSpeed = -Skull.xSpeed;
 ;
@@ -3671,8 +4072,8 @@ L0040:	jsr     _check_paddle_collision
 ;
 ; if (yCollisionDir) {
 ;
-L004B:	lda     _yCollisionDir
-	beq     L0096
+L0049:	lda     _yCollisionDir
+	beq     L0092
 ;
 ; Skull.ySpeed = -Skull.ySpeed;
 ;
@@ -3694,7 +4095,7 @@ L004B:	lda     _yCollisionDir
 ;
 ; --temp_x;
 ;
-L0096:	dec     _temp_x
+L0092:	dec     _temp_x
 ;
 ; --temp_y;
 ;
@@ -3702,17 +4103,17 @@ L0096:	dec     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0099
+	jmp     L0095
 ;
 ; temp_x = Paddle.x + (Paddle.width >> 1) - (Skull.width >> 1);
 ;
-L0098:	lda     _Paddle+2
+L0094:	lda     _Paddle+2
 	lsr     a
 	clc
 	adc     _Paddle
-	bcc     L006D
+	bcc     L0069
 	inx
-L006D:	jsr     pushax
+L0069:	jsr     pushax
 	lda     _Skull+2
 	lsr     a
 	jsr     tossuba0
@@ -3731,7 +4132,7 @@ L006D:	jsr     pushax
 ;
 ; Skull.x = temp_x;
 ;
-L0099:	lda     _temp_x
+L0095:	lda     _temp_x
 	sta     _Skull
 ;
 ; Skull.y = temp_y;

@@ -64,7 +64,7 @@ unsigned char c_map[368];
 
 int collision_index, nametable_index, backup_col_index, backup_nt_index;
 unsigned char collision_mask, backup_col_mask, stuck_times;
-unsigned char i, j, temp, temp_x, temp_y, collision_type, backup_col_type, skull_launched;
+unsigned char i, j, temp, temp2, temp_x, temp_y, collision_type, backup_col_type, skull_launched;
 unsigned char p1_health;
 unsigned char p1_max_health;
 unsigned char game_state, current_level, is_soft_hit;
@@ -88,6 +88,8 @@ struct Actor {
     unsigned char ySpeedFloat;
     unsigned char xRemain;
     unsigned char yRemain;
+    unsigned char xVelocity;
+    unsigned char yVelocity;
 };
 
 struct Actor Paddle = {
@@ -102,7 +104,9 @@ struct Actor Paddle = {
     0,     // xDir
     0,     // yDir
     0,     // xSpeedFloat
-    0      // ySpeedFloat
+    0,     // ySpeedFloat
+    0,     // xVelocity
+    0      // yVelocity
 };
 
 struct Actor Skull = {
@@ -117,7 +121,9 @@ struct Actor Skull = {
     RIGHT,  // xDir
     UP,     // yDir
     100,    // xSpeedFloat
-    100     // ySpeedFloat
+    100,    // ySpeedFloat
+    0,      // xVelocity
+    0       // yVelocity
 };
 
 enum GameStates { TITLE,
@@ -347,16 +353,23 @@ void do_tile_collision() {
     }
 }
 
-char is_paddle_skull_collision() {
+char is_skull_collision_paddle() {
     return (temp_x < Paddle.x + Paddle.width &&
             temp_x + Skull.width > Paddle.x &&
             temp_y < Paddle.y + Paddle.height + Paddle.bbox_y &&
             temp_y + Skull.height > Paddle.y + Paddle.bbox_y);
 }
 
-// Paddle collision with wall
+char is_paddle_collision_skull() {
+    return (Skull.x + Skull.bbox_x < temp_x + Paddle.width &&
+            Skull.x + Skull.bbox_x + Skull.width > temp_x &&
+            Skull.y + Skull.bbox_y < temp_y + Paddle.height + Paddle.bbox_y &&
+            Skull.y + Skull.bbox_y + Skull.height > temp_y + Paddle.bbox_y);
+}
+
+// Paddle collision with wall and skull
 void check_paddle_input() {
-    if (!is_paddle_skull_collision()) {
+    if (!is_skull_collision_paddle()) {
         Paddle.xSpeedFloat += 128;
         temp = Paddle.xSpeedFloat ? 1 : 2;
         if ((pad1 & PAD_LEFT) && (Paddle.xSpeed > -PADDLE_MAX_SPEED)) {
@@ -380,6 +393,11 @@ void check_paddle_input() {
             }
         }
 
+        // Collision with skull
+        if (is_paddle_collision_skull()) {  // && Skull.y + Skull.bbox_y < Paddle.y + Paddle.height + Paddle.bbox_y && Skull.y + Skull.bbox_y + Skull.height > Paddle.y + Paddle.bbox_y) {
+            Skull.xVelocity = 80;
+        }
+
         Paddle.x = temp_x;
         // FRICTION
         if (Paddle.xSpeed) {
@@ -390,11 +408,11 @@ void check_paddle_input() {
 
 // Skull collision with paddle
 void check_paddle_collision() {
-    if (is_paddle_skull_collision()) {
-        // If skull is beside the paddle (Skull.x & Skull.y hasn't been updated yet)
+    if (is_skull_collision_paddle()) {
+        // If skull was beside the paddle when collision (Skull.x & Skull.y hasn't been updated yet)
         if (Skull.y + Skull.bbox_y < Paddle.y + Paddle.height + Paddle.bbox_y && Skull.y + Skull.bbox_y + Skull.height > Paddle.y + Paddle.bbox_y) {
-            add_x_speed(100);
-            subtract_y_speed(100);
+            Skull.xSpeedFloat = 150;
+            Skull.ySpeedFloat = 50;
             if (temp_x < Paddle.x + (Paddle.width >> 1)) {
                 // LEFT side
                 xCollisionDir = RIGHT;
@@ -406,43 +424,57 @@ void check_paddle_collision() {
             } else {
                 // RIGHT side
                 xCollisionDir = LEFT;
+                temp_x = Paddle.x + Paddle.width;
                 while (set_collision_data(temp_x + Skull.width, temp_y)) {
-                    temp_x = Paddle.x + Paddle.width;
                     --temp_x;
                     --Paddle.x;
                 }
             }
+            xCollisionDir = DOWN;
         } else {
             // Skull not beside
             if (temp_x < Paddle.x + (Paddle.width >> 1)) {
                 // We hit left side of Paddle
-                if (Skull.xDir == RIGHT) {
-                    xCollisionDir = RIGHT;
+                if (temp_x <= Paddle.x + 4) {
+                    if (Skull.xDir == RIGHT) {
+                        xCollisionDir = RIGHT;
+                    }
+                    Skull.xSpeedFloat = 140;
+                    Skull.ySpeedFloat = 60;
+                } else if (temp_x <= Paddle.x + 8) {
+                    if (Skull.xDir == RIGHT) {
+                        xCollisionDir = RIGHT;
+                    }
+                    Skull.xSpeedFloat = 100;
+                    Skull.ySpeedFloat = 100;
+                } else {
+                    Skull.xSpeedFloat = 60;
+                    Skull.ySpeedFloat = 140;
                 }
-                if (temp_x < Paddle.x + 2) {
-                    add_x_speed(96);
-                    subtract_y_speed(96);
-                } else if (!(temp_x < Paddle.x + 8)) {
-                    subtract_x_speed(64);
-                    add_y_speed(64);
-                }
+
             } else {
                 // Right side of Paddle
-                if (Skull.xDir == LEFT) {
-                    xCollisionDir = LEFT;
-                }
-                if (temp_x > Paddle.x + Paddle.width - 2) {
-                    add_x_speed(96);
-                    subtract_y_speed(96);
-                } else if (!(temp_x > Paddle.x + Paddle.width - 8)) {
-                    subtract_x_speed(64);
-                    add_y_speed(64);
+                if (temp_x >= Paddle.x + Paddle.width - 4) {
+                    if (Skull.xDir == LEFT) {
+                        xCollisionDir = LEFT;
+                    }
+                    Skull.xSpeedFloat = 140;
+                    Skull.ySpeedFloat = 60;
+                } else if (temp_x >= Paddle.x + Paddle.width - 8) {
+                    if (Skull.xDir == LEFT) {
+                        xCollisionDir = LEFT;
+                    }
+                    Skull.xSpeedFloat = 100;
+                    Skull.ySpeedFloat = 100;
+                } else {
+                    Skull.xSpeedFloat = 60;
+                    Skull.ySpeedFloat = 140;
                 }
             }
 
             if (temp_y < Paddle.y + Paddle.bbox_y + (Paddle.height >> 1)) {
                 yCollisionDir = DOWN;
-                while (is_paddle_skull_collision()) {
+                while (is_skull_collision_paddle()) {
                     --temp_y;
                     if (set_collision_data(temp_x, temp_y)) {
                         ++temp_y;
@@ -451,7 +483,7 @@ void check_paddle_collision() {
                 }
             } else {
                 yCollisionDir = UP;
-                while (is_paddle_skull_collision()) {
+                while (is_skull_collision_paddle()) {
                     ++temp_y;
                     if (set_collision_data(temp_x, temp_y)) {
                         --temp_y;
@@ -504,19 +536,36 @@ void check_main_input() {
 
 // not really decimal.... I know it's a mess...
 signed char get_x_speed() {
+    Skull.xSpeed = (Skull.xSpeedFloat >> 7);
     Skull.xRemain += Skull.xSpeedFloat & 0b01111111;  // MODULO 128
+    temp = 0;
+    temp2 = 0;
+
+    // Remain of Speed Float
     if (Skull.xRemain > 127) {
         Skull.xRemain &= 0b01111111;
-        return Skull.xDir;
+        temp = 1;
     }
+
+    // Velocity when paddle hits the skull, it sets xVelocity to 80
+    temp2 = Skull.xVelocity > 40 ? 1 : Skull.xVelocity % 2 ? 1 : 0;
+    if (Skull.xVelocity) {
+        --Skull.xVelocity;
+    }
+
+    return (Skull.xSpeed + temp + temp2) * Skull.xDir;
 }
 
 signed char get_y_speed() {
+    temp = 0;
+    Skull.ySpeed = (Skull.ySpeedFloat >> 7) * Skull.yDir;
     Skull.yRemain += Skull.ySpeedFloat & 0b01111111;  // MODULO 128
+
     if (Skull.yRemain > 127) {
         Skull.yRemain &= 0b01111111;
-        return Skull.yDir;
+        temp = Skull.yDir;
     }
+    return Skull.ySpeed + temp;
 }
 
 void update_skull() {
@@ -528,8 +577,8 @@ void update_skull() {
     is_soft_hit = FALSE;
 
     if (skull_launched) {
-        temp_x = Skull.x + Skull.xSpeed + get_x_speed();
-        temp_y = Skull.y + Skull.ySpeed + get_y_speed();
+        temp_x = Skull.x + get_x_speed();
+        temp_y = Skull.y + get_y_speed();
 
         // bbox of skull is 1, so we increment because it's faster
         ++temp_x;

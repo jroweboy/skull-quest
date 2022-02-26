@@ -1,0 +1,59 @@
+JANUARY 2022
+- Design forest level 
+
+FEBUARY 2022
+- Collision system
+
+MARCH 2022
+- Vertical paddle
+- Multiple paddles
+- Pause
+- Animation system
+- Character design
+
+APRIL 2022
+- Item selection
+- ITEM 
+    - bomb
+    - multiple skull
+    - magnet
+    - keys
+- Dungeon (Design - Level design - Ennemies - Boss - Music)
+
+MAY
+- Shop system??
+- Save state
+- Gameover Screen
+- Title Screen
+- Necromant tower (Design - Level design - Ennemies - Boss - Music)
+
+JUNE
+- Desert (Design - Level design - Ennemies - Boss - Music)
+- Boss Music
+
+JULY
+- Mountain / snow (Design - Level design - Ennemies - Boss - Music)
+
+AUGUST
+- LEVEL? (Design - Level design - Ennemies - Boss - Music)
+
+SEPTEMBER
+- Story system
+- Story Music
+- Story Design - Intro
+- Story Design - Ending
+- Dialog system
+- 2 Player Pong Game
+
+OCTOBER
+- Testing / Debugging
+
+PHYSICAL EDITION:
+- Manual Design
+- Box Art
+- Goodies
+- Burning ROMs
+- Ordering
+
+NOVEMBER
+- Kickstarter Campaign
