@@ -1,0 +1,2 @@
+- Skull glitch on corner Collision
+- Skull choose direction to launch??

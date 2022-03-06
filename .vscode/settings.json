@@ -1,7 +1,10 @@
 {
     "files.associations": {
         "skullquest.h": "c",
-        "master_colmaps.h": "c"
+        "master_colmaps.h": "c",
+        "title_screen.h": "c",
+        "level01.h": "c",
+        "master_collision.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

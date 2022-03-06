@@ -1,4 +1,4 @@
-The city of Xyleria was ruled by Zeltris, a dark and powerful wizard.
+The city of Xyleria was ruled by Kharzoid, a dark and powerful wizard.
 
 In is twisted imagination, he conceived a diabolical game, filled with traps and foes.
 
@@ -35,5 +35,5 @@ Shop:
     - Pay with mana sparks
 
 
-Multiple balls
+Multiple balls ??
 
