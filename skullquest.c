@@ -24,6 +24,7 @@
 #define TILE_HEART_FULL 0x5B
 #define TILE_HEART_EMPTY 0x5C
 #define COL_TYPE_SOFT 0x06
+#define COL_OFFSET 5
 
 #define UP -1
 #define DOWN 1
@@ -469,8 +470,12 @@ void do_skull_tile_collision() {
     }
 }
 
+char is_skull_beside() {
+    return (Skull.y + 1 < paddles[pad_index].y + 6) && (Skull.y + 7 > paddles[pad_index].y + 2);
+}
+
 char is_skull_collision_paddle() {
-    // Skull temp_x and temp_y already include the skull bbox
+    // Skull temp_x and temp_y already include the bbox
     return (temp_x < paddles[pad_index].x + paddles[pad_index].width + paddles[pad_index].bbox_x &&
             temp_x + Skull.width > paddles[pad_index].x + paddles[pad_index].bbox_x &&
             temp_y < paddles[pad_index].y + paddles[pad_index].height + paddles[pad_index].bbox_y &&
@@ -511,7 +516,7 @@ void move_horizontal_paddle() {
     // Hit the skull
     if ((pad1 & 0b00000011) && is_paddle_collision_skull()) {
         // If skull was beside the paddle when collision
-        if ((Skull.y + 1 < paddles[pad_index].y + 6) && (Skull.y + 7 > paddles[pad_index].y + 2)) {
+        if (is_skull_beside()) {
             Skull.xVelocity = 80;
         }
     }
@@ -526,59 +531,12 @@ void move_horizontal_paddle() {
 }
 
 void move_vertical_paddle() {
-    temp_x_col = paddles[pad_index].x + get_x_speed();
-    temp_y_col = paddles[pad_index].y + get_y_speed();
-
-    // Check wall collision:
-    if (paddles[pad_index].xDir == LEFT) {
-        while (get_collision_type()) {
-            ++temp_x_col;
-        }
-    } else {
-        temp_x_col += paddles[pad_index].width;
-        while (get_collision_type()) {
-            --temp_x_col;
-        }
-        temp_x_col -= paddles[pad_index].width;
-    }
-    if (paddles[pad_index].yDir == UP) {
-        while (get_collision_type()) {
-            ++temp_y_col;
-        }
-    } else {
-        temp_y_col += paddles[pad_index].height;
-        while (get_collision_type()) {
-            --temp_y_col;
-        }
-        temp_y_col -= paddles[pad_index].height;
-    }
-
-    // Everything's fine, update x, y
-    paddles[pad_index].x = temp_x_col;
-    paddles[pad_index].y = temp_y_col;
-
-    // Collision with skull
-    if (pad1 & 0b00000011 && is_paddle_collision_skull()) {
-        // If skull was beside the paddle when collision
-        if (Skull.y + 1 < paddles[pad_index].y + 6 && Skull.y + 7 > paddles[pad_index].y + 2) {
-            Skull.xVelocity = 80;
-        }
-    }
-
-    // FRICTION
-    if (paddles[pad_index].xSpeedFloat) {
-        subtract_x_speed(16);
-        --paddles[pad_index].xSpeedFloat;
-    }
-    if (paddles[pad_index].ySpeedFloat) {
-        subtract_y_speed(16);
-        --paddles[pad_index].ySpeedFloat;
-    }
+    // TODO
 }
 
 // Skull collision with paddle
-// paddle 0 is always on bottom, no need to check if skull is not in the zone
 void check_paddle_collision() {
+    // paddle 0 is always on bottom, no need to check if skull is not in the zone
     temp = FALSE;
     if (Skull.y > 127) {
         temp = TRUE;
@@ -620,10 +578,21 @@ void check_paddle_collision() {
                 }
             }
 
-            //
-            Skull.yDir = Skull.y < paddles[pad_index].y ? UP : DOWN;
+            // Going up or down?
+            if (Skull.y < paddles[pad_index].y) {
+                Skull.yDir = UP;
+                // if (!is_skull_beside()) {
+                //     temp_y = paddles[pad_index].y - Skull.height;
+                // }
+            } else {
+                Skull.yDir = DOWN;
+                // if (!is_skull_beside()) {
+                //     temp_y = paddles[pad_index].y + 4;
+                // }
+            }
         }
     }
+
     temp = FALSE;
     if (paddle_count > 2) {
         if (Skull.x < 127) {
@@ -635,7 +604,7 @@ void check_paddle_collision() {
         }
     }
     if (temp) {
-        // Check vertical paddles
+        // TODO Check vertical paddles
     }
 }
 
@@ -703,7 +672,7 @@ void update_skull() {
 
         temp_x = Skull.x + get_x_speed();
         temp_y = Skull.y + get_y_speed();
-        
+
         // bbox of skull is 1, so we increment because it's faster than addition
         ++temp_x;
         ++temp_y;
@@ -717,10 +686,7 @@ void update_skull() {
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.yDir = UP;
-                        while (get_collision_type()) {
-                            --temp_y;
-                            --temp_y_col;
-                        }
+                        temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
@@ -730,10 +696,7 @@ void update_skull() {
                     // Check right
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.xDir = LEFT;
-                        while (get_collision_type()) {
-                            --temp_x;
-                            --temp_x_col;
-                        }
+                        temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
                 } else {
@@ -741,13 +704,12 @@ void update_skull() {
                     temp_y_col += Skull.height;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            Skull.xDir = LEFT;
-                            // Skull.yDir = UP;
-                            while (get_collision_type()) {
-                                --temp_x;
-                                --temp_x_col;
-                                // --temp_y;
-                                // --temp_y_col;
+                            if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
+                                Skull.yDir = UP;
+                                temp_y -= temp_y % 8;
+                            } else {
+                                Skull.xDir = LEFT;
+                                temp_x -= temp_x % 8;
                             }
                         }
                         do_skull_tile_collision();
@@ -761,23 +723,18 @@ void update_skull() {
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.yDir = DOWN;
-                        while (get_collision_type()) {
-                            ++temp_y;
-                            ++temp_y_col;
-                        }
+                        temp_y += 8;
+                        temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
                 // Check right
-                temp_x_col += Skull.width;
+                temp_x_col = temp_x + Skull.width;
                 temp_y_col += Skull.height;
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.xDir = LEFT;
-                        while (get_collision_type()) {
-                            --temp_x;
-                            --temp_x_col;
-                        }
+                        temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
                 } else {
@@ -785,13 +742,13 @@ void update_skull() {
                     temp_y_col = temp_y;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            Skull.xDir = LEFT;
-                            // Skull.yDir = DOWN;
-                            while (get_collision_type()) {
-                                --temp_x;
-                                --temp_x_col;
-                                // ++temp_y;
-                                // ++temp_y_col;
+                            if (temp_y % 8 < COL_OFFSET && temp_x % 8 < 3) {
+                                Skull.xDir = LEFT;
+                                temp_x -= temp_x % 8;
+                            } else {
+                                Skull.yDir = DOWN;
+                                temp_y += 8;
+                                temp_y -= temp_y % 8;
                             }
                         }
                         do_skull_tile_collision();
@@ -807,10 +764,7 @@ void update_skull() {
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.yDir = UP;
-                        while (get_collision_type()) {
-                            --temp_y;
-                            --temp_y_col;
-                        }
+                        temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
@@ -820,24 +774,23 @@ void update_skull() {
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.xDir = RIGHT;
-                        while (get_collision_type()) {
-                            ++temp_x;
-                            ++temp_x_col;
-                        }
+                        temp_x += 8;
+                        temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
                 } else {
                     // Check down-left
+                    temp_x_col = temp_x;
                     temp_y_col += Skull.height;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            // Skull.xDir = RIGHT;
-                            Skull.yDir = UP;
-                            while (get_collision_type()) {
-                                // ++temp_x;
-                                // ++temp_x_col;
-                                --temp_y;
-                                --temp_y_col;
+                            if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
+                                Skull.yDir = UP;
+                                temp_y -= temp_y % 8;
+                            } else {
+                                Skull.xDir = RIGHT;
+                                temp_x += 8;
+                                temp_x -= temp_x % 8;
                             }
                         }
                         do_skull_tile_collision();
@@ -851,23 +804,19 @@ void update_skull() {
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.yDir = DOWN;
-                        while (get_collision_type()) {
-                            ++temp_y;
-                            ++temp_y_col;
-                        }
+                        temp_y += 8;
+                        temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
                 // Check left
                 temp_x_col = temp_x;
-                temp_y_col += Skull.height;
+                temp_y_col = temp_y + Skull.height;
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         Skull.xDir = RIGHT;
-                        while (get_collision_type()) {
-                            ++temp_x;
-                            ++temp_x_col;
-                        }
+                        temp_x += 8;
+                        temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
                 } else {
@@ -875,13 +824,15 @@ void update_skull() {
                     temp_y_col = temp_y;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            Skull.xDir = RIGHT;
-                            // Skull.yDir = DOWN;
-                            while (get_collision_type()) {
-                                ++temp_x;
-                                ++temp_x_col;
-                                // ++temp_y;
-                                // ++temp_y_col;
+                            if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
+                                Skull.xDir = RIGHT;
+                                temp_x += 8;
+                                temp_x -= temp_x % 8;
+
+                            } else {
+                                Skull.yDir = DOWN;
+                                temp_y += 8;
+                                temp_y -= temp_y % 8;
                             }
                         }
                         do_skull_tile_collision();
@@ -962,7 +913,7 @@ void main() {
             update_skull();
 
             draw_sprites();
-            // gray_line();
+            gray_line();
 
             // game_loop();
 

@@ -6,22 +6,25 @@ FEBUARY 2022
 
 MARCH 2022
 1:
-    - Vertical paddle
     x Multiple paddles
-    - Speedup paddle on B bouton pressed
+    x Optimization
 2: 
+    x Optimization
+    - Speedup paddle on B bouton pressed
+    - Vertical paddle
     - Pause (fade in out transition) - Animation system - Animating skull
 3: 
     - Forest level ennemies
 4:
     - Forest level design
+    - Trails & Particles
 
 APRIL 2022
 1- Forest boss design & AI 
 2- Forest music
 3- ITEMS
     - magnet
-    - multiple skulls
+    - multiple skulls?
     - bomb
     - keys
 4- Item selection and implementation
