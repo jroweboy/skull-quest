@@ -4,6 +4,7 @@
 // LEVEL NAMETABLES AND COLLISION
 #include "Collision/master_collision.h"
 #include "Nametable/Forest/level01.h"
+#include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
 #include "sprites.h"
 
@@ -16,7 +17,7 @@
 #define MILLIONS 1
 #define TEN_MILLIONS 0
 
-#define LEVEL_TOTAL 1
+#define LEVEL_TOTAL 2
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
 #define TILE_BACK 0x10
@@ -37,6 +38,9 @@
 #define PAUSE 3
 #define GAME_OVER 4
 
+#define SKULL 4
+#define PADDLE 0
+
 const unsigned char pal_forest_bg[16] = {
     0x0f, 0x15, 0x20, 0x09,  // GUID Palette
     0x0f, 0x29, 0x1a, 0x09,  // Grass Foliage
@@ -49,7 +53,8 @@ const char pal_spr_01[16] = {
 };
 
 const unsigned char* level_list[LEVEL_TOTAL * 3] = {
-    forest_level_01, forest_col_01, pal_forest_bg  // LEVEL 01
+    forest_level_01, forest_col_01, pal_forest_bg,  // LEVEL 01
+    forest_level_02, forest_col_02, pal_forest_bg   // LEVEL 02
 };
 
 static char exp[] = "00000000";
@@ -58,59 +63,41 @@ static unsigned char debug1, debug2;
 static unsigned char pad1;
 static unsigned char pad1_new;
 static unsigned char c_map[368];
+static unsigned char skull_index = 0;
 
 static int collision_index, backup_col_index, backup_nt_index;
 static unsigned char pad_index, temp_y_col, temp_x_col;
-static unsigned char i, temp, temp2, temp_x, temp_y, backup_col_type, skull_launched;
+static unsigned char i, z, temp, temp2, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health;
 static unsigned char p1_max_health;
-static unsigned char game_state, current_level, is_soft_hit, paddle_count;
+static unsigned char game_state, current_level, paddle_count;
 
+#define ACTOR_NUMBER 5
 typedef struct {
-    unsigned char x;
-    unsigned char y;
-    unsigned char width;
-    unsigned char height;
-    unsigned char bbox_x;
-    unsigned char bbox_y;
-    signed char xSpeed;
-    signed char ySpeed;
-    signed char xDir;
-    signed char yDir;
-    unsigned char xSpeedFloat;
-    unsigned char ySpeedFloat;
-    unsigned char xRemain;
-    unsigned char yRemain;
-    unsigned char xVelocity;
-    unsigned char yVelocity;
-    unsigned char minSpeed;
-    unsigned char maxSpeed;
-} Actor;
+    unsigned char x[ACTOR_NUMBER];
+    unsigned char y[ACTOR_NUMBER];
+    unsigned char width[ACTOR_NUMBER];
+    unsigned char height[ACTOR_NUMBER];
+    unsigned char bbox_x[ACTOR_NUMBER];
+    unsigned char bbox_y[ACTOR_NUMBER];
+    signed char xSpeed[ACTOR_NUMBER];
+    signed char ySpeed[ACTOR_NUMBER];
+    signed char xDir[ACTOR_NUMBER];
+    signed char yDir[ACTOR_NUMBER];
+    unsigned char xSpeedFloat[ACTOR_NUMBER];
+    unsigned char ySpeedFloat[ACTOR_NUMBER];
+    unsigned char xRemain[ACTOR_NUMBER];
+    unsigned char yRemain[ACTOR_NUMBER];
+    unsigned char xVelocity[ACTOR_NUMBER];
+    unsigned char yVelocity[ACTOR_NUMBER];
+    unsigned char minSpeed[ACTOR_NUMBER];
+    unsigned char maxSpeed[ACTOR_NUMBER];
+} Actors;
 
-Actor* actor;
-
-Actor paddles[4];
-
-Actor Skull = {
-    0xFF,   // x
-    0xFF,   // y
-    6,      // width
-    6,      // height
-    1,      // bbox_x
-    1,      // bbox_y
-    0,      // xSpeed
-    0,      // ySpeed
-    RIGHT,  // xDir
-    UP,     // yDir
-    100,    // xSpeedFloat
-    100,    // ySpeedFloat
-    0,      // xRemain
-    0,      // yRemain
-    0,      // xVelocity
-    0,      // yVelocity
-    64,     // minSpeed
-    250     // maxSpeed
-};
+// index 0 - 3 paddles
+// index 4 - 5 skulls
+// index 7 ... ennemies
+Actors actors;
 
 void update_health() {
     if (p1_health > 0) {
@@ -182,12 +169,21 @@ void load_paddles() {
     switch (current_level) {
         case 0:
             paddle_count = 2;
-            paddles[0].x = 0x75;
-            paddles[0].y = 0xCF;
-            paddles[1].x = 0x75;
-            paddles[1].y = 0x50;
+            actors.x[0] = 0x78;
+            actors.y[0] = 0xD0;
+            actors.x[1] = 0x78;
+            actors.y[1] = 0x50;
             break;
         case 1:
+            paddle_count = 4;
+            actors.x[0] = 0x70;  // 14
+            actors.y[0] = 0xD0;  // 26
+            actors.x[1] = 0x70;  // 14
+            actors.y[1] = 0x38;  // 7
+            actors.x[2] = 0x18;  // 3
+            actors.y[2] = 0x70;  // 14
+            actors.x[3] = 0xE0;  // 28
+            actors.y[3] = 0x70;  // 14
             break;
         case 2:
             break;
@@ -258,39 +254,62 @@ void load_paddles() {
     for (i = 0; i < paddle_count; ++i) {
         // The first 2 paddles are horizontal, the others vertical
         if (i < 2) {
-            paddles[i].width = 0x20;
-            paddles[i].height = 0x04;
-            paddles[i].bbox_x = 0x02;
-            paddles[i].bbox_y = 0x00;
+            actors.width[i] = 0x20;
+            actors.height[i] = 0x04;
+            actors.bbox_x[i] = 0x02;
+            actors.bbox_y[i] = 0x00;
         } else {
-            paddles[i].width = 0x04;
-            paddles[i].height = 0x20;
-            paddles[i].bbox_x = 0x00;
-            paddles[i].bbox_y = 0x02;
+            actors.width[i] = 0x04;
+            actors.height[i] = 0x20;
+            actors.bbox_x[i] = 0x00;
+            actors.bbox_y[i] = 0x02;
         }
-        paddles[i].xSpeed = 0;
-        paddles[i].ySpeed = 0;
-        paddles[i].xDir = 0;
-        paddles[i].yDir = 0;
-        paddles[i].xSpeedFloat = 0;
-        paddles[i].ySpeedFloat = 0;
-        paddles[i].xVelocity = 0;
-        paddles[i].yVelocity = 0;
-        paddles[i].minSpeed = 0;
-        paddles[i].maxSpeed = 250;
+        actors.xSpeed[i] = 0;
+        actors.ySpeed[i] = 0;
+        actors.xDir[i] = 0;
+        actors.yDir[i] = 0;
+        actors.xSpeedFloat[i] = 0;
+        actors.ySpeedFloat[i] = 0;
+        actors.xVelocity[i] = 0;
+        actors.yVelocity[i] = 0;
+        actors.minSpeed[i] = 0;
+        actors.maxSpeed[i] = 250;
     }
+}
+
+void init_skull() {
+    actors.x[SKULL] = 0xFF;
+    actors.y[SKULL] = 0xFF;
+    actors.width[SKULL] = 6;
+    actors.height[SKULL] = 6;
+    actors.bbox_x[SKULL] = 1;
+    actors.bbox_y[SKULL] = 1;
+    actors.xSpeed[SKULL] = 0;
+    actors.ySpeed[SKULL] = 0;
+    actors.xDir[SKULL] = RIGHT;
+    actors.yDir[SKULL] = UP;
+    actors.xSpeedFloat[SKULL] = 100;
+    actors.ySpeedFloat[SKULL] = 100;
+    actors.xRemain[SKULL] = 0;
+    actors.yRemain[SKULL] = 0;
+    actors.xVelocity[SKULL] = 0;
+    actors.yVelocity[SKULL] = 0;
+    actors.minSpeed[SKULL] = 64;
+    actors.maxSpeed[SKULL] = 250;
 }
 
 void load_level() {
     ppu_off();
 
     vram_adr(NAMETABLE_A);
-    vram_unrle(level_list[current_level]);
+    vram_unrle(level_list[current_level * 3]);
 
     // TODO: compress col data! and decompress here:
-    memcpy(c_map, level_list[current_level + 1], 368);
+    memcpy(c_map, level_list[current_level * 3 + 1], 368);
 
     load_paddles();
+
+    init_skull();
 
     ppu_on_all();
 
@@ -315,85 +334,84 @@ void remove_brick(char tile_type) {
 
 void hit_brick(char tile_type) {
     remove_brick(tile_type);
-    is_soft_hit = FALSE;
     // Play sound
     // Update score
     // Spawn random coin ??
 }
 
-// actor must be defined first
+// z index must be defined first
 // not really decimal.... I know it's a mess...
 signed char get_x_speed() {
-    actor->xSpeed = actor->xSpeedFloat >> 7;
-    actor->xRemain += actor->xSpeedFloat & 0b01111111;  // MODULO 128
+    actors.xSpeed[z] = actors.xSpeedFloat[z] >> 7;
+    actors.xRemain[z] += actors.xSpeedFloat[z] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
     // Remain of Speed Float
-    if (actor->xRemain > 127) {
-        actor->xRemain &= 0b01111111;
+    if (actors.xRemain[z] > 127) {
+        actors.xRemain[z] &= 0b01111111;
         temp = 1;
     }
 
     // Velocity. (For exemple: when paddle hits the skull, it sets xVelocity to 80)
-    temp2 = ((actor->xVelocity > 40) || (actor->xVelocity % 2)) ? 1 : 0;
+    temp2 = ((actors.xVelocity[z] > 40) || (actors.xVelocity[z] % 2)) ? 1 : 0;
 
-    if (actor->xVelocity) {
-        --actor->xVelocity;
+    if (actors.xVelocity[z]) {
+        --actors.xVelocity[z];
     }
 
-    return (actor->xSpeed + temp + temp2) * actor->xDir;
+    return (actors.xSpeed[z] + temp + temp2) * actors.xDir[z];
 }
 
 signed char get_y_speed() {
-    actor->ySpeed = actor->ySpeedFloat >> 7;
-    actor->yRemain += actor->ySpeedFloat & 0b01111111;  // MODULO 128
+    actors.ySpeed[z] = actors.ySpeedFloat[z] >> 7;
+    actors.yRemain[z] += actors.ySpeedFloat[z] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
-    if (actor->yRemain > 127) {
-        actor->yRemain &= 0b01111111;
+    if (actors.yRemain[z] > 127) {
+        actors.yRemain[z] &= 0b01111111;
         temp = 1;
     }
 
-    temp2 = ((actor->yVelocity > 40) || (actor->yVelocity % 2)) ? 1 : 0;
+    temp2 = ((actors.yVelocity[z] > 40) || (actors.yVelocity[z] % 2)) ? 1 : 0;
 
-    if (actor->yVelocity) {
-        --actor->yVelocity;
+    if (actors.yVelocity[z]) {
+        --actors.yVelocity[z];
     }
 
-    return (actor->ySpeed + temp + temp2) * actor->yDir;
+    return (actors.ySpeed[z] + temp + temp2) * actors.yDir[z];
 }
 
 void add_x_speed(unsigned char val) {
-    temp = actor->xSpeedFloat;
-    actor->xSpeedFloat += val;
-    if (actor->xSpeedFloat > actor->maxSpeed || actor->xSpeedFloat < temp) {
-        actor->xSpeedFloat = actor->maxSpeed;
+    temp = actors.xSpeedFloat[z];
+    actors.xSpeedFloat[z] += val;
+    if (actors.xSpeedFloat[z] > actors.maxSpeed[z] || actors.xSpeedFloat[z] < temp) {
+        actors.xSpeedFloat[z] = actors.maxSpeed[z];
     }
 }
 
 void subtract_x_speed(unsigned char val) {
-    temp = actor->xSpeedFloat;
-    actor->xSpeedFloat -= val;
-    if (actor->xSpeedFloat < actor->minSpeed || actor->xSpeedFloat > temp) {
-        actor->xSpeedFloat = actor->minSpeed;
+    temp = actors.xSpeedFloat[z];
+    actors.xSpeedFloat[z] -= val;
+    if (actors.xSpeedFloat[z] < actors.minSpeed[z] || actors.xSpeedFloat[z] > temp) {
+        actors.xSpeedFloat[z] = actors.minSpeed[z];
     }
 }
 
 void add_y_speed(unsigned char val) {
-    temp = actor->ySpeedFloat;
-    actor->ySpeedFloat += val;
-    if (actor->ySpeedFloat > actor->maxSpeed || actor->ySpeedFloat < temp) {
-        actor->ySpeedFloat = actor->maxSpeed;
+    temp = actors.ySpeedFloat[z];
+    actors.ySpeedFloat[z] += val;
+    if (actors.ySpeedFloat[z] > actors.maxSpeed[z] || actors.ySpeedFloat[z] < temp) {
+        actors.ySpeedFloat[z] = actors.maxSpeed[z];
     }
 }
 
 void subtract_y_speed(unsigned char val) {
-    temp = actor->ySpeedFloat;
-    actor->ySpeedFloat -= val;
-    if (actor->ySpeedFloat < actor->minSpeed || actor->ySpeedFloat > temp) {
-        actor->ySpeedFloat = actor->minSpeed;
+    temp = actors.ySpeedFloat[z];
+    actors.ySpeedFloat[z] -= val;
+    if (actors.ySpeedFloat[z] < actors.minSpeed[z] || actors.ySpeedFloat[z] > temp) {
+        actors.ySpeedFloat[z] = actors.minSpeed[z];
     }
 }
 
@@ -447,7 +465,6 @@ void do_skull_tile_collision() {
         case 0x06:
             // Foliage
             hit_brick(TILE_BACK_GRASS);
-            is_soft_hit = TRUE;
             break;
         case 0x07:
             break;
@@ -470,75 +487,114 @@ void do_skull_tile_collision() {
     }
 }
 
-char is_skull_beside() {
-    return (Skull.y + 1 < paddles[pad_index].y + 6) && (Skull.y + 7 > paddles[pad_index].y + 2);
+char is_skull_h_beside() {
+    return (actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
+}
+
+char is_skull_v_beside() {
+    return (actors.x[SKULL] + 7 > actors.x[pad_index] + 2) &&
+           (actors.x[SKULL] + 1 < actors.x[pad_index] + 6);
 }
 
 char is_skull_collision_paddle() {
     // Skull temp_x and temp_y already include the bbox
-    return (temp_x < paddles[pad_index].x + paddles[pad_index].width + paddles[pad_index].bbox_x &&
-            temp_x + Skull.width > paddles[pad_index].x + paddles[pad_index].bbox_x &&
-            temp_y < paddles[pad_index].y + paddles[pad_index].height + paddles[pad_index].bbox_y &&
-            temp_y + Skull.height > paddles[pad_index].y + paddles[pad_index].bbox_y);
+    return (temp_x < actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] &&
+            temp_x + actors.width[SKULL] > actors.x[pad_index] + actors.bbox_x[pad_index] &&
+            temp_y < actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index] &&
+            temp_y + actors.height[SKULL] > actors.y[pad_index] + actors.bbox_y[pad_index]);
 }
 
 // TODO Will probably have to merge with above function...
 char is_paddle_collision_skull() {
     // Skull bbox is hard-coded here
-    return (Skull.x + 7 > paddles[pad_index].x + paddles[pad_index].bbox_x &&
-            Skull.y + 7 > paddles[pad_index].y + paddles[pad_index].bbox_y &&
-            Skull.x + 1 < paddles[pad_index].x + paddles[pad_index].width + paddles[pad_index].bbox_x &&
-            Skull.y + 1 < paddles[pad_index].y + paddles[pad_index].height + paddles[pad_index].bbox_y);
+    return (actors.x[SKULL] + 7 > actors.x[pad_index] + actors.bbox_x[pad_index] &&
+            actors.y[SKULL] + 7 > actors.y[pad_index] + actors.bbox_y[pad_index] &&
+            actors.x[SKULL] + 1 < actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] &&
+            actors.y[SKULL] + 1 < actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index]);
 }
 
 // Paddle collision with wall and skull
 void move_horizontal_paddle() {
-    temp_x_col = paddles[pad_index].x;
-    temp_y_col = paddles[pad_index].y;
+    temp_x_col = actors.x[pad_index];
+    temp_y_col = actors.y[pad_index];
 
     // Check wall collision:
-    if (paddles[pad_index].xDir == LEFT) {
+    if (actors.xDir[pad_index] == LEFT) {
         --temp_x_col;
         if (get_collision_type()) {
             ++temp_x_col;
         } else {
-            temp_x_col = paddles[pad_index].x + get_x_speed();
+            temp_x_col = actors.x[pad_index] + get_x_speed();
         }
     } else {
-        temp_x_col += paddles[pad_index].width;
+        temp_x_col += actors.width[pad_index];
         if (get_collision_type()) {
-            temp_x_col = paddles[pad_index].x;
+            temp_x_col = actors.x[pad_index];
         } else {
-            temp_x_col = paddles[pad_index].x + get_x_speed();
+            temp_x_col = actors.x[pad_index] + get_x_speed();
         }
     }
 
     // Hit the skull
     if ((pad1 & 0b00000011) && is_paddle_collision_skull()) {
         // If skull was beside the paddle when collision
-        if (is_skull_beside()) {
-            Skull.xVelocity = 80;
+        if (is_skull_h_beside()) {
+            actors.xVelocity[SKULL] = 80;
         }
     }
 
     // Everything's fine, update x
-    paddles[pad_index].x = temp_x_col;
+    actors.x[pad_index] = temp_x_col;
 
     // FRICTION
-    if (paddles[pad_index].xSpeedFloat) {
+    if (actors.xSpeedFloat[pad_index]) {
         subtract_x_speed(16);
     }
 }
 
 void move_vertical_paddle() {
-    // TODO
+    temp_x_col = actors.x[pad_index];
+    temp_y_col = actors.y[pad_index];
+
+    // Check wall collision:
+    if (actors.yDir[pad_index] == UP) {
+        --temp_y_col;
+        if (get_collision_type()) {
+            ++temp_y_col;
+        } else {
+            temp_y_col = actors.y[pad_index] + get_y_speed();
+        }
+    } else {
+        temp_y_col += actors.height[pad_index];
+        if (get_collision_type()) {
+            temp_y_col = actors.y[pad_index];
+        } else {
+            temp_y_col = actors.y[pad_index] + get_y_speed();
+        }
+    }
+
+    // Hit the skull
+    if ((pad1 & 0b00001100) && is_paddle_collision_skull()) {
+        // If skull was beside the paddle when collision
+        if (is_skull_v_beside()) {
+            actors.yVelocity[SKULL] = 80;
+        }
+    }
+
+    // Everything's fine, update x
+    actors.y[pad_index] = temp_y_col;
+
+    // FRICTION
+    if (actors.ySpeedFloat[pad_index]) {
+        subtract_y_speed(16);
+    }
 }
 
 // Skull collision with paddle
 void check_paddle_collision() {
     // paddle 0 is always on bottom, no need to check if skull is not in the zone
     temp = FALSE;
-    if (Skull.y > 127) {
+    if (actors.y[SKULL] > 127) {
         temp = TRUE;
         pad_index = 0;
     } else if (paddle_count > 1) {
@@ -548,46 +604,46 @@ void check_paddle_collision() {
     if (temp) {
         if (is_skull_collision_paddle()) {
             // horizontal paddle
-            if (temp_x < paddles[pad_index].x + (paddles[pad_index].width >> 1)) {
+            if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
                 // We hit left side of Paddle
-                if (temp_x <= paddles[pad_index].x + 4) {
-                    Skull.xDir = LEFT;
-                    Skull.xSpeedFloat = 140;
-                    Skull.ySpeedFloat = 60;
-                } else if (temp_x <= paddles[pad_index].x + 8) {
-                    Skull.xDir = LEFT;
-                    Skull.xSpeedFloat = 100;
-                    Skull.ySpeedFloat = 100;
+                if (temp_x <= actors.x[pad_index] + 4) {
+                    actors.xDir[SKULL] = LEFT;
+                    actors.xSpeedFloat[SKULL] = 140;
+                    actors.ySpeedFloat[SKULL] = 60;
+                } else if (temp_x <= actors.x[pad_index] + 8) {
+                    actors.xDir[SKULL] = LEFT;
+                    actors.xSpeedFloat[SKULL] = 100;
+                    actors.ySpeedFloat[SKULL] = 100;
                 } else {
-                    Skull.xSpeedFloat = 60;
-                    Skull.ySpeedFloat = 140;
+                    actors.xSpeedFloat[SKULL] = 60;
+                    actors.ySpeedFloat[SKULL] = 140;
                 }
             } else {
                 // Right side of Paddle
-                if (temp_x >= paddles[pad_index].x + paddles[pad_index].width - 4) {
-                    Skull.xDir = RIGHT;
-                    Skull.xSpeedFloat = 140;
-                    Skull.ySpeedFloat = 60;
-                } else if (temp_x >= paddles[pad_index].x + paddles[pad_index].width - 8) {
-                    Skull.xDir = RIGHT;
-                    Skull.xSpeedFloat = 100;
-                    Skull.ySpeedFloat = 100;
+                if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
+                    actors.xDir[SKULL] = RIGHT;
+                    actors.xSpeedFloat[SKULL] = 140;
+                    actors.ySpeedFloat[SKULL] = 60;
+                } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+                    actors.xDir[SKULL] = RIGHT;
+                    actors.xSpeedFloat[SKULL] = 100;
+                    actors.ySpeedFloat[SKULL] = 100;
                 } else {
-                    Skull.xSpeedFloat = 60;
-                    Skull.ySpeedFloat = 140;
+                    actors.xSpeedFloat[SKULL] = 60;
+                    actors.ySpeedFloat[SKULL] = 140;
                 }
             }
 
-            // Going up or down?
-            if (Skull.y < paddles[pad_index].y) {
-                Skull.yDir = UP;
+            // Skull going up or down?
+            if (actors.y[SKULL] < actors.y[pad_index]) {
+                actors.yDir[SKULL] = UP;
                 // if (!is_skull_beside()) {
-                //     temp_y = paddles[pad_index].y - Skull.height;
+                //     temp_y = actors.y[pad_index] - actors.height[SKULL];
                 // }
             } else {
-                Skull.yDir = DOWN;
+                actors.yDir[SKULL] = DOWN;
                 // if (!is_skull_beside()) {
-                //     temp_y = paddles[pad_index].y + 4;
+                //     temp_y = actors.y[pad_index] + 4;
                 // }
             }
         }
@@ -595,7 +651,7 @@ void check_paddle_collision() {
 
     temp = FALSE;
     if (paddle_count > 2) {
-        if (Skull.x < 127) {
+        if (actors.x[SKULL] < 127) {
             temp = TRUE;
             pad_index = 2;
         } else if (paddle_count > 3) {
@@ -604,33 +660,77 @@ void check_paddle_collision() {
         }
     }
     if (temp) {
-        // TODO Check vertical paddles
+        if (is_skull_collision_paddle()) {
+            // vertical paddle
+            if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
+                // We hit upper side of Paddle
+                if (temp_y <= actors.y[pad_index] + 4) {
+                    actors.yDir[SKULL] = UP;
+                    actors.xSpeedFloat[SKULL] = 60;
+                    actors.ySpeedFloat[SKULL] = 140;
+                } else if (temp_x <= actors.x[pad_index] + 8) {
+                    actors.yDir[SKULL] = UP;
+                    actors.xSpeedFloat[SKULL] = 100;
+                    actors.ySpeedFloat[SKULL] = 100;
+                } else {
+                    actors.xSpeedFloat[SKULL] = 140;
+                    actors.ySpeedFloat[SKULL] = 60;
+                }
+            } else {
+                // Lower side of Paddle
+                if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
+                    actors.yDir[SKULL] = DOWN;
+                    actors.xSpeedFloat[SKULL] = 60;
+                    actors.ySpeedFloat[SKULL] = 140;
+                } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+                    actors.yDir[SKULL] = RIGHT;
+                    actors.xSpeedFloat[SKULL] = 100;
+                    actors.ySpeedFloat[SKULL] = 100;
+                } else {
+                    actors.xSpeedFloat[SKULL] = 140;
+                    actors.ySpeedFloat[SKULL] = 60;
+                }
+            }
+
+            // Skull going left or right?
+            if (actors.x[SKULL] < actors.x[pad_index]) {
+                actors.xDir[SKULL] = LEFT;
+                // if (!is_skull_beside()) {
+                //     temp_y = actors.y[pad_index] - actors.height[SKULL];
+                // }
+            } else {
+                actors.xDir[SKULL] = RIGHT;
+                // if (!is_skull_beside()) {
+                //     temp_y = actors.y[pad_index] + 4;
+                // }
+            }
+        }
     }
 }
 
 void check_main_input() {
     for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
-        actor = &paddles[pad_index];
+        z = pad_index;
         if (pad_index < 2) {
             // Horizontal paddle
             if (pad1 & PAD_LEFT) {
                 add_x_speed(80);
-                paddles[pad_index].xDir = LEFT;
+                actors.xDir[pad_index] = LEFT;
             }
             if (pad1 & PAD_RIGHT) {
                 add_x_speed(80);
-                paddles[pad_index].xDir = RIGHT;
+                actors.xDir[pad_index] = RIGHT;
             }
             move_horizontal_paddle();
         } else {
             // Vertical paddle
             if (pad1 & PAD_UP) {
                 add_y_speed(80);
-                paddles[pad_index].yDir = UP;
+                actors.yDir[pad_index] = UP;
             }
             if (pad1 & PAD_DOWN) {
                 add_y_speed(80);
-                paddles[pad_index].yDir = DOWN;
+                actors.yDir[pad_index] = DOWN;
             }
             move_vertical_paddle();
         }
@@ -638,14 +738,14 @@ void check_main_input() {
 
     if (pad1 & PAD_A) {
         if (skull_launched) {
-            // WHAT DOES BUTTON A DO?? WEAPON? SPEED_UP THE PADDLE?
+            // TODO SPEED_UP THE PADDLE
         } else {
             skull_launched = TRUE;
         }
     }
 
     if (pad1 & PAD_B) {
-        // WHAT DOES BUTTON B DO?? WEAPON? SPEED_UP THE PADDLE?
+        // TODO ITEM USE
     }
 
     if (pad1 & PAD_START) {
@@ -668,47 +768,47 @@ void update_skull() {
 
     if (skull_launched) {
         // Required for get_x_speed()
-        actor = &Skull;
+        z = SKULL;
 
-        temp_x = Skull.x + get_x_speed();
-        temp_y = Skull.y + get_y_speed();
+        temp_x = actors.x[SKULL] + get_x_speed();
+        temp_y = actors.y[SKULL] + get_y_speed();
 
         // bbox of skull is 1, so we increment because it's faster than addition
         ++temp_x;
         ++temp_y;
 
-        if (Skull.xDir == RIGHT) {
-            if (Skull.yDir == DOWN) {
+        if (actors.xDir[SKULL] == RIGHT) {
+            if (actors.yDir[SKULL] == DOWN) {
                 // Going DOWN RIGHT
                 // Check down
                 temp_x_col = temp_x;
-                temp_y_col = temp_y + Skull.height;
+                temp_y_col = temp_y + actors.height[SKULL];
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.yDir = UP;
+                        actors.yDir[SKULL] = UP;
                         temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
-                temp_x_col += Skull.width;
+                temp_x_col += actors.width[SKULL];
                 temp_y_col = temp_y;
                 if (set_collision_data()) {
                     // Check right
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.xDir = LEFT;
+                        actors.xDir[SKULL] = LEFT;
                         temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
                 } else {
                     // Check down-right
-                    temp_y_col += Skull.height;
+                    temp_y_col += actors.height[SKULL];
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
-                                Skull.yDir = UP;
+                                actors.yDir[SKULL] = UP;
                                 temp_y -= temp_y % 8;
                             } else {
-                                Skull.xDir = LEFT;
+                                actors.xDir[SKULL] = LEFT;
                                 temp_x -= temp_x % 8;
                             }
                         }
@@ -722,18 +822,18 @@ void update_skull() {
                 temp_y_col = temp_y;
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.yDir = DOWN;
+                        actors.yDir[SKULL] = DOWN;
                         temp_y += 8;
                         temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
                 }
                 // Check right
-                temp_x_col = temp_x + Skull.width;
-                temp_y_col += Skull.height;
+                temp_x_col = temp_x + actors.width[SKULL];
+                temp_y_col += actors.height[SKULL];
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.xDir = LEFT;
+                        actors.xDir[SKULL] = LEFT;
                         temp_x -= temp_x % 8;
                     }
                     do_skull_tile_collision();
@@ -743,10 +843,10 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             if (temp_y % 8 < COL_OFFSET && temp_x % 8 < 3) {
-                                Skull.xDir = LEFT;
+                                actors.xDir[SKULL] = LEFT;
                                 temp_x -= temp_x % 8;
                             } else {
-                                Skull.yDir = DOWN;
+                                actors.yDir[SKULL] = DOWN;
                                 temp_y += 8;
                                 temp_y -= temp_y % 8;
                             }
@@ -756,14 +856,14 @@ void update_skull() {
                 }
             }
         } else {
-            if (Skull.yDir == DOWN) {
+            if (actors.yDir[SKULL] == DOWN) {
                 // Going DOWN LEFT
                 // Check down
-                temp_x_col = temp_x + Skull.width;
-                temp_y_col = temp_y + Skull.height;
+                temp_x_col = temp_x + actors.width[SKULL];
+                temp_y_col = temp_y + actors.height[SKULL];
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.yDir = UP;
+                        actors.yDir[SKULL] = UP;
                         temp_y -= temp_y % 8;
                     }
                     do_skull_tile_collision();
@@ -773,7 +873,7 @@ void update_skull() {
                 temp_y_col = temp_y;
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.xDir = RIGHT;
+                        actors.xDir[SKULL] = RIGHT;
                         temp_x += 8;
                         temp_x -= temp_x % 8;
                     }
@@ -781,14 +881,14 @@ void update_skull() {
                 } else {
                     // Check down-left
                     temp_x_col = temp_x;
-                    temp_y_col += Skull.height;
+                    temp_y_col += actors.height[SKULL];
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
-                                Skull.yDir = UP;
+                                actors.yDir[SKULL] = UP;
                                 temp_y -= temp_y % 8;
                             } else {
-                                Skull.xDir = RIGHT;
+                                actors.xDir[SKULL] = RIGHT;
                                 temp_x += 8;
                                 temp_x -= temp_x % 8;
                             }
@@ -799,11 +899,11 @@ void update_skull() {
             } else {
                 // Going UP LEFT
                 // Check up
-                temp_x_col = temp_x + Skull.width;
+                temp_x_col = temp_x + actors.width[SKULL];
                 temp_y_col = temp_y;
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.yDir = DOWN;
+                        actors.yDir[SKULL] = DOWN;
                         temp_y += 8;
                         temp_y -= temp_y % 8;
                     }
@@ -811,10 +911,10 @@ void update_skull() {
                 }
                 // Check left
                 temp_x_col = temp_x;
-                temp_y_col = temp_y + Skull.height;
+                temp_y_col = temp_y + actors.height[SKULL];
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
-                        Skull.xDir = RIGHT;
+                        actors.xDir[SKULL] = RIGHT;
                         temp_x += 8;
                         temp_x -= temp_x % 8;
                     }
@@ -825,12 +925,12 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             if (temp_y % 8 < COL_OFFSET && temp_x % 8 > 3) {
-                                Skull.xDir = RIGHT;
+                                actors.xDir[SKULL] = RIGHT;
                                 temp_x += 8;
                                 temp_x -= temp_x % 8;
 
                             } else {
-                                Skull.yDir = DOWN;
+                                actors.yDir[SKULL] = DOWN;
                                 temp_y += 8;
                                 temp_y -= temp_y % 8;
                             }
@@ -848,13 +948,13 @@ void update_skull() {
         --temp_y;
     } else {
         // Skull not launched, follow the paddle
-        temp_x = paddles[0].x + (paddles[0].width >> 1) - (Skull.width >> 1);
-        temp_y = paddles[0].y + paddles[0].bbox_y - Skull.height - Skull.bbox_x;
+        temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
+        temp_y = actors.y[PADDLE] + actors.bbox_y[PADDLE] - actors.height[SKULL] - actors.bbox_x[SKULL];
     }
 
     // All is fine, we can update x and y
-    Skull.x = temp_x;
-    Skull.y = temp_y;
+    actors.x[SKULL] = temp_x;
+    actors.y[SKULL] = temp_y;
 }
 
 void draw_sprites(void) {
@@ -864,12 +964,12 @@ void draw_sprites(void) {
     // draw paddles
     for (i = 0; i < paddle_count; ++i) {
         if (i < 2) {
-            oam_meta_spr(paddles[i].x, paddles[i].y, HorizontalPaddleSpr);
+            oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
         } else {
-            oam_meta_spr(paddles[i].x, paddles[i].y, VerticalPaddleSpr);
+            oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
         }
     }
-    oam_spr(Skull.x, Skull.y, 0x00, 0b00000000);
+    oam_spr(actors.x[SKULL], actors.y[SKULL], 0x00, 0b00000000);
 }
 
 void main() {
@@ -895,7 +995,7 @@ void main() {
             pad1_new = get_pad_new(0);
             if (pad1_new & PAD_START) {
                 game_state = MAIN;
-                current_level = 0;
+                current_level = 1;
                 p1_health = 3;
                 p1_max_health = 3;
 

@@ -31,7 +31,9 @@
 	.import		_vram_unrle
 	.import		_memcpy
 	.export		_forest_col_01
+	.export		_forest_col_02
 	.export		_forest_level_01
+	.export		_forest_level_02
 	.export		_title_screen
 	.export		_HorizontalPaddleSpr
 	.export		_VerticalPaddleSpr
@@ -39,9 +41,7 @@
 	.export		_pal_forest_bg
 	.export		_pal_spr_01
 	.export		_level_list
-	.export		_actor
-	.export		_paddles
-	.export		_Skull
+	.export		_actors
 	.export		_update_health
 	.export		_update_xp
 	.export		_add_xp
@@ -62,7 +62,8 @@
 	.export		_get_collision_type
 	.export		_set_collision_data
 	.export		_do_skull_tile_collision
-	.export		_is_skull_beside
+	.export		_is_skull_h_beside
+	.export		_is_skull_v_beside
 	.export		_is_skull_collision_paddle
 	.export		_is_paddle_collision_skull
 	.export		_move_horizontal_paddle
@@ -79,27 +80,13 @@ _level_list:
 	.addr	_forest_level_01
 	.addr	_forest_col_01
 	.addr	_pal_forest_bg
+	.addr	_forest_level_02
+	.addr	_forest_col_02
+	.addr	_pal_forest_bg
 _exp:
 	.byte	$30,$30,$30,$30,$30,$30,$30,$30,$00
-_Skull:
-	.byte	$FF
-	.byte	$FF
-	.byte	$06
-	.byte	$06
-	.byte	$01
-	.byte	$01
+_skull_index:
 	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$FF
-	.byte	$64
-	.byte	$64
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$40
-	.byte	$FA
 
 .segment	"RODATA"
 
@@ -251,80 +238,48 @@ _forest_col_01:
 	.byte	$11
 	.byte	$11
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
+	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
+	.byte	$11
+	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
 	.byte	$11
 	.byte	$11
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
+	.byte	$34
 	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
 	.byte	$11
 	.byte	$11
 	.byte	$11
@@ -347,39 +302,6 @@ _forest_col_01:
 	.byte	$11
 	.byte	$11
 	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$11
-	.byte	$00
-	.byte	$00
 	.byte	$00
 	.byte	$00
 	.byte	$00
@@ -394,16 +316,33 @@ _forest_col_01:
 	.byte	$11
 	.byte	$11
 	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
+	.byte	$66
 	.byte	$00
 	.byte	$00
 	.byte	$11
@@ -412,14 +351,14 @@ _forest_col_01:
 	.byte	$11
 	.byte	$00
 	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
-	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
 	.byte	$00
 	.byte	$00
 	.byte	$11
@@ -439,6 +378,423 @@ _forest_col_01:
 	.byte	$00
 	.byte	$00
 	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$11
+	.byte	$11
+_forest_col_02:
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$22
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$11
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$50
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$05
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$05
+	.byte	$55
+	.byte	$55
+	.byte	$50
+	.byte	$50
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$50
+	.byte	$55
+	.byte	$55
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$50
+	.byte	$05
+	.byte	$50
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$50
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$00
+	.byte	$55
+	.byte	$55
+	.byte	$00
+	.byte	$50
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$50
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$66
+	.byte	$66
+	.byte	$00
+	.byte	$02
+	.byte	$11
+	.byte	$11
+	.byte	$20
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$02
 	.byte	$11
 	.byte	$11
 	.byte	$11
@@ -1064,6 +1420,610 @@ _forest_level_01:
 	.byte	$05
 	.byte	$01
 	.byte	$00
+_forest_level_02:
+	.byte	$06
+	.byte	$00
+	.byte	$06
+	.byte	$41
+	.byte	$5B
+	.byte	$06
+	.byte	$02
+	.byte	$5C
+	.byte	$06
+	.byte	$04
+	.byte	$00
+	.byte	$00
+	.byte	$30
+	.byte	$06
+	.byte	$07
+	.byte	$00
+	.byte	$00
+	.byte	$5D
+	.byte	$5E
+	.byte	$5F
+	.byte	$00
+	.byte	$00
+	.byte	$20
+	.byte	$30
+	.byte	$30
+	.byte	$00
+	.byte	$06
+	.byte	$18
+	.byte	$7E
+	.byte	$7F
+	.byte	$00
+	.byte	$06
+	.byte	$27
+	.byte	$05
+	.byte	$06
+	.byte	$1D
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$08
+	.byte	$09
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$0A
+	.byte	$0B
+	.byte	$08
+	.byte	$09
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$18
+	.byte	$19
+	.byte	$10
+	.byte	$06
+	.byte	$17
+	.byte	$18
+	.byte	$19
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$13
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$11
+	.byte	$06
+	.byte	$0B
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$10
+	.byte	$06
+	.byte	$0B
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$0B
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$06
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$10
+	.byte	$04
+	.byte	$10
+	.byte	$04
+	.byte	$06
+	.byte	$05
+	.byte	$10
+	.byte	$04
+	.byte	$10
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$10
+	.byte	$04
+	.byte	$06
+	.byte	$03
+	.byte	$10
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$01
+	.byte	$10
+	.byte	$04
+	.byte	$04
+	.byte	$10
+	.byte	$01
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$06
+	.byte	$07
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$04
+	.byte	$04
+	.byte	$06
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$04
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$04
+	.byte	$04
+	.byte	$06
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$04
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$05
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$10
+	.byte	$04
+	.byte	$10
+	.byte	$10
+	.byte	$04
+	.byte	$06
+	.byte	$03
+	.byte	$10
+	.byte	$10
+	.byte	$04
+	.byte	$10
+	.byte	$10
+	.byte	$11
+	.byte	$06
+	.byte	$04
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$04
+	.byte	$10
+	.byte	$06
+	.byte	$09
+	.byte	$04
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$10
+	.byte	$06
+	.byte	$0B
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$11
+	.byte	$11
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$10
+	.byte	$06
+	.byte	$0B
+	.byte	$02
+	.byte	$03
+	.byte	$02
+	.byte	$03
+	.byte	$11
+	.byte	$11
+	.byte	$10
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$0C
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$11
+	.byte	$06
+	.byte	$0B
+	.byte	$12
+	.byte	$13
+	.byte	$12
+	.byte	$13
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$0D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$1C
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$11
+	.byte	$06
+	.byte	$13
+	.byte	$10
+	.byte	$06
+	.byte	$02
+	.byte	$1D
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$08
+	.byte	$09
+	.byte	$10
+	.byte	$06
+	.byte	$17
+	.byte	$08
+	.byte	$09
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$18
+	.byte	$19
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$1A
+	.byte	$1B
+	.byte	$18
+	.byte	$19
+	.byte	$05
+	.byte	$00
+	.byte	$00
+	.byte	$05
+	.byte	$06
+	.byte	$1D
+	.byte	$00
+	.byte	$06
+	.byte	$28
+	.byte	$55
+	.byte	$F5
+	.byte	$06
+	.byte	$05
+	.byte	$55
+	.byte	$DD
+	.byte	$55
+	.byte	$15
+	.byte	$05
+	.byte	$05
+	.byte	$45
+	.byte	$55
+	.byte	$77
+	.byte	$DD
+	.byte	$55
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$44
+	.byte	$55
+	.byte	$77
+	.byte	$DD
+	.byte	$55
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$44
+	.byte	$55
+	.byte	$77
+	.byte	$DD
+	.byte	$55
+	.byte	$11
+	.byte	$00
+	.byte	$00
+	.byte	$44
+	.byte	$55
+	.byte	$77
+	.byte	$5D
+	.byte	$F5
+	.byte	$06
+	.byte	$05
+	.byte	$57
+	.byte	$05
+	.byte	$06
+	.byte	$06
+	.byte	$05
+	.byte	$06
+	.byte	$00
 _title_screen:
 	.byte	$01
 	.byte	$00
@@ -1240,6 +2200,8 @@ _temp_x_col:
 	.res	1,$00
 _i:
 	.res	1,$00
+_z:
+	.res	1,$00
 _temp:
 	.res	1,$00
 _temp2:
@@ -1260,14 +2222,10 @@ _game_state:
 	.res	1,$00
 _current_level:
 	.res	1,$00
-_is_soft_hit:
-	.res	1,$00
 _paddle_count:
 	.res	1,$00
-_actor:
-	.res	2,$00
-_paddles:
-	.res	72,$00
+_actors:
+	.res	90,$00
 
 ; ---------------------------------------------------------------
 ; void __near__ update_health (void)
@@ -1586,107 +2544,156 @@ L0008:	sta     ptr1
 ;
 ; }
 ;
-	jeq     L002D
+	jeq     L003F
 	cmp     #$01
-	jeq     L002E
+	jeq     L0040
 	cmp     #$02
-	jeq     L002E
+	jeq     L0041
 	cmp     #$03
-	jeq     L002E
+	jeq     L0041
 	cmp     #$04
-	jeq     L002E
+	jeq     L0041
 	cmp     #$05
-	jeq     L002E
+	jeq     L0041
 	cmp     #$06
-	jeq     L002E
+	jeq     L0041
 	cmp     #$07
-	jeq     L002E
+	jeq     L0041
 	cmp     #$08
-	jeq     L002E
+	jeq     L0041
 	cmp     #$09
-	jeq     L002E
+	jeq     L0041
 	cmp     #$0A
-	jeq     L002E
+	jeq     L0041
 	cmp     #$0B
-	beq     L002E
+	jeq     L0041
 	cmp     #$0C
-	beq     L002E
+	jeq     L0041
 	cmp     #$0D
-	beq     L002E
+	jeq     L0041
 	cmp     #$0E
-	beq     L002E
+	jeq     L0041
 	cmp     #$0F
-	beq     L002E
+	jeq     L0041
 	cmp     #$10
-	beq     L002E
+	jeq     L0041
 	cmp     #$11
-	beq     L002E
+	jeq     L0041
 	cmp     #$12
-	beq     L002E
+	jeq     L0041
 	cmp     #$13
-	beq     L002E
+	jeq     L0041
 	cmp     #$14
-	beq     L002E
+	jeq     L0041
 	cmp     #$15
-	beq     L002E
+	jeq     L0041
 	cmp     #$16
-	beq     L002E
+	beq     L0041
 	cmp     #$17
-	beq     L002E
+	beq     L0041
 	cmp     #$18
-	beq     L002E
+	beq     L0041
 	cmp     #$19
-	beq     L002E
+	beq     L0041
 	cmp     #$1A
-	beq     L002E
+	beq     L0041
 	cmp     #$1B
-	beq     L002E
+	beq     L0041
 	cmp     #$1C
-	beq     L002E
+	beq     L0041
 	cmp     #$1D
-	beq     L002E
+	beq     L0041
 	cmp     #$1E
-	beq     L002E
+	beq     L0041
 	cmp     #$1F
-	beq     L002E
+	beq     L0041
 	cmp     #$20
-	beq     L002E
+	beq     L0041
 	cmp     #$21
-	beq     L002E
-	jmp     L002E
+	beq     L0041
+	jmp     L0041
 ;
 ; paddle_count = 2;
 ;
-L002D:	lda     #$02
+L003F:	lda     #$02
 	sta     _paddle_count
 ;
-; paddles[0].x = 0x75;
+; actors.x[0] = 0x78;
 ;
-	lda     #$75
-	sta     _paddles
+	lda     #$78
+	sta     _actors
 ;
-; paddles[0].y = 0xCF;
+; actors.y[0] = 0xD0;
 ;
-	lda     #$CF
-	sta     _paddles+1
+	lda     #$D0
+	sta     _actors+5
 ;
-; paddles[1].x = 0x75;
+; actors.x[1] = 0x78;
 ;
-	lda     #$75
-	sta     _paddles+18
+	lda     #$78
+	sta     _actors+1
 ;
-; paddles[1].y = 0x50;
+; actors.y[1] = 0x50;
 ;
 	lda     #$50
-	sta     _paddles+19
+	sta     _actors+6
+;
+; break;
+;
+	jmp     L0041
+;
+; paddle_count = 4;
+;
+L0040:	lda     #$04
+	sta     _paddle_count
+;
+; actors.x[0] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors
+;
+; actors.y[0] = 0xD0;  // 26
+;
+	lda     #$D0
+	sta     _actors+5
+;
+; actors.x[1] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+1
+;
+; actors.y[1] = 0x38;  // 7
+;
+	lda     #$38
+	sta     _actors+6
+;
+; actors.x[2] = 0x18;  // 3
+;
+	lda     #$18
+	sta     _actors+2
+;
+; actors.y[2] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+7
+;
+; actors.x[3] = 0xE0;  // 28
+;
+	lda     #$E0
+	sta     _actors+3
+;
+; actors.y[3] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+8
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
-L002E:	lda     #$00
+L0041:	lda     #$00
 	sta     _i
-L002F:	lda     _i
+L0042:	lda     _i
 	cmp     _paddle_count
-	bcc     L0032
+	bcc     L0043
 ;
 ; }
 ;
@@ -1694,303 +2701,116 @@ L002F:	lda     _i
 ;
 ; if (i < 2) {
 ;
-L0032:	lda     _i
-	cmp     #$02
-	bcs     L0030
+L0043:	cmp     #$02
+	bcs     L002A
 ;
-; paddles[i].width = 0x20;
+; actors.width[i] = 0x20;
 ;
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$20
-	ldy     #$02
-	sta     (ptr1),y
+	sta     _actors+10,y
 ;
-; paddles[i].height = 0x04;
+; actors.height[i] = 0x04;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$04
-	ldy     #$03
-	sta     (ptr1),y
+	sta     _actors+15,y
 ;
-; paddles[i].bbox_x = 0x02;
+; actors.bbox_x[i] = 0x02;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$02
-	ldy     #$04
-	sta     (ptr1),y
+	sta     _actors+20,y
 ;
-; paddles[i].bbox_y = 0x00;
+; actors.bbox_y[i] = 0x00;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$00
 ;
 ; } else {
 ;
-	jmp     L0031
+	jmp     L003E
 ;
-; paddles[i].width = 0x04;
+; actors.width[i] = 0x04;
 ;
-L0030:	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+L002A:	ldy     _i
 	lda     #$04
-	ldy     #$02
-	sta     (ptr1),y
+	sta     _actors+10,y
 ;
-; paddles[i].height = 0x20;
+; actors.height[i] = 0x20;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$20
-	ldy     #$03
-	sta     (ptr1),y
+	sta     _actors+15,y
 ;
-; paddles[i].bbox_x = 0x00;
+; actors.bbox_x[i] = 0x00;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$00
-	ldy     #$04
-	sta     (ptr1),y
+	sta     _actors+20,y
 ;
-; paddles[i].bbox_y = 0x02;
+; actors.bbox_y[i] = 0x02;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$02
-L0031:	ldy     #$05
-	sta     (ptr1),y
+L003E:	sta     _actors+25,y
 ;
-; paddles[i].xSpeed = 0;
+; actors.xSpeed[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$00
-	ldy     #$06
-	sta     (ptr1),y
+	sta     _actors+30,y
 ;
-; paddles[i].ySpeed = 0;
+; actors.ySpeed[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$07
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+35,y
 ;
-; paddles[i].xDir = 0;
+; actors.xDir[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$08
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+40,y
 ;
-; paddles[i].yDir = 0;
+; actors.yDir[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$09
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+45,y
 ;
-; paddles[i].xSpeedFloat = 0;
+; actors.xSpeedFloat[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$0A
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+50,y
 ;
-; paddles[i].ySpeedFloat = 0;
+; actors.ySpeedFloat[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$0B
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+55,y
 ;
-; paddles[i].xVelocity = 0;
+; actors.xVelocity[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$0E
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+70,y
 ;
-; paddles[i].yVelocity = 0;
+; actors.yVelocity[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$0F
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+75,y
 ;
-; paddles[i].minSpeed = 0;
+; actors.minSpeed[i] = 0;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	lda     #$00
-	ldy     #$10
-	sta     (ptr1),y
+	ldy     _i
+	sta     _actors+80,y
 ;
-; paddles[i].maxSpeed = 250;
+; actors.maxSpeed[i] = 250;
 ;
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _i
 	lda     #$FA
-	ldy     #$11
-	sta     (ptr1),y
+	sta     _actors+85,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
 	inc     _i
-	jmp     L002F
+	jmp     L0042
 
 .endproc
 
@@ -2015,17 +2835,18 @@ L0031:	ldy     #$05
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_unrle(level_list[current_level]);
+; vram_unrle(level_list[current_level * 3]);
 ;
 	ldx     #$00
 	lda     _current_level
+	jsr     mulax3
+	stx     tmp1
 	asl     a
-	bcc     L0005
-	inx
+	rol     tmp1
 	clc
-L0005:	adc     #<(_level_list)
+	adc     #<(_level_list)
 	sta     ptr1
-	txa
+	lda     tmp1
 	adc     #>(_level_list)
 	sta     ptr1+1
 	ldy     #$01
@@ -2035,13 +2856,14 @@ L0005:	adc     #<(_level_list)
 	lda     (ptr1),y
 	jsr     _vram_unrle
 ;
-; memcpy(c_map, level_list[current_level + 1], 368);
+; memcpy(c_map, level_list[current_level * 3 + 1], 368);
 ;
 	lda     #<(_c_map)
 	ldx     #>(_c_map)
 	jsr     pushax
 	ldx     #$00
 	lda     _current_level
+	jsr     mulax3
 	clc
 	adc     #$01
 	bcc     L0002
@@ -2068,6 +2890,88 @@ L0002:	stx     tmp1
 ; load_paddles();
 ;
 	jsr     _load_paddles
+;
+; actors.x[SKULL] = 0xFF;
+;
+	lda     #$FF
+	sta     _actors+4
+;
+; actors.y[SKULL] = 0xFF;
+;
+	sta     _actors+9
+;
+; actors.width[SKULL] = 6;
+;
+	lda     #$06
+	sta     _actors+14
+;
+; actors.height[SKULL] = 6;
+;
+	sta     _actors+19
+;
+; actors.bbox_x[SKULL] = 1;
+;
+	lda     #$01
+	sta     _actors+24
+;
+; actors.bbox_y[SKULL] = 1;
+;
+	sta     _actors+29
+;
+; actors.xSpeed[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+34
+;
+; actors.ySpeed[SKULL] = 0;
+;
+	sta     _actors+39
+;
+; actors.xDir[SKULL] = RIGHT;
+;
+	lda     #$01
+	sta     _actors+44
+;
+; actors.yDir[SKULL] = UP;
+;
+	lda     #$FF
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 100;
+;
+	lda     #$64
+	sta     _actors+54
+;
+; actors.ySpeedFloat[SKULL] = 100;
+;
+	sta     _actors+59
+;
+; actors.xRemain[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+64
+;
+; actors.yRemain[SKULL] = 0;
+;
+	sta     _actors+69
+;
+; actors.xVelocity[SKULL] = 0;
+;
+	sta     _actors+74
+;
+; actors.yVelocity[SKULL] = 0;
+;
+	sta     _actors+79
+;
+; actors.minSpeed[SKULL] = 64;
+;
+	lda     #$40
+	sta     _actors+84
+;
+; actors.maxSpeed[SKULL] = 250;
+;
+	lda     #$FA
+	sta     _actors+89
 ;
 ; ppu_on_all();
 ;
@@ -2223,11 +3127,6 @@ L0003:	jsr     tosanda0
 	lda     (sp),y
 	jsr     _remove_brick
 ;
-; is_soft_hit = FALSE;
-;
-	lda     #$00
-	sta     _is_soft_hit
-;
 ; }
 ;
 	jmp     incsp1
@@ -2245,18 +3144,18 @@ L0003:	jsr     tosanda0
 .segment	"CODE"
 
 ;
-; actor->xSpeed = actor->xSpeedFloat >> 7;
+; actors.xSpeed[z] = actors.xSpeedFloat[z] >> 7;
 ;
-	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	lda     #<(_actors+30)
+	ldx     #>(_actors+30)
+	clc
+	adc     _z
+	bcc     L0002
+	inx
+L0002:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+50,y
 	lsr     a
 	lsr     a
 	lsr     a
@@ -2265,57 +3164,58 @@ L0003:	jsr     tosanda0
 	lsr     a
 	lsr     a
 	cmp     #$80
-	ldy     #$06
-	sta     (sreg),y
+	ldy     #$00
+	sta     (ptr1),y
 ;
-; actor->xRemain += actor->xSpeedFloat & 0b01111111;  // MODULO 128
+; actors.xRemain[z] += actors.xSpeedFloat[z] & 0b01111111;  // MODULO 128
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     ptr2
-	stx     ptr2+1
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _z
+	bcc     L0005
+	inx
+L0005:	sta     sreg
+	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
-	ldy     #$0C
 	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
 	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+50,y
 	and     #$7F
 	clc
-	adc     sreg
-	ldy     #$0C
-	sta     (ptr2),y
+	adc     ptr1
+	ldy     #$00
+	sta     (sreg),y
 ;
 ; temp = 0;
 ;
-	lda     #$00
+	tya
 	sta     _temp
 ;
 ; temp2 = 0;
 ;
 	sta     _temp2
 ;
-; if (actor->xRemain > 127) {
+; if (actors.xRemain[z] > 127) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+60,y
 	cmp     #$80
-	bcc     L0003
+	bcc     L0007
 ;
-; actor->xRemain &= 0b01111111;
+; actors.xRemain[z] &= 0b01111111;
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _z
+	bcc     L0009
+	inx
+L0009:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	and     #$7F
 	sta     (ptr1),y
@@ -2325,64 +3225,67 @@ L0003:	jsr     tosanda0
 	lda     #$01
 	sta     _temp
 ;
-; temp2 = ((actor->xVelocity > 40) || (actor->xVelocity % 2)) ? 1 : 0;
+; temp2 = ((actors.xVelocity[z] > 40) || (actors.xVelocity[z] % 2)) ? 1 : 0;
 ;
-L0003:	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0E
-	lda     (ptr1),y
+L0007:	ldy     _z
+	lda     _actors+70,y
 	cmp     #$29
-	bcs     L000E
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
+	bcs     L001A
+	ldy     _z
+	lda     _actors+70,y
 	and     #$01
+	beq     L001C
+L001A:	lda     #$01
+L001C:	sta     _temp2
+;
+; if (actors.xVelocity[z]) {
+;
+	ldy     _z
+	lda     _actors+70,y
 	beq     L0010
-L000E:	lda     #$01
-L0010:	sta     _temp2
 ;
-; if (actor->xVelocity) {
+; --actors.xVelocity[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	beq     L0008
-;
-; --actor->xVelocity;
-;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
+	lda     #<(_actors+70)
+	ldx     #>(_actors+70)
+	clc
+	adc     _z
+	bcc     L0012
+	inx
+L0012:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sec
 	sbc     #$01
 	sta     (ptr1),y
 ;
-; return (actor->xSpeed + temp + temp2) * actor->xDir;
+; return (actors.xSpeed[z] + temp + temp2) * actors.xDir[z];
 ;
-L0008:	lda     _actor
-	ldx     _actor+1
-	ldy     #$06
+L0010:	lda     #<(_actors+30)
+	ldx     #>(_actors+30)
+	clc
+	adc     _z
+	bcc     L0013
+	inx
+L0013:	ldy     #$00
 	jsr     ldaidx
 	clc
 	adc     _temp
-	bcc     L000D
+	bcc     L0019
 	inx
 	clc
-L000D:	adc     _temp2
-	bcc     L000B
+L0019:	adc     _temp2
+	bcc     L0017
 	inx
-L000B:	jsr     pushax
-	lda     _actor
-	ldx     _actor+1
-	ldy     #$08
+L0017:	jsr     pushax
+	lda     #<(_actors+40)
+	ldx     #>(_actors+40)
+	clc
+	adc     _z
+	bcc     L0014
+	inx
+L0014:	ldy     #$00
 	jsr     ldaidx
 	jsr     tosmulax
 	ldx     #$00
@@ -2407,18 +3310,18 @@ L0001:	rts
 .segment	"CODE"
 
 ;
-; actor->ySpeed = actor->ySpeedFloat >> 7;
+; actors.ySpeed[z] = actors.ySpeedFloat[z] >> 7;
 ;
-	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	lda     #<(_actors+35)
+	ldx     #>(_actors+35)
+	clc
+	adc     _z
+	bcc     L0002
+	inx
+L0002:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+55,y
 	lsr     a
 	lsr     a
 	lsr     a
@@ -2427,57 +3330,58 @@ L0001:	rts
 	lsr     a
 	lsr     a
 	cmp     #$80
-	ldy     #$07
-	sta     (sreg),y
+	ldy     #$00
+	sta     (ptr1),y
 ;
-; actor->yRemain += actor->ySpeedFloat & 0b01111111;  // MODULO 128
+; actors.yRemain[z] += actors.ySpeedFloat[z] & 0b01111111;  // MODULO 128
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     ptr2
-	stx     ptr2+1
+	lda     #<(_actors+65)
+	ldx     #>(_actors+65)
+	clc
+	adc     _z
+	bcc     L0005
+	inx
+L0005:	sta     sreg
+	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
-	ldy     #$0D
 	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
 	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+55,y
 	and     #$7F
 	clc
-	adc     sreg
-	ldy     #$0D
-	sta     (ptr2),y
+	adc     ptr1
+	ldy     #$00
+	sta     (sreg),y
 ;
 ; temp = 0;
 ;
-	lda     #$00
+	tya
 	sta     _temp
 ;
 ; temp2 = 0;
 ;
 	sta     _temp2
 ;
-; if (actor->yRemain > 127) {
+; if (actors.yRemain[z] > 127) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+65,y
 	cmp     #$80
-	bcc     L0003
+	bcc     L0007
 ;
-; actor->yRemain &= 0b01111111;
+; actors.yRemain[z] &= 0b01111111;
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
+	lda     #<(_actors+65)
+	ldx     #>(_actors+65)
+	clc
+	adc     _z
+	bcc     L0009
+	inx
+L0009:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	and     #$7F
 	sta     (ptr1),y
@@ -2487,64 +3391,67 @@ L0001:	rts
 	lda     #$01
 	sta     _temp
 ;
-; temp2 = ((actor->yVelocity > 40) || (actor->yVelocity % 2)) ? 1 : 0;
+; temp2 = ((actors.yVelocity[z] > 40) || (actors.yVelocity[z] % 2)) ? 1 : 0;
 ;
-L0003:	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0F
-	lda     (ptr1),y
+L0007:	ldy     _z
+	lda     _actors+75,y
 	cmp     #$29
-	bcs     L000E
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
+	bcs     L001A
+	ldy     _z
+	lda     _actors+75,y
 	and     #$01
+	beq     L001C
+L001A:	lda     #$01
+L001C:	sta     _temp2
+;
+; if (actors.yVelocity[z]) {
+;
+	ldy     _z
+	lda     _actors+75,y
 	beq     L0010
-L000E:	lda     #$01
-L0010:	sta     _temp2
 ;
-; if (actor->yVelocity) {
+; --actors.yVelocity[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	beq     L0008
-;
-; --actor->yVelocity;
-;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
+	lda     #<(_actors+75)
+	ldx     #>(_actors+75)
+	clc
+	adc     _z
+	bcc     L0012
+	inx
+L0012:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sec
 	sbc     #$01
 	sta     (ptr1),y
 ;
-; return (actor->ySpeed + temp + temp2) * actor->yDir;
+; return (actors.ySpeed[z] + temp + temp2) * actors.yDir[z];
 ;
-L0008:	lda     _actor
-	ldx     _actor+1
-	ldy     #$07
+L0010:	lda     #<(_actors+35)
+	ldx     #>(_actors+35)
+	clc
+	adc     _z
+	bcc     L0013
+	inx
+L0013:	ldy     #$00
 	jsr     ldaidx
 	clc
 	adc     _temp
-	bcc     L000D
+	bcc     L0019
 	inx
 	clc
-L000D:	adc     _temp2
-	bcc     L000B
+L0019:	adc     _temp2
+	bcc     L0017
 	inx
-L000B:	jsr     pushax
-	lda     _actor
-	ldx     _actor+1
-	ldy     #$09
+L0017:	jsr     pushax
+	lda     #<(_actors+45)
+	ldx     #>(_actors+45)
+	clc
+	adc     _z
+	bcc     L0014
+	inx
+L0014:	ldy     #$00
 	jsr     ldaidx
 	jsr     tosmulax
 	ldx     #$00
@@ -2573,76 +3480,63 @@ L0001:	rts
 ;
 	jsr     pusha
 ;
-; temp = actor->xSpeedFloat;
+; temp = actors.xSpeedFloat[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+50,y
 	sta     _temp
 ;
-; actor->xSpeedFloat += val;
+; actors.xSpeedFloat[z] += val;
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     sreg
+	lda     #<(_actors+50)
+	ldx     #>(_actors+50)
+	clc
+	adc     _z
+	bcc     L0003
+	inx
+L0003:	sta     sreg
 	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sta     ptr1
-	ldy     #$00
 	lda     (sp),y
 	clc
 	adc     ptr1
-	ldy     #$0A
 	sta     (sreg),y
 ;
-; if (actor->xSpeedFloat > actor->maxSpeed || actor->xSpeedFloat < temp) {
+; if (actors.xSpeedFloat[z] > actors.maxSpeed[z] || actors.xSpeedFloat[z] < temp) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$11
-	lda     (ptr1),y
-	cmp     sreg
-	bcc     L0006
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+50,y
+	ldy     _z
+	cmp     _actors+85,y
+	beq     L000D
+	bcs     L000E
+L000D:	ldy     _z
+	lda     _actors+50,y
 	cmp     _temp
-	bcs     L0002
+	bcs     L0004
 ;
-; actor->xSpeedFloat = actor->maxSpeed;
+; actors.xSpeedFloat[z] = actors.maxSpeed[z];
 ;
-L0006:	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$11
-	lda     (ptr1),y
-	ldy     #$0A
-	sta     (sreg),y
+L000E:	lda     #<(_actors+50)
+	ldx     #>(_actors+50)
+	clc
+	adc     _z
+	bcc     L000A
+	inx
+L000A:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+85,y
+	ldy     #$00
+	sta     (ptr1),y
 ;
 ; }
 ;
-L0002:	jmp     incsp1
+L0004:	jmp     incsp1
 
 .endproc
 
@@ -2661,76 +3555,60 @@ L0002:	jmp     incsp1
 ;
 	jsr     pusha
 ;
-; temp = actor->xSpeedFloat;
+; temp = actors.xSpeedFloat[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+50,y
 	sta     _temp
 ;
-; actor->xSpeedFloat -= val;
+; actors.xSpeedFloat[z] -= val;
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     sreg
+	lda     #<(_actors+50)
+	ldx     #>(_actors+50)
+	clc
+	adc     _z
+	bcc     L0003
+	inx
+L0003:	sta     sreg
 	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sec
-	ldy     #$00
 	sbc     (sp),y
-	ldy     #$0A
 	sta     (sreg),y
 ;
-; if (actor->xSpeedFloat < actor->minSpeed || actor->xSpeedFloat > temp) {
+; if (actors.xSpeedFloat[z] < actors.minSpeed[z] || actors.xSpeedFloat[z] > temp) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$10
-	lda     (ptr1),y
-	cmp     sreg
-	beq     L0005
-	bcs     L0008
-L0005:	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0A
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+50,y
+	ldy     _z
+	cmp     _actors+80,y
+	bcc     L000E
+	lda     _actors+50,y
 	cmp     _temp
-	beq     L0002
-	bcc     L0002
+	beq     L0004
+	bcc     L0004
 ;
-; actor->xSpeedFloat = actor->minSpeed;
+; actors.xSpeedFloat[z] = actors.minSpeed[z];
 ;
-L0008:	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$10
-	lda     (ptr1),y
-	ldy     #$0A
-	sta     (sreg),y
+L000E:	lda     #<(_actors+50)
+	ldx     #>(_actors+50)
+	clc
+	adc     _z
+	bcc     L000A
+	inx
+L000A:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+80,y
+	ldy     #$00
+	sta     (ptr1),y
 ;
 ; }
 ;
-L0002:	jmp     incsp1
+L0004:	jmp     incsp1
 
 .endproc
 
@@ -2749,76 +3627,63 @@ L0002:	jmp     incsp1
 ;
 	jsr     pusha
 ;
-; temp = actor->ySpeedFloat;
+; temp = actors.ySpeedFloat[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+55,y
 	sta     _temp
 ;
-; actor->ySpeedFloat += val;
+; actors.ySpeedFloat[z] += val;
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     sreg
+	lda     #<(_actors+55)
+	ldx     #>(_actors+55)
+	clc
+	adc     _z
+	bcc     L0003
+	inx
+L0003:	sta     sreg
 	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sta     ptr1
-	ldy     #$00
 	lda     (sp),y
 	clc
 	adc     ptr1
-	ldy     #$0B
 	sta     (sreg),y
 ;
-; if (actor->ySpeedFloat > actor->maxSpeed || actor->ySpeedFloat < temp) {
+; if (actors.ySpeedFloat[z] > actors.maxSpeed[z] || actors.ySpeedFloat[z] < temp) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$11
-	lda     (ptr1),y
-	cmp     sreg
-	bcc     L0006
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+55,y
+	ldy     _z
+	cmp     _actors+85,y
+	beq     L000D
+	bcs     L000E
+L000D:	ldy     _z
+	lda     _actors+55,y
 	cmp     _temp
-	bcs     L0002
+	bcs     L0004
 ;
-; actor->ySpeedFloat = actor->maxSpeed;
+; actors.ySpeedFloat[z] = actors.maxSpeed[z];
 ;
-L0006:	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$11
-	lda     (ptr1),y
-	ldy     #$0B
-	sta     (sreg),y
+L000E:	lda     #<(_actors+55)
+	ldx     #>(_actors+55)
+	clc
+	adc     _z
+	bcc     L000A
+	inx
+L000A:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+85,y
+	ldy     #$00
+	sta     (ptr1),y
 ;
 ; }
 ;
-L0002:	jmp     incsp1
+L0004:	jmp     incsp1
 
 .endproc
 
@@ -2837,76 +3702,60 @@ L0002:	jmp     incsp1
 ;
 	jsr     pusha
 ;
-; temp = actor->ySpeedFloat;
+; temp = actors.ySpeedFloat[z];
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+55,y
 	sta     _temp
 ;
-; actor->ySpeedFloat -= val;
+; actors.ySpeedFloat[z] -= val;
 ;
-	lda     _actor
-	ldx     _actor+1
-	sta     sreg
+	lda     #<(_actors+55)
+	ldx     #>(_actors+55)
+	clc
+	adc     _z
+	bcc     L0003
+	inx
+L0003:	sta     sreg
 	stx     sreg+1
 	sta     ptr1
 	stx     ptr1+1
+	ldy     #$00
 	lda     (ptr1),y
 	sec
-	ldy     #$00
 	sbc     (sp),y
-	ldy     #$0B
 	sta     (sreg),y
 ;
-; if (actor->ySpeedFloat < actor->minSpeed || actor->ySpeedFloat > temp) {
+; if (actors.ySpeedFloat[z] < actors.minSpeed[z] || actors.ySpeedFloat[z] > temp) {
 ;
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	lda     (ptr1),y
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$10
-	lda     (ptr1),y
-	cmp     sreg
-	beq     L0005
-	bcs     L0008
-L0005:	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$0B
-	lda     (ptr1),y
+	ldy     _z
+	lda     _actors+55,y
+	ldy     _z
+	cmp     _actors+80,y
+	bcc     L000E
+	lda     _actors+55,y
 	cmp     _temp
-	beq     L0002
-	bcc     L0002
+	beq     L0004
+	bcc     L0004
 ;
-; actor->ySpeedFloat = actor->minSpeed;
+; actors.ySpeedFloat[z] = actors.minSpeed[z];
 ;
-L0008:	lda     _actor+1
-	sta     sreg+1
-	lda     _actor
-	sta     sreg
-	lda     _actor+1
-	sta     ptr1+1
-	lda     _actor
-	sta     ptr1
-	ldy     #$10
-	lda     (ptr1),y
-	ldy     #$0B
-	sta     (sreg),y
+L000E:	lda     #<(_actors+55)
+	ldx     #>(_actors+55)
+	clc
+	adc     _z
+	bcc     L000A
+	inx
+L000A:	sta     ptr1
+	stx     ptr1+1
+	ldy     _z
+	lda     _actors+80,y
+	ldy     #$00
+	sta     (ptr1),y
 ;
 ; }
 ;
-L0002:	jmp     incsp1
+L0004:	jmp     incsp1
 
 .endproc
 
@@ -3098,15 +3947,8 @@ L001B:	cmp     #$08
 ; }
 ;
 L001C:	cmp     #$09
-	bne     L001D
-;
-; }
-;
-	rts
-;
-; }
-;
-L001D:	cmp     #$0A
+	beq     L0003
+	cmp     #$0A
 	beq     L0003
 	cmp     #$0B
 	beq     L0003
@@ -3197,16 +4039,7 @@ L0018:	lda     #$11
 ; hit_brick(TILE_BACK_GRASS);
 ;
 L0019:	lda     #$23
-	jsr     _hit_brick
-;
-; is_soft_hit = TRUE;
-;
-	lda     #$01
-	sta     _is_soft_hit
-;
-; break;
-;
-	rts
+	jmp     _hit_brick
 ;
 ; }
 ;
@@ -3215,75 +4048,116 @@ L0003:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; char __near__ is_skull_beside (void)
+; char __near__ is_skull_h_beside (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_is_skull_beside: near
+.proc	_is_skull_h_beside: near
 
 .segment	"CODE"
 
 ;
-; return (Skull.y + 1 < paddles[pad_index].y + 6) && (Skull.y + 7 > paddles[pad_index].y + 2);
+; return (actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
 ;
 	ldx     #$00
-	lda     _Skull+1
+	lda     _actors+9
 	clc
 	adc     #$01
 	bcc     L0002
 	inx
 L0002:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
+	ldy     _pad_index
 	ldx     #$00
-	lda     (ptr1),y
+	lda     _actors+5,y
 	clc
 	adc     #$06
-	bcc     L0003
+	bcc     L0004
 	inx
-L0003:	jsr     tosicmp
-	bpl     L0004
+L0004:	jsr     tosicmp
+	bpl     L0005
 	ldx     #$00
-	lda     _Skull+1
+	lda     _actors+9
 	clc
 	adc     #$07
-	bcc     L0005
-	inx
-L0005:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	ldx     #$00
-	lda     (ptr1),y
-	clc
-	adc     #$02
 	bcc     L0006
 	inx
-L0006:	jsr     tosicmp
-	beq     L0004
-	bpl     L0007
-L0004:	ldx     #$00
+L0006:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+5,y
+	clc
+	adc     #$02
+	bcc     L0008
+	inx
+L0008:	jsr     tosicmp
+	beq     L0005
+	bpl     L0009
+L0005:	ldx     #$00
 	txa
 	rts
-L0007:	lda     #$01
+L0009:	lda     #$01
+	ldx     #$00
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; char __near__ is_skull_v_beside (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_is_skull_v_beside: near
+
+.segment	"CODE"
+
+;
+; return (actors.x[SKULL] + 7 > actors.x[pad_index] + 2) &&
+;
+	ldx     #$00
+	lda     _actors+4
+	clc
+	adc     #$07
+	bcc     L0002
+	inx
+L0002:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors,y
+	clc
+	adc     #$02
+	bcc     L0004
+	inx
+L0004:	jsr     tosicmp
+	bmi     L0005
+	beq     L0005
+;
+; (actors.x[SKULL] + 1 < actors.x[pad_index] + 6);
+;
+	ldx     #$00
+	lda     _actors+4
+	clc
+	adc     #$01
+	bcc     L0006
+	inx
+L0006:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors,y
+	clc
+	adc     #$06
+	bcc     L0008
+	inx
+L0008:	jsr     tosicmp
+	bmi     L0009
+L0005:	ldx     #$00
+	txa
+	rts
+L0009:	lda     #$01
 	ldx     #$00
 ;
 ; }
@@ -3303,179 +4177,97 @@ L0007:	lda     #$01
 .segment	"CODE"
 
 ;
-; return (temp_x < paddles[pad_index].x + paddles[pad_index].width + paddles[pad_index].bbox_x &&
+; return (temp_x < actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] &&
 ;
 	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
+	ldy     _pad_index
+	lda     _actors+10,y
 	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0011
+	inx
+L0011:	sta     ptr1
+	stx     ptr1+1
+	ldy     _pad_index
+	lda     _actors+20,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$04
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	jpl     L0002
+	adc     ptr1
+	ldx     ptr1+1
+	bcc     L0012
+	inx
+L0012:	jsr     tosicmp
+	bpl     L0005
 ;
-; temp_x + Skull.width > paddles[pad_index].x + paddles[pad_index].bbox_x &&
+; temp_x + actors.width[SKULL] > actors.x[pad_index] + actors.bbox_x[pad_index] &&
 ;
 	ldx     #$00
 	lda     _temp_x
 	clc
-	adc     _Skull+2
-	bcc     L0005
+	adc     _actors+14
+	bcc     L000F
 	inx
-L0005:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
+L000F:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+20,y
 	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$04
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	jmi     L0002
-	jeq     L0002
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0013
+	inx
+L0013:	jsr     tosicmp
+	bmi     L0005
+	beq     L0005
 ;
-; temp_y < paddles[pad_index].y + paddles[pad_index].height + paddles[pad_index].bbox_y &&
+; temp_y < actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index] &&
 ;
 	lda     _temp_y
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	ldy     _pad_index
+	lda     _actors+15,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0014
+	inx
+L0014:	sta     ptr1
+	stx     ptr1+1
+	ldy     _pad_index
+	lda     _actors+25,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$03
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$05
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	bpl     L0002
+	adc     ptr1
+	ldx     ptr1+1
+	bcc     L0015
+	inx
+L0015:	jsr     tosicmp
+	bpl     L0005
 ;
-; temp_y + Skull.height > paddles[pad_index].y + paddles[pad_index].bbox_y);
+; temp_y + actors.height[SKULL] > actors.y[pad_index] + actors.bbox_y[pad_index]);
 ;
 	ldx     #$00
 	lda     _temp_y
 	clc
-	adc     _Skull+3
-	bcc     L0006
+	adc     _actors+19
+	bcc     L0010
 	inx
-L0006:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+L0010:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+25,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$05
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	beq     L0002
-	bpl     L0003
-L0002:	ldx     #$00
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0016
+	inx
+L0016:	jsr     tosicmp
+	beq     L0005
+	bpl     L000D
+L0005:	ldx     #$00
 	txa
 	rts
-L0003:	lda     #$01
+L000D:	lda     #$01
 	ldx     #$00
 ;
 ; }
@@ -3495,189 +4287,109 @@ L0003:	lda     #$01
 .segment	"CODE"
 
 ;
-; return (Skull.x + 7 > paddles[pad_index].x + paddles[pad_index].bbox_x &&
+; return (actors.x[SKULL] + 7 > actors.x[pad_index] + actors.bbox_x[pad_index] &&
 ;
 	ldx     #$00
-	lda     _Skull
+	lda     _actors+4
 	clc
 	adc     #$07
 	bcc     L0002
 	inx
 L0002:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+20,y
 	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$04
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	jmi     L0003
-	jeq     L0003
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0013
+	inx
+L0013:	jsr     tosicmp
+	jmi     L0005
+	jeq     L0005
 ;
-; Skull.y + 7 > paddles[pad_index].y + paddles[pad_index].bbox_y &&
+; actors.y[SKULL] + 7 > actors.y[pad_index] + actors.bbox_y[pad_index] &&
 ;
 	ldx     #$00
-	lda     _Skull+1
+	lda     _actors+9
 	clc
 	adc     #$07
-	bcc     L0004
-	inx
-L0004:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$05
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	jmi     L0003
-	jeq     L0003
-;
-; Skull.x + 1 < paddles[pad_index].x + paddles[pad_index].width + paddles[pad_index].bbox_x &&
-;
-	ldx     #$00
-	lda     _Skull
-	clc
-	adc     #$01
-	bcc     L0005
-	inx
-L0005:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$04
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	bpl     L0003
-;
-; Skull.y + 1 < paddles[pad_index].y + paddles[pad_index].height + paddles[pad_index].bbox_y);
-;
-	ldx     #$00
-	lda     _Skull+1
-	clc
-	adc     #$01
 	bcc     L0006
 	inx
 L0006:	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+25,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0014
+	inx
+L0014:	jsr     tosicmp
+	bmi     L0005
+	beq     L0005
+;
+; actors.x[SKULL] + 1 < actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] &&
+;
+	ldx     #$00
+	lda     _actors+4
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$03
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     pushax
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	adc     #$01
+	bcc     L0009
+	inx
+L0009:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+10,y
 	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$05
-	lda     (ptr1),y
-	jsr     tosadda0
-	jsr     tosicmp
-	bmi     L0007
-L0003:	ldx     #$00
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0015
+	inx
+L0015:	sta     ptr1
+	stx     ptr1+1
+	ldy     _pad_index
+	lda     _actors+20,y
+	clc
+	adc     ptr1
+	ldx     ptr1+1
+	bcc     L0016
+	inx
+L0016:	jsr     tosicmp
+	bpl     L0005
+;
+; actors.y[SKULL] + 1 < actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index]);
+;
+	ldx     #$00
+	lda     _actors+9
+	clc
+	adc     #$01
+	bcc     L000D
+	inx
+L000D:	jsr     pushax
+	ldy     _pad_index
+	ldx     #$00
+	lda     _actors+15,y
+	clc
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0017
+	inx
+L0017:	sta     ptr1
+	stx     ptr1+1
+	ldy     _pad_index
+	lda     _actors+25,y
+	clc
+	adc     ptr1
+	ldx     ptr1+1
+	bcc     L0018
+	inx
+L0018:	jsr     tosicmp
+	bmi     L0011
+L0005:	ldx     #$00
 	txa
 	rts
-L0007:	lda     #$01
+L0011:	lda     #$01
 	ldx     #$00
 ;
 ; }
@@ -3697,54 +4409,30 @@ L0007:	lda     #$01
 .segment	"CODE"
 
 ;
-; temp_x_col = paddles[pad_index].x;
+; temp_x_col = actors.x[pad_index];
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors,y
 	sta     _temp_x_col
 ;
-; temp_y_col = paddles[pad_index].y;
+; temp_y_col = actors.y[pad_index];
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors+5,y
 	sta     _temp_y_col
 ;
-; if (paddles[pad_index].xDir == LEFT) {
+; if (actors.xDir[pad_index] == LEFT) {
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
+	lda     #<(_actors+40)
+	ldx     #>(_actors+40)
 	clc
-	adc     #<(_paddles)
-	tay
-	txa
-	adc     #>(_paddles)
-	tax
-	tya
-	ldy     #$08
+	adc     _pad_index
+	bcc     L0005
+	inx
+L0005:	ldy     #$00
 	jsr     ldaidx
 	cmp     #$FF
-	bne     L0002
+	bne     L0004
 ;
 ; --temp_x_col;
 ;
@@ -3754,7 +4442,7 @@ L0007:	lda     #$01
 ;
 	jsr     _get_collision_type
 	tax
-	beq     L0010
+	beq     L000B
 ;
 ; ++temp_x_col;
 ;
@@ -3762,22 +4450,12 @@ L0007:	lda     #$01
 ;
 ; } else {
 ;
-	jmp     L0011
+	jmp     L0018
 ;
-; temp_x_col += paddles[pad_index].width;
+; temp_x_col += actors.width[pad_index];
 ;
-L0002:	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
+L0004:	ldy     _pad_index
+	lda     _actors+10,y
 	clc
 	adc     _temp_x_col
 	sta     _temp_x_col
@@ -3786,95 +4464,57 @@ L0002:	lda     _pad_index
 ;
 	jsr     _get_collision_type
 	tax
-	beq     L0010
+	beq     L000B
 ;
-; temp_x_col = paddles[pad_index].x;
+; temp_x_col = actors.x[pad_index];
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors,y
 ;
 ; } else {
 ;
-	jmp     L000E
+	jmp     L0017
 ;
-; temp_x_col = paddles[pad_index].x + get_x_speed();
+; temp_x_col = actors.x[pad_index] + get_x_speed();
 ;
-L0010:	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
+L000B:	ldy     _pad_index
+	lda     _actors,y
 	jsr     pusha0
 	jsr     _get_x_speed
 	jsr     tosaddax
-L000E:	sta     _temp_x_col
+L0017:	sta     _temp_x_col
 ;
 ; if ((pad1 & 0b00000011) && is_paddle_collision_skull()) {
 ;
-L0011:	lda     _pad1
+L0018:	lda     _pad1
 	and     #$03
-	beq     L0014
+	beq     L000F
 	jsr     _is_paddle_collision_skull
 	tax
-	beq     L0014
+	beq     L000F
 ;
-; if (is_skull_beside()) {
+; if (is_skull_h_beside()) {
 ;
-	jsr     _is_skull_beside
+	jsr     _is_skull_h_beside
 	tax
-	beq     L0014
+	beq     L000F
 ;
-; Skull.xVelocity = 80;
+; actors.xVelocity[SKULL] = 80;
 ;
 	lda     #$50
-	sta     _Skull+14
+	sta     _actors+74
 ;
-; paddles[pad_index].x = temp_x_col;
+; actors.x[pad_index] = temp_x_col;
 ;
-L0014:	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+L000F:	ldy     _pad_index
 	lda     _temp_x_col
-	ldy     #$00
-	sta     (ptr1),y
+	sta     _actors,y
 ;
-; if (paddles[pad_index].xSpeedFloat) {
+; if (actors.xSpeedFloat[pad_index]) {
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$0A
-	lda     (ptr1),y
-	beq     L000D
+	ldy     _pad_index
+	lda     _actors+50,y
+	beq     L0015
 ;
 ; subtract_x_speed(16);
 ;
@@ -3883,7 +4523,7 @@ L0014:	lda     _pad_index
 ;
 ; }
 ;
-L000D:	rts
+L0015:	rts
 
 .endproc
 
@@ -3898,9 +4538,121 @@ L000D:	rts
 .segment	"CODE"
 
 ;
+; temp_x_col = actors.x[pad_index];
+;
+	ldy     _pad_index
+	lda     _actors,y
+	sta     _temp_x_col
+;
+; temp_y_col = actors.y[pad_index];
+;
+	ldy     _pad_index
+	lda     _actors+5,y
+	sta     _temp_y_col
+;
+; if (actors.yDir[pad_index] == UP) {
+;
+	lda     #<(_actors+45)
+	ldx     #>(_actors+45)
+	clc
+	adc     _pad_index
+	bcc     L0005
+	inx
+L0005:	ldy     #$00
+	jsr     ldaidx
+	cmp     #$FF
+	bne     L0004
+;
+; --temp_y_col;
+;
+	dec     _temp_y_col
+;
+; if (get_collision_type()) {
+;
+	jsr     _get_collision_type
+	tax
+	beq     L000B
+;
+; ++temp_y_col;
+;
+	inc     _temp_y_col
+;
+; } else {
+;
+	jmp     L0018
+;
+; temp_y_col += actors.height[pad_index];
+;
+L0004:	ldy     _pad_index
+	lda     _actors+15,y
+	clc
+	adc     _temp_y_col
+	sta     _temp_y_col
+;
+; if (get_collision_type()) {
+;
+	jsr     _get_collision_type
+	tax
+	beq     L000B
+;
+; temp_y_col = actors.y[pad_index];
+;
+	ldy     _pad_index
+	lda     _actors+5,y
+;
+; } else {
+;
+	jmp     L0017
+;
+; temp_y_col = actors.y[pad_index] + get_y_speed();
+;
+L000B:	ldy     _pad_index
+	lda     _actors+5,y
+	jsr     pusha0
+	jsr     _get_y_speed
+	jsr     tosaddax
+L0017:	sta     _temp_y_col
+;
+; if ((pad1 & 0b00001100) && is_paddle_collision_skull()) {
+;
+L0018:	lda     _pad1
+	and     #$0C
+	beq     L000F
+	jsr     _is_paddle_collision_skull
+	tax
+	beq     L000F
+;
+; if (is_skull_v_beside()) {
+;
+	jsr     _is_skull_v_beside
+	tax
+	beq     L000F
+;
+; actors.yVelocity[SKULL] = 80;
+;
+	lda     #$50
+	sta     _actors+79
+;
+; actors.y[pad_index] = temp_y_col;
+;
+L000F:	ldy     _pad_index
+	lda     _temp_y_col
+	sta     _actors+5,y
+;
+; if (actors.ySpeedFloat[pad_index]) {
+;
+	ldy     _pad_index
+	lda     _actors+55,y
+	beq     L0015
+;
+; subtract_y_speed(16);
+;
+	lda     #$10
+	jmp     _subtract_y_speed
+;
 ; }
 ;
-	rts
+L0015:	rts
 
 .endproc
 
@@ -3920,11 +4672,11 @@ L000D:	rts
 	lda     #$00
 	sta     _temp
 ;
-; if (Skull.y > 127) {
+; if (actors.y[SKULL] > 127) {
 ;
-	lda     _Skull+1
+	lda     _actors+9
 	cmp     #$80
-	bcc     L0022
+	bcc     L004F
 ;
 ; temp = TRUE;
 ;
@@ -3937,18 +4689,10 @@ L000D:	rts
 ;
 ; } else if (paddle_count > 1) {
 ;
-	jmp     L001C
-L0022:	lda     _paddle_count
+	jmp     L0045
+L004F:	lda     _paddle_count
 	cmp     #$02
 	bcc     L0004
-;
-; one_vram_buffer(0x31, NTADR_A(1,1));
-;
-	lda     #$31
-	jsr     pusha
-	ldx     #$20
-	lda     #$21
-	jsr     _one_vram_buffer
 ;
 ; temp = TRUE;
 ;
@@ -3957,288 +4701,202 @@ L0022:	lda     _paddle_count
 ;
 ; pad_index = 1;
 ;
-L001C:	sta     _pad_index
+L0045:	sta     _pad_index
 ;
 ; if (temp) {
 ;
 L0004:	lda     _temp
-	jeq     L0024
+	jeq     L0052
 ;
 ; if (is_skull_collision_paddle()) {
 ;
 	jsr     _is_skull_collision_paddle
 	tax
-	jeq     L0024
+	jeq     L0052
 ;
-; if (temp_x < paddles[pad_index].x + (paddles[pad_index].width >> 1)) {
+; if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
 ;
 	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors+10,y
 	lsr     a
-	jsr     tosadda0
-	jsr     tosicmp
+	clc
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L003F
+	inx
+L003F:	jsr     tosicmp
 	bpl     L0007
 ;
-; if (temp_x <= paddles[pad_index].x + 4) {
+; if (temp_x <= actors.x[pad_index] + 4) {
 ;
 	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	ldx     #$00
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors,y
 	clc
 	adc     #$04
-	bcc     L0009
-	inx
-L0009:	jsr     tosicmp
-	beq     L0020
-	bpl     L0008
+	bcc     L000C
+	ldx     #$01
+L000C:	jsr     tosicmp
+	beq     L004B
+	bpl     L000A
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
-L0020:	lda     #$FF
-	sta     _Skull+8
+L004B:	lda     #$FF
+	sta     _actors+44
 ;
-; Skull.xSpeedFloat = 140;
+; actors.xSpeedFloat[SKULL] = 140;
 ;
 	lda     #$8C
-	sta     _Skull+10
+	sta     _actors+54
 ;
-; Skull.ySpeedFloat = 60;
+; actors.ySpeedFloat[SKULL] = 60;
 ;
 	lda     #$3C
 ;
-; } else if (temp_x <= paddles[pad_index].x + 8) {
+; } else if (temp_x <= actors.x[pad_index] + 8) {
 ;
-	jmp     L001D
-L0008:	lda     _temp_x
+	jmp     L0046
+L000A:	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	ldx     #$00
-	lda     (ptr1),y
+	ldy     _pad_index
+	lda     _actors,y
 	clc
 	adc     #$08
-	bcc     L000C
-	inx
-L000C:	jsr     tosicmp
-	beq     L0021
-	jpl     L0012
+	bcc     L0010
+	ldx     #$01
+L0010:	jsr     tosicmp
+	beq     L004C
+	bpl     L0018
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
-L0021:	lda     #$FF
-	sta     _Skull+8
+L004C:	lda     #$FF
+	sta     _actors+44
 ;
-; Skull.xSpeedFloat = 100;
+; actors.xSpeedFloat[SKULL] = 100;
 ;
 	lda     #$64
-	sta     _Skull+10
+	sta     _actors+54
 ;
 ; } else {
 ;
-	jmp     L001D
+	jmp     L0046
 ;
-; if (temp_x >= paddles[pad_index].x + paddles[pad_index].width - 4) {
+; if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
 ;
 L0007:	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
+	ldy     _pad_index
+	lda     _actors+10,y
 	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
-	jsr     tosadda0
-	sec
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0040
+	inx
+L0040:	sec
 	sbc     #$04
-	bcs     L0010
+	bcs     L0016
 	dex
-L0010:	jsr     tosicmp
-	bmi     L000F
+L0016:	jsr     tosicmp
+	bmi     L0013
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
-; Skull.xSpeedFloat = 140;
+; actors.xSpeedFloat[SKULL] = 140;
 ;
 	lda     #$8C
-	sta     _Skull+10
+	sta     _actors+54
 ;
-; Skull.ySpeedFloat = 60;
+; actors.ySpeedFloat[SKULL] = 60;
 ;
 	lda     #$3C
 ;
-; } else if (temp_x >= paddles[pad_index].x + paddles[pad_index].width - 8) {
+; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
 ;
-	jmp     L001D
-L000F:	lda     _temp_x
+	jmp     L0046
+L0013:	lda     _temp_x
 	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
+	ldy     _pad_index
+	lda     _actors+10,y
 	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$02
-	lda     (ptr1),y
-	jsr     tosadda0
-	sec
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0041
+	inx
+L0041:	sec
 	sbc     #$08
-	bcs     L0013
+	bcs     L001B
 	dex
-L0013:	jsr     tosicmp
-	bmi     L0012
+L001B:	jsr     tosicmp
+	bmi     L0018
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
-; Skull.xSpeedFloat = 100;
+; actors.xSpeedFloat[SKULL] = 100;
 ;
 	lda     #$64
-	sta     _Skull+10
+	sta     _actors+54
 ;
 ; } else {
 ;
-	jmp     L001D
+	jmp     L0046
 ;
-; Skull.xSpeedFloat = 60;
+; actors.xSpeedFloat[SKULL] = 60;
 ;
-L0012:	lda     #$3C
-	sta     _Skull+10
+L0018:	lda     #$3C
+	sta     _actors+54
 ;
-; Skull.ySpeedFloat = 140;
+; actors.ySpeedFloat[SKULL] = 140;
 ;
 	lda     #$8C
-L001D:	sta     _Skull+11
+L0046:	sta     _actors+59
 ;
-; if (Skull.y < paddles[pad_index].y) {
+; if (actors.y[SKULL] < actors.y[pad_index]) {
 ;
-	lda     _Skull+1
-	jsr     pusha0
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	jsr     tosicmp0
-	bcs     L0015
+	lda     _actors+9
+	ldy     _pad_index
+	cmp     _actors+5,y
+	bcs     L0050
 ;
-; Skull.yDir = UP;
+; actors.yDir[SKULL] = UP;
 ;
 	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L001E
+	jmp     L0047
 ;
-; Skull.yDir = DOWN;
+; actors.yDir[SKULL] = DOWN;
 ;
-L0015:	lda     #$01
-L001E:	sta     _Skull+9
+L0050:	lda     #$01
+L0047:	sta     _actors+49
 ;
 ; temp = FALSE;
 ;
 	lda     #$00
-L0024:	sta     _temp
+L0052:	sta     _temp
 ;
 ; if (paddle_count > 2) {
 ;
 	lda     _paddle_count
 	cmp     #$03
-	bcc     L001A
+	bcc     L0023
 ;
-; if (Skull.x < 127) {
+; if (actors.x[SKULL] < 127) {
 ;
-	lda     _Skull
+	lda     _actors+4
 	cmp     #$7F
-	bcs     L0025
+	bcs     L0053
 ;
 ; temp = TRUE;
 ;
@@ -4251,10 +4909,10 @@ L0024:	sta     _temp
 ;
 ; } else if (paddle_count > 3) {
 ;
-	jmp     L001F
-L0025:	lda     _paddle_count
+	jmp     L0048
+L0053:	lda     _paddle_count
 	cmp     #$04
-	bcc     L001A
+	bcc     L0023
 ;
 ; temp = TRUE;
 ;
@@ -4264,11 +4922,197 @@ L0025:	lda     _paddle_count
 ; pad_index = 3;
 ;
 	lda     #$03
-L001F:	sta     _pad_index
+L0048:	sta     _pad_index
+;
+; if (temp) {
+;
+L0023:	lda     _temp
+	bne     L0059
 ;
 ; }
 ;
-L001A:	rts
+	rts
+;
+; if (is_skull_collision_paddle()) {
+;
+L0059:	jsr     _is_skull_collision_paddle
+	tax
+	bne     L005A
+;
+; }
+;
+	rts
+;
+; if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
+;
+L005A:	lda     _temp_y
+	jsr     pusha0
+	ldy     _pad_index
+	lda     _actors+15,y
+	lsr     a
+	clc
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0042
+	inx
+L0042:	jsr     tosicmp
+	bpl     L0026
+;
+; if (temp_y <= actors.y[pad_index] + 4) {
+;
+	lda     _temp_y
+	jsr     pusha0
+	ldy     _pad_index
+	lda     _actors+5,y
+	clc
+	adc     #$04
+	bcc     L002B
+	ldx     #$01
+L002B:	jsr     tosicmp
+	beq     L004D
+	bpl     L0029
+;
+; actors.yDir[SKULL] = UP;
+;
+L004D:	lda     #$FF
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 60;
+;
+	lda     #$3C
+	sta     _actors+54
+;
+; actors.ySpeedFloat[SKULL] = 140;
+;
+	lda     #$8C
+;
+; } else if (temp_x <= actors.x[pad_index] + 8) {
+;
+	jmp     L0049
+L0029:	lda     _temp_x
+	jsr     pusha0
+	ldy     _pad_index
+	lda     _actors,y
+	clc
+	adc     #$08
+	bcc     L002F
+	ldx     #$01
+L002F:	jsr     tosicmp
+	beq     L004E
+	bpl     L0037
+;
+; actors.yDir[SKULL] = UP;
+;
+L004E:	lda     #$FF
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 100;
+;
+	lda     #$64
+	sta     _actors+54
+;
+; } else {
+;
+	jmp     L0049
+;
+; if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
+;
+L0026:	lda     _temp_y
+	jsr     pusha0
+	ldy     _pad_index
+	lda     _actors+15,y
+	clc
+	ldy     _pad_index
+	adc     _actors+5,y
+	bcc     L0043
+	inx
+L0043:	sec
+	sbc     #$04
+	bcs     L0035
+	dex
+L0035:	jsr     tosicmp
+	bmi     L0032
+;
+; actors.yDir[SKULL] = DOWN;
+;
+	lda     #$01
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 60;
+;
+	lda     #$3C
+	sta     _actors+54
+;
+; actors.ySpeedFloat[SKULL] = 140;
+;
+	lda     #$8C
+;
+; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+;
+	jmp     L0049
+L0032:	lda     _temp_x
+	jsr     pusha0
+	ldy     _pad_index
+	lda     _actors+10,y
+	clc
+	ldy     _pad_index
+	adc     _actors,y
+	bcc     L0044
+	inx
+L0044:	sec
+	sbc     #$08
+	bcs     L003A
+	dex
+L003A:	jsr     tosicmp
+	bmi     L0037
+;
+; actors.yDir[SKULL] = RIGHT;
+;
+	lda     #$01
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 100;
+;
+	lda     #$64
+	sta     _actors+54
+;
+; } else {
+;
+	jmp     L0049
+;
+; actors.xSpeedFloat[SKULL] = 140;
+;
+L0037:	lda     #$8C
+	sta     _actors+54
+;
+; actors.ySpeedFloat[SKULL] = 60;
+;
+	lda     #$3C
+L0049:	sta     _actors+59
+;
+; if (actors.x[SKULL] < actors.x[pad_index]) {
+;
+	lda     _actors+4
+	ldy     _pad_index
+	cmp     _actors,y
+	bcs     L0054
+;
+; actors.xDir[SKULL] = LEFT;
+;
+	lda     #$FF
+;
+; } else {
+;
+	jmp     L004A
+;
+; actors.xDir[SKULL] = RIGHT;
+;
+L0054:	lda     #$01
+L004A:	sta     _actors+44
+;
+; }
+;
+	rts
 
 .endproc
 
@@ -4287,86 +5131,57 @@ L001A:	rts
 ;
 	lda     #$00
 	sta     _pad_index
-L0012:	lda     _pad_index
+L0016:	lda     _pad_index
 	cmp     _paddle_count
-	jcs     L0016
+	bcs     L001A
 ;
-; actor = &paddles[pad_index];
+; z = pad_index;
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     _actor
-	txa
-	adc     #>(_paddles)
-	sta     _actor+1
+	sta     _z
 ;
 ; if (pad_index < 2) {
 ;
 	lda     _pad_index
 	cmp     #$02
-	bcs     L0014
+	bcs     L0018
 ;
 ; if (pad1 & PAD_LEFT) {
 ;
 	lda     _pad1
 	and     #$02
-	beq     L0013
+	beq     L0017
 ;
 ; add_x_speed(80);
 ;
 	lda     #$50
 	jsr     _add_x_speed
 ;
-; paddles[pad_index].xDir = LEFT;
+; actors.xDir[pad_index] = LEFT;
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _pad_index
 	lda     #$FF
-	ldy     #$08
-	sta     (ptr1),y
+	sta     _actors+40,y
 ;
 ; if (pad1 & PAD_RIGHT) {
 ;
-L0013:	lda     _pad1
+L0017:	lda     _pad1
 	and     #$01
-	beq     L0008
+	beq     L0009
 ;
 ; add_x_speed(80);
 ;
 	lda     #$50
 	jsr     _add_x_speed
 ;
-; paddles[pad_index].xDir = RIGHT;
+; actors.xDir[pad_index] = RIGHT;
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _pad_index
 	lda     #$01
-	ldy     #$08
-	sta     (ptr1),y
+	sta     _actors+40,y
 ;
 ; move_horizontal_paddle();
 ;
-L0008:	jsr     _move_horizontal_paddle
+L0009:	jsr     _move_horizontal_paddle
 ;
 ; } else {
 ;
@@ -4374,72 +5189,52 @@ L0008:	jsr     _move_horizontal_paddle
 ;
 ; if (pad1 & PAD_UP) {
 ;
-L0014:	lda     _pad1
+L0018:	lda     _pad1
 	and     #$08
-	beq     L0015
+	beq     L0019
 ;
 ; add_y_speed(80);
 ;
 	lda     #$50
 	jsr     _add_y_speed
 ;
-; paddles[pad_index].yDir = UP;
+; actors.yDir[pad_index] = UP;
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _pad_index
 	lda     #$FF
-	ldy     #$09
-	sta     (ptr1),y
+	sta     _actors+45,y
 ;
 ; if (pad1 & PAD_DOWN) {
 ;
-L0015:	lda     _pad1
+L0019:	lda     _pad1
 	and     #$04
-	beq     L000B
+	beq     L000E
 ;
 ; add_y_speed(80);
 ;
 	lda     #$50
 	jsr     _add_y_speed
 ;
-; paddles[pad_index].yDir = DOWN;
+; actors.yDir[pad_index] = DOWN;
 ;
-	lda     _pad_index
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
+	ldy     _pad_index
 	lda     #$01
-	ldy     #$09
-	sta     (ptr1),y
+	sta     _actors+45,y
 ;
 ; move_vertical_paddle();
 ;
-L000B:	jsr     _move_vertical_paddle
+L000E:	jsr     _move_vertical_paddle
 ;
 ; for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
 ;
 L0004:	inc     _pad_index
-	jmp     L0012
+	jmp     L0016
 ;
 ; if (pad1 & PAD_A) {
 ;
-L0016:	lda     _pad1
+L001A:	lda     _pad1
 	and     #$80
-	beq     L0017
+	beq     L001B
 ;
 ; if (skull_launched) {
 ;
@@ -4447,7 +5242,7 @@ L0016:	lda     _pad1
 ;
 ; } else {
 ;
-	bne     L0017
+	bne     L001B
 ;
 ; skull_launched = TRUE;
 ;
@@ -4456,7 +5251,7 @@ L0016:	lda     _pad1
 ;
 ; if (pad1 & PAD_B) {
 ;
-L0017:	lda     _pad1
+L001B:	lda     _pad1
 	ldx     #$00
 	and     #$40
 	stx     tmp1
@@ -4501,24 +5296,22 @@ L0017:	lda     _pad1
 	lda     _skull_launched
 	jeq     L0065
 ;
-; actor = &Skull;
+; z = SKULL;
 ;
-	lda     #>(_Skull)
-	sta     _actor+1
-	lda     #<(_Skull)
-	sta     _actor
+	lda     #$04
+	sta     _z
 ;
-; temp_x = Skull.x + get_x_speed();
+; temp_x = actors.x[SKULL] + get_x_speed();
 ;
-	lda     _Skull
+	lda     _actors+4
 	jsr     pusha0
 	jsr     _get_x_speed
 	jsr     tosaddax
 	sta     _temp_x
 ;
-; temp_y = Skull.y + get_y_speed();
+; temp_y = actors.y[SKULL] + get_y_speed();
 ;
-	lda     _Skull+1
+	lda     _actors+9
 	jsr     pusha0
 	jsr     _get_y_speed
 	jsr     tosaddax
@@ -4532,15 +5325,15 @@ L0017:	lda     _pad1
 ;
 	inc     _temp_y
 ;
-; if (Skull.xDir == RIGHT) {
+; if (actors.xDir[SKULL] == RIGHT) {
 ;
-	lda     _Skull+8
+	lda     _actors+44
 	cmp     #$01
 	jne     L0003
 ;
-; if (Skull.yDir == DOWN) {
+; if (actors.yDir[SKULL] == DOWN) {
 ;
-	lda     _Skull+9
+	lda     _actors+49
 	cmp     #$01
 	jne     L0005
 ;
@@ -4549,11 +5342,11 @@ L0017:	lda     _pad1
 	lda     _temp_x
 	sta     _temp_x_col
 ;
-; temp_y_col = temp_y + Skull.height;
+; temp_y_col = temp_y + actors.height[SKULL];
 ;
 	lda     _temp_y
 	clc
-	adc     _Skull+3
+	adc     _actors+19
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -4568,10 +5361,10 @@ L0017:	lda     _pad1
 	cmp     #$06
 	beq     L0008
 ;
-; Skull.yDir = UP;
+; actors.yDir[SKULL] = UP;
 ;
 	lda     #$FF
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y -= temp_y % 8;
 ;
@@ -4586,9 +5379,9 @@ L0017:	lda     _pad1
 ;
 L0008:	jsr     _do_skull_tile_collision
 ;
-; temp_x_col += Skull.width;
+; temp_x_col += actors.width[SKULL];
 ;
-L004D:	lda     _Skull+2
+L004D:	lda     _actors+14
 	clc
 	adc     _temp_x_col
 	sta     _temp_x_col
@@ -4610,10 +5403,10 @@ L004D:	lda     _Skull+2
 	cmp     #$06
 	jeq     L0043
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
 	lda     #$FF
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x -= temp_x % 8;
 ;
@@ -4628,9 +5421,9 @@ L004D:	lda     _Skull+2
 ;
 	jmp     L0043
 ;
-; temp_y_col += Skull.height;
+; temp_y_col += actors.height[SKULL];
 ;
-L004E:	lda     _Skull+3
+L004E:	lda     _actors+19
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -4666,10 +5459,10 @@ L000F:	bpl     L000E
 	eor     #$80
 L0011:	bpl     L000E
 ;
-; Skull.yDir = UP;
+; actors.yDir[SKULL] = UP;
 ;
 	lda     #$FF
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y -= temp_y % 8;
 ;
@@ -4679,10 +5472,10 @@ L0011:	bpl     L000E
 ;
 	jmp     L006B
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
 L000E:	lda     #$FF
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x -= temp_x % 8;
 ;
@@ -4719,10 +5512,10 @@ L0005:	lda     _temp_x
 	cmp     #$06
 	beq     L0017
 ;
-; Skull.yDir = DOWN;
+; actors.yDir[SKULL] = DOWN;
 ;
 	lda     #$01
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y += 8;
 ;
@@ -4743,16 +5536,16 @@ L0005:	lda     _temp_x
 ;
 L0017:	jsr     _do_skull_tile_collision
 ;
-; temp_x_col = temp_x + Skull.width;
+; temp_x_col = temp_x + actors.width[SKULL];
 ;
 L0052:	lda     _temp_x
 	clc
-	adc     _Skull+2
+	adc     _actors+14
 	sta     _temp_x_col
 ;
-; temp_y_col += Skull.height;
+; temp_y_col += actors.height[SKULL];
 ;
-	lda     _Skull+3
+	lda     _actors+19
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -4769,10 +5562,10 @@ L0052:	lda     _temp_x
 	cmp     #$06
 	jeq     L0043
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
 	lda     #$FF
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x -= temp_x % 8;
 ;
@@ -4823,10 +5616,10 @@ L001E:	jpl     L0063
 	eor     #$80
 L0020:	jpl     L0063
 ;
-; Skull.xDir = LEFT;
+; actors.xDir[SKULL] = LEFT;
 ;
 	lda     #$FF
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x -= temp_x % 8;
 ;
@@ -4841,24 +5634,24 @@ L0020:	jpl     L0063
 ;
 	jmp     L0043
 ;
-; if (Skull.yDir == DOWN) {
+; if (actors.yDir[SKULL] == DOWN) {
 ;
-L0003:	lda     _Skull+9
+L0003:	lda     _actors+49
 	cmp     #$01
 	jne     L0025
 ;
-; temp_x_col = temp_x + Skull.width;
+; temp_x_col = temp_x + actors.width[SKULL];
 ;
 	lda     _temp_x
 	clc
-	adc     _Skull+2
+	adc     _actors+14
 	sta     _temp_x_col
 ;
-; temp_y_col = temp_y + Skull.height;
+; temp_y_col = temp_y + actors.height[SKULL];
 ;
 	lda     _temp_y
 	clc
-	adc     _Skull+3
+	adc     _actors+19
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -4873,10 +5666,10 @@ L0003:	lda     _Skull+9
 	cmp     #$06
 	beq     L0028
 ;
-; Skull.yDir = UP;
+; actors.yDir[SKULL] = UP;
 ;
 	lda     #$FF
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y -= temp_y % 8;
 ;
@@ -4913,10 +5706,10 @@ L0058:	lda     _temp_x
 	cmp     #$06
 	jeq     L0043
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x += 8;
 ;
@@ -4942,9 +5735,9 @@ L0058:	lda     _temp_x
 L0059:	lda     _temp_x
 	sta     _temp_x_col
 ;
-; temp_y_col += Skull.height;
+; temp_y_col += actors.height[SKULL];
 ;
-	lda     _Skull+3
+	lda     _actors+19
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -4980,10 +5773,10 @@ L002F:	bpl     L005D
 	eor     #$80
 L0031:	bpl     L005D
 ;
-; Skull.yDir = UP;
+; actors.yDir[SKULL] = UP;
 ;
 	lda     #$FF
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y -= temp_y % 8;
 ;
@@ -4993,10 +5786,10 @@ L0031:	bpl     L005D
 ;
 	jmp     L006B
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 L005D:	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x += 8;
 ;
@@ -5017,11 +5810,11 @@ L005D:	lda     #$01
 ;
 	jmp     L0043
 ;
-; temp_x_col = temp_x + Skull.width;
+; temp_x_col = temp_x + actors.width[SKULL];
 ;
 L0025:	lda     _temp_x
 	clc
-	adc     _Skull+2
+	adc     _actors+14
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y;
@@ -5041,10 +5834,10 @@ L0025:	lda     _temp_x
 	cmp     #$06
 	beq     L0037
 ;
-; Skull.yDir = DOWN;
+; actors.yDir[SKULL] = DOWN;
 ;
 	lda     #$01
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y += 8;
 ;
@@ -5070,11 +5863,11 @@ L0037:	jsr     _do_skull_tile_collision
 L005E:	lda     _temp_x
 	sta     _temp_x_col
 ;
-; temp_y_col = temp_y + Skull.height;
+; temp_y_col = temp_y + actors.height[SKULL];
 ;
 	lda     _temp_y
 	clc
-	adc     _Skull+3
+	adc     _actors+19
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -5089,10 +5882,10 @@ L005E:	lda     _temp_x
 	cmp     #$06
 	jeq     L0043
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x += 8;
 ;
@@ -5149,10 +5942,10 @@ L003E:	bpl     L0063
 	eor     #$80
 L0040:	bpl     L0063
 ;
-; Skull.xDir = RIGHT;
+; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
-	sta     _Skull+8
+	sta     _actors+44
 ;
 ; temp_x += 8;
 ;
@@ -5173,10 +5966,10 @@ L0040:	bpl     L0063
 ;
 	jmp     L0043
 ;
-; Skull.yDir = DOWN;
+; actors.yDir[SKULL] = DOWN;
 ;
 L0063:	lda     #$01
-	sta     _Skull+9
+	sta     _actors+49
 ;
 ; temp_y += 8;
 ;
@@ -5213,40 +6006,40 @@ L003B:	jsr     _check_paddle_collision
 ;
 	jmp     L0066
 ;
-; temp_x = paddles[0].x + (paddles[0].width >> 1) - (Skull.width >> 1);
+; temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
 ;
-L0065:	lda     _paddles+2
+L0065:	lda     _actors+10
 	lsr     a
 	clc
-	adc     _paddles
+	adc     _actors
 	bcc     L004C
 	inx
 L004C:	jsr     pushax
-	lda     _Skull+2
+	lda     _actors+14
 	lsr     a
 	jsr     tossuba0
 	sta     _temp_x
 ;
-; temp_y = paddles[0].y + paddles[0].bbox_y - Skull.height - Skull.bbox_x;
+; temp_y = actors.y[PADDLE] + actors.bbox_y[PADDLE] - actors.height[SKULL] - actors.bbox_x[SKULL];
 ;
-	lda     _paddles+1
+	lda     _actors+5
 	clc
-	adc     _paddles+5
+	adc     _actors+25
 	sec
-	sbc     _Skull+3
+	sbc     _actors+19
 	sec
-	sbc     _Skull+4
+	sbc     _actors+24
 	sta     _temp_y
 ;
-; Skull.x = temp_x;
+; actors.x[SKULL] = temp_x;
 ;
 L0066:	lda     _temp_x
-	sta     _Skull
+	sta     _actors+4
 ;
-; Skull.y = temp_y;
+; actors.y[SKULL] = temp_y;
 ;
 	lda     _temp_y
-	sta     _Skull+1
+	sta     _actors+9
 ;
 ; }
 ;
@@ -5273,98 +6066,60 @@ L0066:	lda     _temp_x
 ;
 	lda     #$00
 	sta     _i
-L0009:	lda     _i
+L000D:	lda     _i
 	cmp     _paddle_count
-	jcs     L0003
+	bcs     L0003
 ;
 ; if (i < 2) {
 ;
 	cmp     #$02
 	bcs     L0006
 ;
-; oam_meta_spr(paddles[i].x, paddles[i].y, HorizontalPaddleSpr);
+; oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
 ;
 	jsr     decsp2
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
+	ldy     _i
+	lda     _actors,y
 	ldy     #$01
 	sta     (sp),y
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	dey
+	ldy     _i
+	lda     _actors+5,y
+	ldy     #$00
 	sta     (sp),y
 	lda     #<(_HorizontalPaddleSpr)
 	ldx     #>(_HorizontalPaddleSpr)
 ;
 ; } else {
 ;
-	jmp     L0008
+	jmp     L000C
 ;
-; oam_meta_spr(paddles[i].x, paddles[i].y, VerticalPaddleSpr);
+; oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
 ;
 L0006:	jsr     decsp2
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	sta     ptr1
-	txa
-	clc
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #<(_paddles)
-	lda     (ptr1),y
+	ldy     _i
+	lda     _actors,y
 	ldy     #$01
 	sta     (sp),y
-	lda     _i
-	jsr     pusha0
-	lda     #$12
-	jsr     tosmula0
-	clc
-	adc     #<(_paddles)
-	sta     ptr1
-	txa
-	adc     #>(_paddles)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	dey
+	ldy     _i
+	lda     _actors+5,y
+	ldy     #$00
 	sta     (sp),y
 	lda     #<(_VerticalPaddleSpr)
 	ldx     #>(_VerticalPaddleSpr)
-L0008:	jsr     _oam_meta_spr
+L000C:	jsr     _oam_meta_spr
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
 	inc     _i
-	jmp     L0009
+	jmp     L000D
 ;
-; oam_spr(Skull.x, Skull.y, 0x00, 0b00000000);
+; oam_spr(actors.x[SKULL], actors.y[SKULL], 0x00, 0b00000000);
 ;
 L0003:	jsr     decsp3
-	lda     _Skull
+	lda     _actors+4
 	ldy     #$02
 	sta     (sp),y
-	lda     _Skull+1
+	lda     _actors+9
 	dey
 	sta     (sp),y
 	lda     #$00
@@ -5436,9 +6191,8 @@ L0005:	jsr     _ppu_wait_nmi
 	lda     #$01
 	sta     _game_state
 ;
-; current_level = 0;
+; current_level = 1;
 ;
-	lda     #$00
 	sta     _current_level
 ;
 ; p1_health = 3;
