@@ -1,0 +1,9 @@
+Press A
+    - Launch the skull
+    - Boost the paddle speed
+    - Confirm, skip dialog
+
+Press B
+    - Use item
+    - Cancel ??
+    

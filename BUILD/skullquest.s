@@ -15,7 +15,6 @@
 	.import		_one_vram_buffer
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
-	.import		_gray_line
 	.import		_pal_bg
 	.import		_pal_spr
 	.import		_ppu_wait_nmi
@@ -49,6 +48,7 @@
 	.export		_show_title_screen
 	.export		_show_game_over
 	.export		_load_paddles
+	.export		_init_skull
 	.export		_load_level
 	.export		_load_title_screen
 	.export		_remove_brick
@@ -1424,36 +1424,7 @@ _forest_level_02:
 	.byte	$06
 	.byte	$00
 	.byte	$06
-	.byte	$41
-	.byte	$5B
-	.byte	$06
-	.byte	$02
-	.byte	$5C
-	.byte	$06
-	.byte	$04
-	.byte	$00
-	.byte	$00
-	.byte	$30
-	.byte	$06
-	.byte	$07
-	.byte	$00
-	.byte	$00
-	.byte	$5D
-	.byte	$5E
-	.byte	$5F
-	.byte	$00
-	.byte	$00
-	.byte	$20
-	.byte	$30
-	.byte	$30
-	.byte	$00
-	.byte	$06
-	.byte	$18
-	.byte	$7E
-	.byte	$7F
-	.byte	$00
-	.byte	$06
-	.byte	$27
+	.byte	$A0
 	.byte	$05
 	.byte	$06
 	.byte	$1D
@@ -2704,28 +2675,28 @@ L0042:	lda     _i
 L0043:	cmp     #$02
 	bcs     L002A
 ;
-; actors.width[i] = 0x20;
+; actors.width[i] = 0x20;   // 32
 ;
 	ldy     _i
 	lda     #$20
 	sta     _actors+10,y
 ;
-; actors.height[i] = 0x04;
+; actors.height[i] = 0x04;  // 4
 ;
 	ldy     _i
 	lda     #$04
 	sta     _actors+15,y
 ;
-; actors.bbox_x[i] = 0x02;
-;
-	ldy     _i
-	lda     #$02
-	sta     _actors+20,y
-;
-; actors.bbox_y[i] = 0x00;
+; actors.bbox_x[i] = 0x00;  // 2
 ;
 	ldy     _i
 	lda     #$00
+	sta     _actors+20,y
+;
+; actors.bbox_y[i] = 0x02;
+;
+	ldy     _i
+	lda     #$02
 ;
 ; } else {
 ;
@@ -2743,16 +2714,16 @@ L002A:	ldy     _i
 	lda     #$20
 	sta     _actors+15,y
 ;
-; actors.bbox_x[i] = 0x00;
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+20,y
-;
-; actors.bbox_y[i] = 0x02;
+; actors.bbox_x[i] = 0x02;
 ;
 	ldy     _i
 	lda     #$02
+	sta     _actors+20,y
+;
+; actors.bbox_y[i] = 0x00;
+;
+	ldy     _i
+	lda     #$00
 L003E:	sta     _actors+25,y
 ;
 ; actors.xSpeed[i] = 0;
@@ -2811,6 +2782,105 @@ L003E:	sta     _actors+25,y
 ;
 	inc     _i
 	jmp     L0042
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ init_skull (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_init_skull: near
+
+.segment	"CODE"
+
+;
+; actors.x[SKULL] = 0xFF;
+;
+	lda     #$FF
+	sta     _actors+4
+;
+; actors.y[SKULL] = 0xFF;
+;
+	sta     _actors+9
+;
+; actors.width[SKULL] = 6;
+;
+	lda     #$06
+	sta     _actors+14
+;
+; actors.height[SKULL] = 6;
+;
+	sta     _actors+19
+;
+; actors.bbox_x[SKULL] = 1;
+;
+	lda     #$01
+	sta     _actors+24
+;
+; actors.bbox_y[SKULL] = 1;
+;
+	sta     _actors+29
+;
+; actors.xSpeed[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+34
+;
+; actors.ySpeed[SKULL] = 0;
+;
+	sta     _actors+39
+;
+; actors.xDir[SKULL] = RIGHT;
+;
+	lda     #$01
+	sta     _actors+44
+;
+; actors.yDir[SKULL] = UP;
+;
+	lda     #$FF
+	sta     _actors+49
+;
+; actors.xSpeedFloat[SKULL] = 80;
+;
+	lda     #$50
+	sta     _actors+54
+;
+; actors.ySpeedFloat[SKULL] = 80;
+;
+	sta     _actors+59
+;
+; actors.xRemain[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+64
+;
+; actors.yRemain[SKULL] = 0;
+;
+	sta     _actors+69
+;
+; actors.xVelocity[SKULL] = 0;
+;
+	sta     _actors+74
+;
+; actors.yVelocity[SKULL] = 0;
+;
+	sta     _actors+79
+;
+; actors.minSpeed[SKULL] = 64;
+;
+	lda     #$40
+	sta     _actors+84
+;
+; actors.maxSpeed[SKULL] = 250;
+;
+	lda     #$FA
+	sta     _actors+89
+;
+; }
+;
+	rts
 
 .endproc
 
@@ -2891,87 +2961,9 @@ L0002:	stx     tmp1
 ;
 	jsr     _load_paddles
 ;
-; actors.x[SKULL] = 0xFF;
+; init_skull();
 ;
-	lda     #$FF
-	sta     _actors+4
-;
-; actors.y[SKULL] = 0xFF;
-;
-	sta     _actors+9
-;
-; actors.width[SKULL] = 6;
-;
-	lda     #$06
-	sta     _actors+14
-;
-; actors.height[SKULL] = 6;
-;
-	sta     _actors+19
-;
-; actors.bbox_x[SKULL] = 1;
-;
-	lda     #$01
-	sta     _actors+24
-;
-; actors.bbox_y[SKULL] = 1;
-;
-	sta     _actors+29
-;
-; actors.xSpeed[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+34
-;
-; actors.ySpeed[SKULL] = 0;
-;
-	sta     _actors+39
-;
-; actors.xDir[SKULL] = RIGHT;
-;
-	lda     #$01
-	sta     _actors+44
-;
-; actors.yDir[SKULL] = UP;
-;
-	lda     #$FF
-	sta     _actors+49
-;
-; actors.xSpeedFloat[SKULL] = 100;
-;
-	lda     #$64
-	sta     _actors+54
-;
-; actors.ySpeedFloat[SKULL] = 100;
-;
-	sta     _actors+59
-;
-; actors.xRemain[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+64
-;
-; actors.yRemain[SKULL] = 0;
-;
-	sta     _actors+69
-;
-; actors.xVelocity[SKULL] = 0;
-;
-	sta     _actors+74
-;
-; actors.yVelocity[SKULL] = 0;
-;
-	sta     _actors+79
-;
-; actors.minSpeed[SKULL] = 64;
-;
-	lda     #$40
-	sta     _actors+84
-;
-; actors.maxSpeed[SKULL] = 250;
-;
-	lda     #$FA
-	sta     _actors+89
+	jsr     _init_skull
 ;
 ; ppu_on_all();
 ;
@@ -4058,7 +4050,7 @@ L0003:	rts
 .segment	"CODE"
 
 ;
-; return (actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
+; return !(actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
 ;
 	ldx     #$00
 	lda     _actors+9
@@ -4074,9 +4066,9 @@ L0002:	jsr     pushax
 	adc     #$06
 	bcc     L0004
 	inx
-L0004:	jsr     tosicmp
-	bpl     L0005
-	ldx     #$00
+L0004:	jsr     tosltax
+	tax
+	bne     L0005
 	lda     _actors+9
 	clc
 	adc     #$07
@@ -4116,12 +4108,12 @@ L0009:	lda     #$01
 .segment	"CODE"
 
 ;
-; return (actors.x[SKULL] + 7 > actors.x[pad_index] + 2) &&
+; return !(actors.x[SKULL] + 1 < actors.x[pad_index] + 6) && (actors.x[SKULL] + 7 > actors.x[pad_index] + 2);
 ;
 	ldx     #$00
 	lda     _actors+4
 	clc
-	adc     #$07
+	adc     #$01
 	bcc     L0002
 	inx
 L0002:	jsr     pushax
@@ -4129,19 +4121,15 @@ L0002:	jsr     pushax
 	ldx     #$00
 	lda     _actors,y
 	clc
-	adc     #$02
+	adc     #$06
 	bcc     L0004
 	inx
-L0004:	jsr     tosicmp
-	bmi     L0005
-	beq     L0005
-;
-; (actors.x[SKULL] + 1 < actors.x[pad_index] + 6);
-;
-	ldx     #$00
+L0004:	jsr     tosltax
+	tax
+	bne     L0005
 	lda     _actors+4
 	clc
-	adc     #$01
+	adc     #$07
 	bcc     L0006
 	inx
 L0006:	jsr     pushax
@@ -4149,11 +4137,12 @@ L0006:	jsr     pushax
 	ldx     #$00
 	lda     _actors,y
 	clc
-	adc     #$06
+	adc     #$02
 	bcc     L0008
 	inx
 L0008:	jsr     tosicmp
-	bmi     L0009
+	beq     L0005
+	bpl     L0009
 L0005:	ldx     #$00
 	txa
 	rts
@@ -4450,7 +4439,7 @@ L0005:	ldy     #$00
 ;
 ; } else {
 ;
-	jmp     L0018
+	jmp     L000D
 ;
 ; temp_x_col += actors.width[pad_index];
 ;
@@ -4473,7 +4462,7 @@ L0004:	ldy     _pad_index
 ;
 ; } else {
 ;
-	jmp     L0017
+	jmp     L0018
 ;
 ; temp_x_col = actors.x[pad_index] + get_x_speed();
 ;
@@ -4482,27 +4471,31 @@ L000B:	ldy     _pad_index
 	jsr     pusha0
 	jsr     _get_x_speed
 	jsr     tosaddax
-L0017:	sta     _temp_x_col
+L0018:	sta     _temp_x_col
 ;
-; if ((pad1 & 0b00000011) && is_paddle_collision_skull()) {
+; if (is_paddle_collision_skull()) {
 ;
-L0018:	lda     _pad1
-	and     #$03
-	beq     L000F
-	jsr     _is_paddle_collision_skull
+L000D:	jsr     _is_paddle_collision_skull
 	tax
 	beq     L000F
 ;
-; if (is_skull_h_beside()) {
+; if ((pad1 & 0b00000011) && is_skull_h_beside()) {
 ;
+	lda     _pad1
+	and     #$03
+	beq     L0014
 	jsr     _is_skull_h_beside
 	tax
-	beq     L000F
+	beq     L0014
 ;
-; actors.xVelocity[SKULL] = 80;
+; actors.xVelocity[SKULL] = 60;
 ;
-	lda     #$50
+	lda     #$3C
 	sta     _actors+74
+;
+; } else {
+;
+	jmp     L0014
 ;
 ; actors.x[pad_index] = temp_x_col;
 ;
@@ -4512,9 +4505,9 @@ L000F:	ldy     _pad_index
 ;
 ; if (actors.xSpeedFloat[pad_index]) {
 ;
-	ldy     _pad_index
+L0014:	ldy     _pad_index
 	lda     _actors+50,y
-	beq     L0015
+	beq     L0016
 ;
 ; subtract_x_speed(16);
 ;
@@ -4523,7 +4516,7 @@ L000F:	ldy     _pad_index
 ;
 ; }
 ;
-L0015:	rts
+L0016:	rts
 
 .endproc
 
@@ -4579,7 +4572,7 @@ L0005:	ldy     #$00
 ;
 ; } else {
 ;
-	jmp     L0018
+	jmp     L000D
 ;
 ; temp_y_col += actors.height[pad_index];
 ;
@@ -4602,7 +4595,7 @@ L0004:	ldy     _pad_index
 ;
 ; } else {
 ;
-	jmp     L0017
+	jmp     L0018
 ;
 ; temp_y_col = actors.y[pad_index] + get_y_speed();
 ;
@@ -4611,27 +4604,31 @@ L000B:	ldy     _pad_index
 	jsr     pusha0
 	jsr     _get_y_speed
 	jsr     tosaddax
-L0017:	sta     _temp_y_col
+L0018:	sta     _temp_y_col
 ;
-; if ((pad1 & 0b00001100) && is_paddle_collision_skull()) {
+; if (is_paddle_collision_skull()) {
 ;
-L0018:	lda     _pad1
-	and     #$0C
-	beq     L000F
-	jsr     _is_paddle_collision_skull
+L000D:	jsr     _is_paddle_collision_skull
 	tax
 	beq     L000F
 ;
-; if (is_skull_v_beside()) {
+; if ((pad1 & 0b00001100) && is_skull_v_beside()) {
 ;
+	lda     _pad1
+	and     #$0C
+	beq     L0014
 	jsr     _is_skull_v_beside
 	tax
-	beq     L000F
+	beq     L0014
 ;
-; actors.yVelocity[SKULL] = 80;
+; actors.yVelocity[SKULL] = 60;
 ;
-	lda     #$50
+	lda     #$3C
 	sta     _actors+79
+;
+; } else {
+;
+	jmp     L0014
 ;
 ; actors.y[pad_index] = temp_y_col;
 ;
@@ -4641,9 +4638,9 @@ L000F:	ldy     _pad_index
 ;
 ; if (actors.ySpeedFloat[pad_index]) {
 ;
-	ldy     _pad_index
+L0014:	ldy     _pad_index
 	lda     _actors+55,y
-	beq     L0015
+	beq     L0016
 ;
 ; subtract_y_speed(16);
 ;
@@ -4652,7 +4649,7 @@ L000F:	ldy     _pad_index
 ;
 ; }
 ;
-L0015:	rts
+L0016:	rts
 
 .endproc
 
@@ -4676,7 +4673,7 @@ L0015:	rts
 ;
 	lda     _actors+9
 	cmp     #$80
-	bcc     L004F
+	bcc     L0051
 ;
 ; temp = TRUE;
 ;
@@ -4689,8 +4686,8 @@ L0015:	rts
 ;
 ; } else if (paddle_count > 1) {
 ;
-	jmp     L0045
-L004F:	lda     _paddle_count
+	jmp     L0047
+L0051:	lda     _paddle_count
 	cmp     #$02
 	bcc     L0004
 ;
@@ -4701,18 +4698,15 @@ L004F:	lda     _paddle_count
 ;
 ; pad_index = 1;
 ;
-L0045:	sta     _pad_index
+L0047:	sta     _pad_index
 ;
-; if (temp) {
+; if (temp && is_skull_collision_paddle()) {
 ;
 L0004:	lda     _temp
-	jeq     L0052
-;
-; if (is_skull_collision_paddle()) {
-;
+	jeq     L0056
 	jsr     _is_skull_collision_paddle
 	tax
-	jeq     L0052
+	jeq     L0056
 ;
 ; if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
 ;
@@ -4724,10 +4718,10 @@ L0004:	lda     _temp
 	clc
 	ldy     _pad_index
 	adc     _actors,y
-	bcc     L003F
+	bcc     L0041
 	inx
-L003F:	jsr     tosicmp
-	bpl     L0007
+L0041:	jsr     tosicmp
+	bpl     L0009
 ;
 ; if (temp_x <= actors.x[pad_index] + 4) {
 ;
@@ -4737,15 +4731,15 @@ L003F:	jsr     tosicmp
 	lda     _actors,y
 	clc
 	adc     #$04
-	bcc     L000C
+	bcc     L000E
 	ldx     #$01
-L000C:	jsr     tosicmp
-	beq     L004B
-	bpl     L000A
+L000E:	jsr     tosicmp
+	beq     L004D
+	bpl     L000C
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
-L004B:	lda     #$FF
+L004D:	lda     #$FF
 	sta     _actors+44
 ;
 ; actors.xSpeedFloat[SKULL] = 140;
@@ -4759,22 +4753,22 @@ L004B:	lda     #$FF
 ;
 ; } else if (temp_x <= actors.x[pad_index] + 8) {
 ;
-	jmp     L0046
-L000A:	lda     _temp_x
+	jmp     L0048
+L000C:	lda     _temp_x
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors,y
 	clc
 	adc     #$08
-	bcc     L0010
+	bcc     L0012
 	ldx     #$01
-L0010:	jsr     tosicmp
-	beq     L004C
-	bpl     L0018
+L0012:	jsr     tosicmp
+	beq     L004E
+	bpl     L001A
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
-L004C:	lda     #$FF
+L004E:	lda     #$FF
 	sta     _actors+44
 ;
 ; actors.xSpeedFloat[SKULL] = 100;
@@ -4784,25 +4778,25 @@ L004C:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L0046
+	jmp     L0048
 ;
 ; if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
 ;
-L0007:	lda     _temp_x
+L0009:	lda     _temp_x
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors+10,y
 	clc
 	ldy     _pad_index
 	adc     _actors,y
-	bcc     L0040
+	bcc     L0042
 	inx
-L0040:	sec
+L0042:	sec
 	sbc     #$04
-	bcs     L0016
+	bcs     L0018
 	dex
-L0016:	jsr     tosicmp
-	bmi     L0013
+L0018:	jsr     tosicmp
+	bmi     L0015
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -4820,22 +4814,22 @@ L0016:	jsr     tosicmp
 ;
 ; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
 ;
-	jmp     L0046
-L0013:	lda     _temp_x
+	jmp     L0048
+L0015:	lda     _temp_x
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors+10,y
 	clc
 	ldy     _pad_index
 	adc     _actors,y
-	bcc     L0041
+	bcc     L0043
 	inx
-L0041:	sec
+L0043:	sec
 	sbc     #$08
-	bcs     L001B
+	bcs     L001D
 	dex
-L001B:	jsr     tosicmp
-	bmi     L0018
+L001D:	jsr     tosicmp
+	bmi     L001A
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -4849,24 +4843,24 @@ L001B:	jsr     tosicmp
 ;
 ; } else {
 ;
-	jmp     L0046
+	jmp     L0048
 ;
 ; actors.xSpeedFloat[SKULL] = 60;
 ;
-L0018:	lda     #$3C
+L001A:	lda     #$3C
 	sta     _actors+54
 ;
 ; actors.ySpeedFloat[SKULL] = 140;
 ;
 	lda     #$8C
-L0046:	sta     _actors+59
+L0048:	sta     _actors+59
 ;
 ; if (actors.y[SKULL] < actors.y[pad_index]) {
 ;
 	lda     _actors+9
 	ldy     _pad_index
 	cmp     _actors+5,y
-	bcs     L0050
+	bcs     L0054
 ;
 ; actors.yDir[SKULL] = UP;
 ;
@@ -4874,29 +4868,29 @@ L0046:	sta     _actors+59
 ;
 ; } else {
 ;
-	jmp     L0047
+	jmp     L0049
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
-L0050:	lda     #$01
-L0047:	sta     _actors+49
+L0054:	lda     #$01
+L0049:	sta     _actors+49
 ;
 ; temp = FALSE;
 ;
 	lda     #$00
-L0052:	sta     _temp
+L0056:	sta     _temp
 ;
 ; if (paddle_count > 2) {
 ;
 	lda     _paddle_count
 	cmp     #$03
-	bcc     L0023
+	bcc     L0025
 ;
 ; if (actors.x[SKULL] < 127) {
 ;
 	lda     _actors+4
 	cmp     #$7F
-	bcs     L0053
+	bcs     L0057
 ;
 ; temp = TRUE;
 ;
@@ -4909,10 +4903,10 @@ L0052:	sta     _temp
 ;
 ; } else if (paddle_count > 3) {
 ;
-	jmp     L0048
-L0053:	lda     _paddle_count
+	jmp     L004A
+L0057:	lda     _paddle_count
 	cmp     #$04
-	bcc     L0023
+	bcc     L0025
 ;
 ; temp = TRUE;
 ;
@@ -4922,12 +4916,12 @@ L0053:	lda     _paddle_count
 ; pad_index = 3;
 ;
 	lda     #$03
-L0048:	sta     _pad_index
+L004A:	sta     _pad_index
 ;
 ; if (temp) {
 ;
-L0023:	lda     _temp
-	bne     L0059
+L0025:	lda     _temp
+	bne     L005D
 ;
 ; }
 ;
@@ -4935,9 +4929,9 @@ L0023:	lda     _temp
 ;
 ; if (is_skull_collision_paddle()) {
 ;
-L0059:	jsr     _is_skull_collision_paddle
+L005D:	jsr     _is_skull_collision_paddle
 	tax
-	bne     L005A
+	bne     L005E
 ;
 ; }
 ;
@@ -4945,7 +4939,7 @@ L0059:	jsr     _is_skull_collision_paddle
 ;
 ; if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
 ;
-L005A:	lda     _temp_y
+L005E:	lda     _temp_y
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors+15,y
@@ -4953,10 +4947,10 @@ L005A:	lda     _temp_y
 	clc
 	ldy     _pad_index
 	adc     _actors+5,y
-	bcc     L0042
+	bcc     L0044
 	inx
-L0042:	jsr     tosicmp
-	bpl     L0026
+L0044:	jsr     tosicmp
+	bpl     L0028
 ;
 ; if (temp_y <= actors.y[pad_index] + 4) {
 ;
@@ -4966,15 +4960,15 @@ L0042:	jsr     tosicmp
 	lda     _actors+5,y
 	clc
 	adc     #$04
-	bcc     L002B
+	bcc     L002D
 	ldx     #$01
-L002B:	jsr     tosicmp
-	beq     L004D
-	bpl     L0029
+L002D:	jsr     tosicmp
+	beq     L004F
+	bpl     L002B
 ;
 ; actors.yDir[SKULL] = UP;
 ;
-L004D:	lda     #$FF
+L004F:	lda     #$FF
 	sta     _actors+49
 ;
 ; actors.xSpeedFloat[SKULL] = 60;
@@ -4988,22 +4982,22 @@ L004D:	lda     #$FF
 ;
 ; } else if (temp_x <= actors.x[pad_index] + 8) {
 ;
-	jmp     L0049
-L0029:	lda     _temp_x
+	jmp     L004B
+L002B:	lda     _temp_x
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors,y
 	clc
 	adc     #$08
-	bcc     L002F
+	bcc     L0031
 	ldx     #$01
-L002F:	jsr     tosicmp
-	beq     L004E
-	bpl     L0037
+L0031:	jsr     tosicmp
+	beq     L0050
+	bpl     L0039
 ;
 ; actors.yDir[SKULL] = UP;
 ;
-L004E:	lda     #$FF
+L0050:	lda     #$FF
 	sta     _actors+49
 ;
 ; actors.xSpeedFloat[SKULL] = 100;
@@ -5013,25 +5007,25 @@ L004E:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L0049
+	jmp     L004B
 ;
 ; if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
 ;
-L0026:	lda     _temp_y
+L0028:	lda     _temp_y
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors+15,y
 	clc
 	ldy     _pad_index
 	adc     _actors+5,y
-	bcc     L0043
+	bcc     L0045
 	inx
-L0043:	sec
+L0045:	sec
 	sbc     #$04
-	bcs     L0035
+	bcs     L0037
 	dex
-L0035:	jsr     tosicmp
-	bmi     L0032
+L0037:	jsr     tosicmp
+	bmi     L0034
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
@@ -5049,22 +5043,22 @@ L0035:	jsr     tosicmp
 ;
 ; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
 ;
-	jmp     L0049
-L0032:	lda     _temp_x
+	jmp     L004B
+L0034:	lda     _temp_x
 	jsr     pusha0
 	ldy     _pad_index
 	lda     _actors+10,y
 	clc
 	ldy     _pad_index
 	adc     _actors,y
-	bcc     L0044
+	bcc     L0046
 	inx
-L0044:	sec
+L0046:	sec
 	sbc     #$08
-	bcs     L003A
+	bcs     L003C
 	dex
-L003A:	jsr     tosicmp
-	bmi     L0037
+L003C:	jsr     tosicmp
+	bmi     L0039
 ;
 ; actors.yDir[SKULL] = RIGHT;
 ;
@@ -5078,24 +5072,24 @@ L003A:	jsr     tosicmp
 ;
 ; } else {
 ;
-	jmp     L0049
+	jmp     L004B
 ;
 ; actors.xSpeedFloat[SKULL] = 140;
 ;
-L0037:	lda     #$8C
+L0039:	lda     #$8C
 	sta     _actors+54
 ;
 ; actors.ySpeedFloat[SKULL] = 60;
 ;
 	lda     #$3C
-L0049:	sta     _actors+59
+L004B:	sta     _actors+59
 ;
 ; if (actors.x[SKULL] < actors.x[pad_index]) {
 ;
 	lda     _actors+4
 	ldy     _pad_index
 	cmp     _actors,y
-	bcs     L0054
+	bcs     L0058
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
@@ -5103,12 +5097,12 @@ L0049:	sta     _actors+59
 ;
 ; } else {
 ;
-	jmp     L004A
+	jmp     L004C
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
-L0054:	lda     #$01
-L004A:	sta     _actors+44
+L0058:	lda     #$01
+L004C:	sta     _actors+44
 ;
 ; }
 ;
@@ -5230,28 +5224,53 @@ L000E:	jsr     _move_vertical_paddle
 L0004:	inc     _pad_index
 	jmp     L0016
 ;
-; if (pad1 & PAD_A) {
+; if (pad1_new & PAD_A) {
 ;
-L001A:	lda     _pad1
+L001A:	lda     _pad1_new
 	and     #$80
-	beq     L001B
+	beq     L001C
 ;
 ; if (skull_launched) {
 ;
 	lda     _skull_launched
+	beq     L001B
+;
+; temp = 80;
+;
+	lda     #$50
+	sta     _temp
+;
+; actors.xVelocity[0] = temp;
+;
+	sta     _actors+70
+;
+; actors.xVelocity[1] = temp;
+;
+	lda     _temp
+	sta     _actors+71
+;
+; actors.yVelocity[2] = temp;
+;
+	lda     _temp
+	sta     _actors+77
+;
+; actors.yVelocity[3] = temp;
+;
+	lda     _temp
+	sta     _actors+78
 ;
 ; } else {
 ;
-	bne     L001B
+	jmp     L001C
 ;
 ; skull_launched = TRUE;
 ;
-	lda     #$01
+L001B:	lda     #$01
 	sta     _skull_launched
 ;
 ; if (pad1 & PAD_B) {
 ;
-L001B:	lda     _pad1
+L001C:	lda     _pad1
 	ldx     #$00
 	and     #$40
 	stx     tmp1
@@ -6244,10 +6263,6 @@ L0009:	jsr     _ppu_wait_nmi
 ; draw_sprites();
 ;
 	jsr     _draw_sprites
-;
-; gray_line();
-;
-	jsr     _gray_line
 ;
 ; while (game_state == MAIN) {
 ;

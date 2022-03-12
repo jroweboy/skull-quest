@@ -254,15 +254,15 @@ void load_paddles() {
     for (i = 0; i < paddle_count; ++i) {
         // The first 2 paddles are horizontal, the others vertical
         if (i < 2) {
-            actors.width[i] = 0x20;
-            actors.height[i] = 0x04;
-            actors.bbox_x[i] = 0x02;
-            actors.bbox_y[i] = 0x00;
+            actors.width[i] = 0x20;   // 32
+            actors.height[i] = 0x04;  // 4
+            actors.bbox_x[i] = 0x00;  // 2
+            actors.bbox_y[i] = 0x02;
         } else {
             actors.width[i] = 0x04;
             actors.height[i] = 0x20;
-            actors.bbox_x[i] = 0x00;
-            actors.bbox_y[i] = 0x02;
+            actors.bbox_x[i] = 0x02;
+            actors.bbox_y[i] = 0x00;
         }
         actors.xSpeed[i] = 0;
         actors.ySpeed[i] = 0;
@@ -288,8 +288,8 @@ void init_skull() {
     actors.ySpeed[SKULL] = 0;
     actors.xDir[SKULL] = RIGHT;
     actors.yDir[SKULL] = UP;
-    actors.xSpeedFloat[SKULL] = 100;
-    actors.ySpeedFloat[SKULL] = 100;
+    actors.xSpeedFloat[SKULL] = 80;
+    actors.ySpeedFloat[SKULL] = 80;
     actors.xRemain[SKULL] = 0;
     actors.yRemain[SKULL] = 0;
     actors.xVelocity[SKULL] = 0;
@@ -488,12 +488,11 @@ void do_skull_tile_collision() {
 }
 
 char is_skull_h_beside() {
-    return (actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
+    return !(actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
 }
 
 char is_skull_v_beside() {
-    return (actors.x[SKULL] + 7 > actors.x[pad_index] + 2) &&
-           (actors.x[SKULL] + 1 < actors.x[pad_index] + 6);
+    return !(actors.x[SKULL] + 1 < actors.x[pad_index] + 6) && (actors.x[SKULL] + 7 > actors.x[pad_index] + 2);
 }
 
 char is_skull_collision_paddle() {
@@ -536,15 +535,14 @@ void move_horizontal_paddle() {
     }
 
     // Hit the skull
-    if ((pad1 & 0b00000011) && is_paddle_collision_skull()) {
-        // If skull was beside the paddle when collision
-        if (is_skull_h_beside()) {
-            actors.xVelocity[SKULL] = 80;
+    if (is_paddle_collision_skull()) {
+        if ((pad1 & 0b00000011) && is_skull_h_beside()) {
+            actors.xVelocity[SKULL] = 60;
         }
+    } else {
+        // Everything's fine, update x
+        actors.x[pad_index] = temp_x_col;
     }
-
-    // Everything's fine, update x
-    actors.x[pad_index] = temp_x_col;
 
     // FRICTION
     if (actors.xSpeedFloat[pad_index]) {
@@ -574,15 +572,14 @@ void move_vertical_paddle() {
     }
 
     // Hit the skull
-    if ((pad1 & 0b00001100) && is_paddle_collision_skull()) {
-        // If skull was beside the paddle when collision
-        if (is_skull_v_beside()) {
-            actors.yVelocity[SKULL] = 80;
+    if (is_paddle_collision_skull()) {
+        if ((pad1 & 0b00001100) && is_skull_v_beside()) {
+            actors.yVelocity[SKULL] = 60;
         }
+    } else {
+        // Everything's fine, update x
+        actors.y[pad_index] = temp_y_col;
     }
-
-    // Everything's fine, update x
-    actors.y[pad_index] = temp_y_col;
 
     // FRICTION
     if (actors.ySpeedFloat[pad_index]) {
@@ -601,51 +598,49 @@ void check_paddle_collision() {
         temp = TRUE;
         pad_index = 1;
     }
-    if (temp) {
-        if (is_skull_collision_paddle()) {
-            // horizontal paddle
-            if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
-                // We hit left side of Paddle
-                if (temp_x <= actors.x[pad_index] + 4) {
-                    actors.xDir[SKULL] = LEFT;
-                    actors.xSpeedFloat[SKULL] = 140;
-                    actors.ySpeedFloat[SKULL] = 60;
-                } else if (temp_x <= actors.x[pad_index] + 8) {
-                    actors.xDir[SKULL] = LEFT;
-                    actors.xSpeedFloat[SKULL] = 100;
-                    actors.ySpeedFloat[SKULL] = 100;
-                } else {
-                    actors.xSpeedFloat[SKULL] = 60;
-                    actors.ySpeedFloat[SKULL] = 140;
-                }
+    if (temp && is_skull_collision_paddle()) {
+        // horizontal paddle
+        if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
+            // We hit left side of Paddle
+            if (temp_x <= actors.x[pad_index] + 4) {
+                actors.xDir[SKULL] = LEFT;
+                actors.xSpeedFloat[SKULL] = 140;
+                actors.ySpeedFloat[SKULL] = 60;
+            } else if (temp_x <= actors.x[pad_index] + 8) {
+                actors.xDir[SKULL] = LEFT;
+                actors.xSpeedFloat[SKULL] = 100;
+                actors.ySpeedFloat[SKULL] = 100;
             } else {
-                // Right side of Paddle
-                if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
-                    actors.xDir[SKULL] = RIGHT;
-                    actors.xSpeedFloat[SKULL] = 140;
-                    actors.ySpeedFloat[SKULL] = 60;
-                } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
-                    actors.xDir[SKULL] = RIGHT;
-                    actors.xSpeedFloat[SKULL] = 100;
-                    actors.ySpeedFloat[SKULL] = 100;
-                } else {
-                    actors.xSpeedFloat[SKULL] = 60;
-                    actors.ySpeedFloat[SKULL] = 140;
-                }
+                actors.xSpeedFloat[SKULL] = 60;
+                actors.ySpeedFloat[SKULL] = 140;
             }
+        } else {
+            // Right side of Paddle
+            if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
+                actors.xDir[SKULL] = RIGHT;
+                actors.xSpeedFloat[SKULL] = 140;
+                actors.ySpeedFloat[SKULL] = 60;
+            } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+                actors.xDir[SKULL] = RIGHT;
+                actors.xSpeedFloat[SKULL] = 100;
+                actors.ySpeedFloat[SKULL] = 100;
+            } else {
+                actors.xSpeedFloat[SKULL] = 60;
+                actors.ySpeedFloat[SKULL] = 140;
+            }
+        }
 
-            // Skull going up or down?
-            if (actors.y[SKULL] < actors.y[pad_index]) {
-                actors.yDir[SKULL] = UP;
-                // if (!is_skull_beside()) {
-                //     temp_y = actors.y[pad_index] - actors.height[SKULL];
-                // }
-            } else {
-                actors.yDir[SKULL] = DOWN;
-                // if (!is_skull_beside()) {
-                //     temp_y = actors.y[pad_index] + 4;
-                // }
-            }
+        // Skull going up or down?
+        if (actors.y[SKULL] < actors.y[pad_index]) {
+            actors.yDir[SKULL] = UP;
+            // if (!is_skull_beside()) {
+            //     temp_y = actors.y[pad_index] - actors.height[SKULL];
+            // }
+        } else {
+            actors.yDir[SKULL] = DOWN;
+            // if (!is_skull_beside()) {
+            //     temp_y = actors.y[pad_index] + 4;
+            // }
         }
     }
 
@@ -736,9 +731,13 @@ void check_main_input() {
         }
     }
 
-    if (pad1 & PAD_A) {
+    if (pad1_new & PAD_A) {
         if (skull_launched) {
-            // TODO SPEED_UP THE PADDLE
+            temp = 80;
+            actors.xVelocity[0] = temp;
+            actors.xVelocity[1] = temp;
+            actors.yVelocity[2] = temp;
+            actors.yVelocity[3] = temp;
         } else {
             skull_launched = TRUE;
         }
@@ -749,7 +748,7 @@ void check_main_input() {
     }
 
     if (pad1 & PAD_START) {
-        // TODO PAUSE!
+        // TODO ITEM SELECTION...
         // stop music (or lower volume?)
         // palette fade
         // write PAUSE
@@ -1013,7 +1012,7 @@ void main() {
             update_skull();
 
             draw_sprites();
-            gray_line();
+            // gray_line();
 
             // game_loop();
 
