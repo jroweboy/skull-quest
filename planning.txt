@@ -12,8 +12,10 @@ MARCH 2022
     x Optimization
     x Speedup paddle on A bouton pressed
     x Vertical paddle
-    - Animation system - Animating skull
+    - Animating skull
 3: 
+    - Brick count to end level
+    - Animation system 
     - Forest level ennemies
 4:
     - Forest level design

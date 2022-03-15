@@ -58,18 +58,19 @@ const unsigned char* level_list[LEVEL_TOTAL * 3] = {
 };
 
 static char exp[] = "00000000";
+static unsigned char c_map[368];
+
+// #pragma bss - name(push, "ZEROPAGE")
+// #pragma data - name(push, "ZEROPAGE")
 
 static unsigned char debug1, debug2;
 static unsigned char pad1;
 static unsigned char pad1_new;
-static unsigned char c_map[368];
-static unsigned char skull_index = 0;
 
 static int collision_index, backup_col_index, backup_nt_index;
 static unsigned char pad_index, temp_y_col, temp_x_col;
-static unsigned char i, z, temp, temp2, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health;
-static unsigned char p1_max_health;
+static unsigned char i, z, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
+static unsigned char p1_health, p1_max_health, brick_counter;
 static unsigned char game_state, current_level, paddle_count;
 
 #define ACTOR_NUMBER 5
@@ -80,24 +81,29 @@ typedef struct {
     unsigned char height[ACTOR_NUMBER];
     unsigned char bbox_x[ACTOR_NUMBER];
     unsigned char bbox_y[ACTOR_NUMBER];
-    signed char xSpeed[ACTOR_NUMBER];
-    signed char ySpeed[ACTOR_NUMBER];
     signed char xDir[ACTOR_NUMBER];
     signed char yDir[ACTOR_NUMBER];
-    unsigned char xSpeedFloat[ACTOR_NUMBER];
-    unsigned char ySpeedFloat[ACTOR_NUMBER];
+    unsigned char xSpeed[ACTOR_NUMBER];
+    unsigned char ySpeed[ACTOR_NUMBER];
     unsigned char xRemain[ACTOR_NUMBER];
     unsigned char yRemain[ACTOR_NUMBER];
     unsigned char xVelocity[ACTOR_NUMBER];
     unsigned char yVelocity[ACTOR_NUMBER];
     unsigned char minSpeed[ACTOR_NUMBER];
     unsigned char maxSpeed[ACTOR_NUMBER];
+    unsigned char counter[ACTOR_NUMBER];
+    unsigned char animation_speed[ACTOR_NUMBER];
+    unsigned char current_frame[ACTOR_NUMBER];
 } Actors;
 
 // index 0 - 3 paddles
 // index 4 - 5 skulls
 // index 7 ... ennemies
 Actors actors;
+
+void debug(unsigned char value) {
+    one_vram_buffer(value, NTADR_A(1, 1));
+}
 
 void update_health() {
     if (p1_health > 0) {
@@ -168,11 +174,9 @@ void show_game_over() {
 void load_paddles() {
     switch (current_level) {
         case 0:
-            paddle_count = 2;
+            paddle_count = 1;
             actors.x[0] = 0x78;
             actors.y[0] = 0xD0;
-            actors.x[1] = 0x78;
-            actors.y[1] = 0x50;
             break;
         case 1:
             paddle_count = 4;
@@ -264,12 +268,10 @@ void load_paddles() {
             actors.bbox_x[i] = 0x02;
             actors.bbox_y[i] = 0x00;
         }
-        actors.xSpeed[i] = 0;
-        actors.ySpeed[i] = 0;
         actors.xDir[i] = 0;
         actors.yDir[i] = 0;
-        actors.xSpeedFloat[i] = 0;
-        actors.ySpeedFloat[i] = 0;
+        actors.xSpeed[i] = 0;
+        actors.ySpeed[i] = 0;
         actors.xVelocity[i] = 0;
         actors.yVelocity[i] = 0;
         actors.minSpeed[i] = 0;
@@ -284,18 +286,19 @@ void init_skull() {
     actors.height[SKULL] = 6;
     actors.bbox_x[SKULL] = 1;
     actors.bbox_y[SKULL] = 1;
-    actors.xSpeed[SKULL] = 0;
-    actors.ySpeed[SKULL] = 0;
     actors.xDir[SKULL] = RIGHT;
     actors.yDir[SKULL] = UP;
-    actors.xSpeedFloat[SKULL] = 80;
-    actors.ySpeedFloat[SKULL] = 80;
+    actors.xSpeed[SKULL] = 100;
+    actors.ySpeed[SKULL] = 100;
     actors.xRemain[SKULL] = 0;
     actors.yRemain[SKULL] = 0;
     actors.xVelocity[SKULL] = 0;
     actors.yVelocity[SKULL] = 0;
     actors.minSpeed[SKULL] = 64;
     actors.maxSpeed[SKULL] = 250;
+    actors.counter[SKULL] = 0;
+    actors.animation_speed[SKULL] = 60;  // Multiple of 6 !!!!
+    actors.current_frame[SKULL] = 0;
 }
 
 void load_level() {
@@ -306,6 +309,23 @@ void load_level() {
 
     // TODO: compress col data! and decompress here:
     memcpy(c_map, level_list[current_level * 3 + 1], 368);
+
+    // Check how many destructable brick there are
+    brick_counter = 0;
+    for (collision_index = 0; collision_index < 368; ++collision_index) {
+        temp = c_map[collision_index] >> 4;
+        if (temp == 3) {
+            ++brick_counter;
+        } else {
+            if (temp == 5) {
+                ++brick_counter;
+            }
+            temp = c_map[collision_index] & 0x0F;
+            if (temp == 4 || temp == 5) {
+                ++brick_counter;
+            }
+        }
+    }
 
     load_paddles();
 
@@ -342,8 +362,8 @@ void hit_brick(char tile_type) {
 // z index must be defined first
 // not really decimal.... I know it's a mess...
 signed char get_x_speed() {
-    actors.xSpeed[z] = actors.xSpeedFloat[z] >> 7;
-    actors.xRemain[z] += actors.xSpeedFloat[z] & 0b01111111;  // MODULO 128
+    temp_speed = actors.xSpeed[z] >> 7;
+    actors.xRemain[z] += actors.xSpeed[z] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
@@ -360,12 +380,12 @@ signed char get_x_speed() {
         --actors.xVelocity[z];
     }
 
-    return (actors.xSpeed[z] + temp + temp2) * actors.xDir[z];
+    return (temp_speed + temp + temp2) * actors.xDir[z];
 }
 
 signed char get_y_speed() {
-    actors.ySpeed[z] = actors.ySpeedFloat[z] >> 7;
-    actors.yRemain[z] += actors.ySpeedFloat[z] & 0b01111111;  // MODULO 128
+    temp_speed = actors.ySpeed[z] >> 7;
+    actors.yRemain[z] += actors.ySpeed[z] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
@@ -380,38 +400,38 @@ signed char get_y_speed() {
         --actors.yVelocity[z];
     }
 
-    return (actors.ySpeed[z] + temp + temp2) * actors.yDir[z];
+    return (temp_speed + temp + temp2) * actors.yDir[z];
 }
 
 void add_x_speed(unsigned char val) {
-    temp = actors.xSpeedFloat[z];
-    actors.xSpeedFloat[z] += val;
-    if (actors.xSpeedFloat[z] > actors.maxSpeed[z] || actors.xSpeedFloat[z] < temp) {
-        actors.xSpeedFloat[z] = actors.maxSpeed[z];
+    temp = actors.xSpeed[z];
+    actors.xSpeed[z] += val;
+    if (actors.xSpeed[z] > actors.maxSpeed[z] || actors.xSpeed[z] < temp) {
+        actors.xSpeed[z] = actors.maxSpeed[z];
     }
 }
 
 void subtract_x_speed(unsigned char val) {
-    temp = actors.xSpeedFloat[z];
-    actors.xSpeedFloat[z] -= val;
-    if (actors.xSpeedFloat[z] < actors.minSpeed[z] || actors.xSpeedFloat[z] > temp) {
-        actors.xSpeedFloat[z] = actors.minSpeed[z];
+    temp = actors.xSpeed[z];
+    actors.xSpeed[z] -= val;
+    if (actors.xSpeed[z] < actors.minSpeed[z] || actors.xSpeed[z] > temp) {
+        actors.xSpeed[z] = actors.minSpeed[z];
     }
 }
 
 void add_y_speed(unsigned char val) {
-    temp = actors.ySpeedFloat[z];
-    actors.ySpeedFloat[z] += val;
-    if (actors.ySpeedFloat[z] > actors.maxSpeed[z] || actors.ySpeedFloat[z] < temp) {
-        actors.ySpeedFloat[z] = actors.maxSpeed[z];
+    temp = actors.ySpeed[z];
+    actors.ySpeed[z] += val;
+    if (actors.ySpeed[z] > actors.maxSpeed[z] || actors.ySpeed[z] < temp) {
+        actors.ySpeed[z] = actors.maxSpeed[z];
     }
 }
 
 void subtract_y_speed(unsigned char val) {
-    temp = actors.ySpeedFloat[z];
-    actors.ySpeedFloat[z] -= val;
-    if (actors.ySpeedFloat[z] < actors.minSpeed[z] || actors.ySpeedFloat[z] > temp) {
-        actors.ySpeedFloat[z] = actors.minSpeed[z];
+    temp = actors.ySpeed[z];
+    actors.ySpeed[z] -= val;
+    if (actors.ySpeed[z] < actors.minSpeed[z] || actors.ySpeed[z] > temp) {
+        actors.ySpeed[z] = actors.minSpeed[z];
     }
 }
 
@@ -444,23 +464,21 @@ void do_skull_tile_collision() {
             // invincible for a few frames ??
             break;
         case 0x03:
-            // Left brick
+            // Long brick
             remove_brick(TILE_BACK);
-            ++backup_nt_index;
+            backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
+            --brick_counter;
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
         case 0x04:
-            // Right brick
-            remove_brick(TILE_BACK);
-            --backup_nt_index;
-            hit_brick(TILE_BACK);
-            add_xp(1, HUNDREDS);
+            // Tall brick ??
             break;
         case 0x05:
             // Dot brick
             hit_brick(0x11);
             add_xp(5, TENS);
+            --brick_counter;
             break;
         case 0x06:
             // Foliage
@@ -487,12 +505,14 @@ void do_skull_tile_collision() {
     }
 }
 
-char is_skull_h_beside() {
-    return !(actors.y[SKULL] + 1 < actors.y[pad_index] + 6) && (actors.y[SKULL] + 7 > actors.y[pad_index] + 2);
+char skull_was_beside() {
+    return actors.x[SKULL] + 1 > actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] ||
+           actors.x[SKULL] + 7 < actors.x[pad_index] + actors.bbox_x[pad_index];
 }
 
-char is_skull_v_beside() {
-    return !(actors.x[SKULL] + 1 < actors.x[pad_index] + 6) && (actors.x[SKULL] + 7 > actors.x[pad_index] + 2);
+char skull_was_above() {  // or below !!!
+    return actors.y[SKULL] + 1 > actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index] ||
+           actors.y[SKULL] + 7 < actors.y[pad_index] + actors.bbox_y[pad_index];
 }
 
 char is_skull_collision_paddle() {
@@ -503,13 +523,12 @@ char is_skull_collision_paddle() {
             temp_y + actors.height[SKULL] > actors.y[pad_index] + actors.bbox_y[pad_index]);
 }
 
-// TODO Will probably have to merge with above function...
 char is_paddle_collision_skull() {
     // Skull bbox is hard-coded here
-    return (actors.x[SKULL] + 7 > actors.x[pad_index] + actors.bbox_x[pad_index] &&
-            actors.y[SKULL] + 7 > actors.y[pad_index] + actors.bbox_y[pad_index] &&
-            actors.x[SKULL] + 1 < actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] &&
-            actors.y[SKULL] + 1 < actors.y[pad_index] + actors.height[pad_index] + actors.bbox_y[pad_index]);
+    return (actors.x[SKULL] + 7 > temp_x_col + actors.bbox_x[pad_index] &&
+            actors.y[SKULL] + 7 > temp_y_col + actors.bbox_y[pad_index] &&
+            actors.x[SKULL] + 1 < temp_x_col + actors.width[pad_index] + actors.bbox_x[pad_index] &&
+            actors.y[SKULL] + 1 < temp_y_col + actors.height[pad_index] + actors.bbox_y[pad_index]);
 }
 
 // Paddle collision with wall and skull
@@ -536,8 +555,8 @@ void move_horizontal_paddle() {
 
     // Hit the skull
     if (is_paddle_collision_skull()) {
-        if ((pad1 & 0b00000011) && is_skull_h_beside()) {
-            actors.xVelocity[SKULL] = 60;
+        if (pad1 & 0b00000011 && skull_was_beside()) {
+            actors.xVelocity[SKULL] = 70;
         }
     } else {
         // Everything's fine, update x
@@ -545,7 +564,7 @@ void move_horizontal_paddle() {
     }
 
     // FRICTION
-    if (actors.xSpeedFloat[pad_index]) {
+    if (actors.xSpeed[pad_index]) {
         subtract_x_speed(16);
     }
 }
@@ -573,8 +592,8 @@ void move_vertical_paddle() {
 
     // Hit the skull
     if (is_paddle_collision_skull()) {
-        if ((pad1 & 0b00001100) && is_skull_v_beside()) {
-            actors.yVelocity[SKULL] = 60;
+        if ((pad1 & 0b00001100) && skull_was_above()) {
+            actors.yVelocity[SKULL] = 70;
         }
     } else {
         // Everything's fine, update x
@@ -582,7 +601,7 @@ void move_vertical_paddle() {
     }
 
     // FRICTION
-    if (actors.ySpeedFloat[pad_index]) {
+    if (actors.ySpeed[pad_index]) {
         subtract_y_speed(16);
     }
 }
@@ -604,44 +623,34 @@ void check_paddle_collision() {
             // We hit left side of Paddle
             if (temp_x <= actors.x[pad_index] + 4) {
                 actors.xDir[SKULL] = LEFT;
-                actors.xSpeedFloat[SKULL] = 140;
-                actors.ySpeedFloat[SKULL] = 60;
+                actors.xSpeed[SKULL] = 140;
+                actors.ySpeed[SKULL] = 60;
             } else if (temp_x <= actors.x[pad_index] + 8) {
                 actors.xDir[SKULL] = LEFT;
-                actors.xSpeedFloat[SKULL] = 100;
-                actors.ySpeedFloat[SKULL] = 100;
+                actors.xSpeed[SKULL] = 100;
+                actors.ySpeed[SKULL] = 100;
             } else {
-                actors.xSpeedFloat[SKULL] = 60;
-                actors.ySpeedFloat[SKULL] = 140;
+                actors.xSpeed[SKULL] = 60;
+                actors.ySpeed[SKULL] = 140;
             }
         } else {
             // Right side of Paddle
             if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
                 actors.xDir[SKULL] = RIGHT;
-                actors.xSpeedFloat[SKULL] = 140;
-                actors.ySpeedFloat[SKULL] = 60;
+                actors.xSpeed[SKULL] = 140;
+                actors.ySpeed[SKULL] = 60;
             } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
                 actors.xDir[SKULL] = RIGHT;
-                actors.xSpeedFloat[SKULL] = 100;
-                actors.ySpeedFloat[SKULL] = 100;
+                actors.xSpeed[SKULL] = 100;
+                actors.ySpeed[SKULL] = 100;
             } else {
-                actors.xSpeedFloat[SKULL] = 60;
-                actors.ySpeedFloat[SKULL] = 140;
+                actors.xSpeed[SKULL] = 60;
+                actors.ySpeed[SKULL] = 140;
             }
         }
 
         // Skull going up or down?
-        if (actors.y[SKULL] < actors.y[pad_index]) {
-            actors.yDir[SKULL] = UP;
-            // if (!is_skull_beside()) {
-            //     temp_y = actors.y[pad_index] - actors.height[SKULL];
-            // }
-        } else {
-            actors.yDir[SKULL] = DOWN;
-            // if (!is_skull_beside()) {
-            //     temp_y = actors.y[pad_index] + 4;
-            // }
-        }
+        actors.yDir[SKULL] = actors.y[SKULL] < actors.y[pad_index] ? UP : DOWN;
     }
 
     temp = FALSE;
@@ -654,52 +663,40 @@ void check_paddle_collision() {
             pad_index = 3;
         }
     }
-    if (temp) {
-        if (is_skull_collision_paddle()) {
-            // vertical paddle
-            if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
-                // We hit upper side of Paddle
-                if (temp_y <= actors.y[pad_index] + 4) {
-                    actors.yDir[SKULL] = UP;
-                    actors.xSpeedFloat[SKULL] = 60;
-                    actors.ySpeedFloat[SKULL] = 140;
-                } else if (temp_x <= actors.x[pad_index] + 8) {
-                    actors.yDir[SKULL] = UP;
-                    actors.xSpeedFloat[SKULL] = 100;
-                    actors.ySpeedFloat[SKULL] = 100;
-                } else {
-                    actors.xSpeedFloat[SKULL] = 140;
-                    actors.ySpeedFloat[SKULL] = 60;
-                }
+    if (temp && is_skull_collision_paddle()) {
+        // vertical paddle
+        if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
+            // We hit upper side of Paddle
+            if (temp_y <= actors.y[pad_index] + 4) {
+                actors.yDir[SKULL] = UP;
+                actors.xSpeed[SKULL] = 60;
+                actors.ySpeed[SKULL] = 140;
+            } else if (temp_x <= actors.x[pad_index] + 8) {
+                actors.yDir[SKULL] = UP;
+                actors.xSpeed[SKULL] = 100;
+                actors.ySpeed[SKULL] = 100;
             } else {
-                // Lower side of Paddle
-                if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
-                    actors.yDir[SKULL] = DOWN;
-                    actors.xSpeedFloat[SKULL] = 60;
-                    actors.ySpeedFloat[SKULL] = 140;
-                } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
-                    actors.yDir[SKULL] = RIGHT;
-                    actors.xSpeedFloat[SKULL] = 100;
-                    actors.ySpeedFloat[SKULL] = 100;
-                } else {
-                    actors.xSpeedFloat[SKULL] = 140;
-                    actors.ySpeedFloat[SKULL] = 60;
-                }
+                actors.xSpeed[SKULL] = 140;
+                actors.ySpeed[SKULL] = 60;
             }
-
-            // Skull going left or right?
-            if (actors.x[SKULL] < actors.x[pad_index]) {
-                actors.xDir[SKULL] = LEFT;
-                // if (!is_skull_beside()) {
-                //     temp_y = actors.y[pad_index] - actors.height[SKULL];
-                // }
+        } else {
+            // Lower side of Paddle
+            if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
+                actors.yDir[SKULL] = DOWN;
+                actors.xSpeed[SKULL] = 60;
+                actors.ySpeed[SKULL] = 140;
+            } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+                actors.yDir[SKULL] = RIGHT;
+                actors.xSpeed[SKULL] = 100;
+                actors.ySpeed[SKULL] = 100;
             } else {
-                actors.xDir[SKULL] = RIGHT;
-                // if (!is_skull_beside()) {
-                //     temp_y = actors.y[pad_index] + 4;
-                // }
+                actors.xSpeed[SKULL] = 140;
+                actors.ySpeed[SKULL] = 60;
             }
         }
+
+        // Skull going left or right?
+        actors.xDir[SKULL] = actors.x[SKULL] < actors.x[pad_index] ? LEFT : RIGHT;
     }
 }
 
@@ -956,11 +953,19 @@ void update_skull() {
     actors.y[SKULL] = temp_y;
 }
 
-void draw_sprites(void) {
-    // clear all sprites from sprite buffer
-    oam_clear();
+void draw_skull() {
+    if (actors.counter[SKULL] == 10) {
+        actors.current_frame[SKULL] = ++actors.current_frame[SKULL] % 6;
+        actors.counter[SKULL] = 0;
+    }
+    ++actors.counter[SKULL];
 
-    // draw paddles
+    temp = actors.current_frame[SKULL] << 1;  // Tile
+    temp2 = temp + 1;                         // Attribute
+    oam_spr(actors.x[SKULL], actors.y[SKULL], SkullAnim[temp], SkullAnim[temp2]);
+}
+
+void draw_paddles() {
     for (i = 0; i < paddle_count; ++i) {
         if (i < 2) {
             oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
@@ -968,7 +973,15 @@ void draw_sprites(void) {
             oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
         }
     }
-    oam_spr(actors.x[SKULL], actors.y[SKULL], 0x00, 0b00000000);
+}
+
+void draw_sprites(void) {
+    // clear all sprites from sprite buffer
+    oam_clear();
+
+    draw_paddles();
+
+    draw_skull();
 }
 
 void main() {
@@ -1012,6 +1025,11 @@ void main() {
             update_skull();
 
             draw_sprites();
+
+            if (brick_counter == 0) {
+                // Next Level!
+            }
+
             // gray_line();
 
             // game_loop();
