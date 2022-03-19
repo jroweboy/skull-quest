@@ -12,25 +12,34 @@ MARCH 2022
     x Optimization
     x Speedup paddle on A bouton pressed
     x Vertical paddle
-    - Animating skull
+    x Animating skull
 3: 
-    - Brick count to end level
-    - Animation system 
-    - Forest level ennemies
+    x Brick count to end level
+    x Animation system
+    x Altar story design
+    x MAP Design
+    x SELECT button -> map
+
 4:
-    - Forest level design
-    - Trails & Particles
-    - Forest boss design & AI 
+    - Altar story
+    - FIRST LEVEL Cimetery design
+    
 
 APRIL 2022
-1- 
-2- Forest music
-3- ITEMS
+1:
+    - Forest level ennemies
+    - Forest level design
+    - Forest boss design & AI 
+2:
+    - Forest music
+3:
+    - ITEMS
     - magnet
     - multiple skulls?
     - bomb
     - keys
-4- START BUTTON -> Item selection (fade out background)
+4:
+    - START BUTTON -> Item selection (fade out background)
 
 MAY
 1- Necromant tower Design
@@ -45,7 +54,7 @@ JUNE
 - Shop system??
 - Angelic character design
 - Dungeon (Design - Level design - Ennemies - Boss - Music)
-
+- Trails & Particles
 - Desert (Design - Level design - Ennemies - Boss - Music)
 - Boss Music
 
