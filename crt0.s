@@ -3,6 +3,12 @@
 
 
 
+
+; Edited to work with MMC3 code
+.define SOUND_BANK 12
+;segment BANK12
+
+
 FT_BASE_ADR		= $0100		;page in RAM, should be $xx00
 FT_DPCM_OFF		= $f000		;$c000..$ffc0, 64-byte steps
 FT_SFX_STREAMS	= 1			;number of sound effects played at once, 1..4
@@ -10,7 +16,7 @@ FT_SFX_STREAMS	= 1			;number of sound effects played at once, 1..4
 FT_THREAD       = 1		;undefine if you call sound effects in the same thread as sound update
 FT_PAL_SUPPORT	= 1		;undefine to exclude PAL support
 FT_NTSC_SUPPORT	= 1		;undefine to exclude NTSC support
-FT_DPCM_ENABLE  = 0		;undefine to exclude all DMC code
+FT_DPCM_ENABLE  = 1		;undefine to exclude all DMC code
 FT_SFX_ENABLE   = 1		;undefine to exclude all sound effects code
 
 
@@ -31,10 +37,7 @@ FT_SFX_ENABLE   = 1		;undefine to exclude all sound effects code
 	.import	__RODATA_LOAD__ ,__RODATA_RUN__ ,__RODATA_SIZE__
 	.import NES_MAPPER, NES_PRG_BANKS, NES_CHR_BANKS, NES_MIRRORING
 
-	.importzp _PAD_STATE, _PAD_STATET ;added
     .include "zeropage.inc"
-
-
 
 
 
@@ -117,11 +120,29 @@ DATA_PTR:			.res 2
 	.byte <NES_CHR_BANKS
 	.byte <NES_MIRRORING|(<NES_MAPPER<<4)
 	.byte <NES_MAPPER&$f0
-	.res 8,0
+	.byte 1 ;8k of PRG RAM
+	.res 7,0
 
+
+; linker complains if I don't have at least one mention of each bank
+.segment "ONCE"
+.segment "BANK0"
+.segment "BANK1"
+.segment "BANK2"
+.segment "BANK3"
+.segment "BANK4"
+.segment "BANK5"
+.segment "BANK6"
+.segment "BANK7"
+.segment "BANK8"
+.segment "BANK9"
+.segment "BANK10"
+.segment "BANK11"
+.segment "BANK12"
 
 
 .segment "STARTUP"
+; this should be mapped to the last PRG bank
 
 start:
 _exit:
@@ -136,6 +157,10 @@ _exit:
     stx PPU_MASK
     stx DMC_FREQ
     stx PPU_CTRL		;no NMI
+	
+	jsr _disable_irq ;disable mmc3 IRQ
+	
+	;x is zero
 
 initPPU:
     bit PPU_STATUS
@@ -156,6 +181,16 @@ clearPalette:
 	sta PPU_DATA
 	dex
 	bne @1
+	
+	
+	lda #$01				; DEBUGGING
+	sta PPU_DATA
+	lda #$11
+	sta PPU_DATA
+	lda #$21
+	sta PPU_DATA
+	lda #$30
+	sta PPU_DATA
 
 clearVRAM:
 	txa
@@ -183,13 +218,57 @@ clearRAM:
     sta $700,x
     inx
     bne @1
+	
+; don't call any subroutines until the banks are in place	
+	
+	
+	
+; MMC3 reset
+
+; set which bank at $8000
+; also $c000 fixed to 14 of 15
+	lda #0 ; PRG bank zero
+	jsr _set_prg_8000
+; set which bank at $a000
+	lda #13 ; PRG bank 13 of 15
+	jsr _set_prg_a000
+	
+; with CHR invert, set $0000-$03FF
+	lda #0
+	jsr _set_chr_mode_2
+; with CHR invert, set $0400-$07FF
+	lda #1
+	jsr _set_chr_mode_3
+; with CHR invert, set $0800-$0BFF
+	lda #2
+	jsr _set_chr_mode_4
+; with CHR invert, set $0C00-$0FFF
+	lda #3
+	jsr _set_chr_mode_5
+; with CHR invert, set $1000-$17FF
+	lda #4
+	jsr _set_chr_mode_0
+; with CHR invert, set $1800-$1FFF
+	lda #6
+	jsr _set_chr_mode_1
+;set mirroring to vertical, no good reason	
+	lda #0
+	jsr _set_mirroring
+;allow reads and writes to WRAM	
+	lda #$80 ;WRAM_ON 0x80
+	jsr _set_wram_mode
+	
+	cli ;allow irq's to happen on the 6502 chip	
+		;however, the mmc3 IRQ was disabled above
+	
+	
 
 	lda #4
 	jsr _pal_bright
 	jsr _pal_clear
 	jsr _oam_clear
 
-    jsr	zerobss
+    jsr zerobss
 	jsr	copydata
 
     lda #<(__STACK_START__+__STACKSIZE__) ;changed
@@ -231,17 +310,6 @@ detectNTSC:
 	ldx #0
 	jsr _set_vram_update
 
-	ldx #<music_data
-	ldy #>music_data
-	lda <NTSC_MODE
-	jsr FamiToneInit
-
-	.if(FT_SFX_ENABLE)
-	ldx #<sounds_data
-	ldy #>sounds_data
-	jsr FamiToneSfxInit
-	.endif
-
 	lda #$fd
 	sta <RAND_SEED
 	sta <RAND_SEED+1
@@ -249,31 +317,61 @@ detectNTSC:
 	lda #0
 	sta PPU_SCROLL
 	sta PPU_SCROLL
+	
+	
+	
+;BANK12
+	
+	lda #SOUND_BANK ;swap the music in place before using
+					;SOUND_BANK is defined above
+	jsr _set_prg_8000
+	
+	ldx #<music_data
+	ldy #>music_data
+	lda <NTSC_MODE
+	jsr FamiToneInit
+
+	ldx #<sounds_data
+	ldy #>sounds_data
+	jsr FamiToneSfxInit
+	
+	lda #$00 ;PRG bank #0 at $8000, back to basic
+	jsr _set_prg_8000
 
 	jmp _main			;no parameters
+	
+	
 
+	.include "MMC3/mmc3_code.asm"
 	.include "LIB/neslib.s"
 	.include "LIB/nesdoug.s"
+	
+
+
+
+	
+
+	
+.segment "CODE"	
 	.include "MUSIC/famitone2.s"
+; When music files get very big, it's probably best to
+; split the songs into multiple swapped banks
+; the music code itself is in the regular CODE banks.
+; It could be moved into BANK12 if music data is small.
 	
+.segment "BANK12"	
 	
-	
-.segment "RODATA"
-
 music_data:
-;	.include "music.s"
+;	.include "MUSIC/TestMusic3.s"
 
-
-
-	.if(FT_SFX_ENABLE)
 sounds_data:
-;	.include "sounds.s"
-	.endif
+;	.include "MUSIC/SoundFx.s"
+
 
 	
 	
-.segment "SAMPLES"
-;	.incbin "music_dpcm.bin"
+;.segment "SAMPLES"
+;	.incbin "MUSIC/BassDrum.dmc"
 
 
 
@@ -287,3 +385,7 @@ sounds_data:
 .segment "CHARS"
 
 	.incbin "Nametable/Forest/chrblock.chr"
+	.incbin "map.pngE/chrblock.chr"
+; the CHARS segment is much bigger, and I could have 
+; incbin-ed many more chr files
+	

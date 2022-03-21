@@ -1,11 +1,14 @@
 #include "LIB/nesdoug.h"
 #include "LIB/neslib.h"
+#include "MMC3/mmc3_code.h"
+#include "MMC3/mmc3_code.c"
 
 // LEVEL NAMETABLES AND COLLISION
 #include "Collision/master_collision.h"
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
+#include "map.pngE/map.h"
 #include "sprites.h"
 
 #define ONES 7
@@ -35,11 +38,28 @@
 #define TITLE 0
 #define MAIN 1
 #define STORY 2
-#define PAUSE 3
+#define MAP 3
 #define GAME_OVER 4
 
 #define SKULL 4
 #define PADDLE 0
+
+#pragma bss-name(push, "ZEROPAGE")
+static unsigned char pad1;
+static unsigned char pad1_new;
+
+static unsigned char pad_index, temp_y_col, temp_x_col;
+static unsigned char i, z, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
+static unsigned char p1_health, p1_max_health, brick_counter;
+static unsigned char game_state, current_level, paddle_count;
+
+static int collision_index, backup_col_index, backup_nt_index;
+#pragma bss-name(pop)
+
+#pragma bss-name(push, "XRAM")
+// extra RAM at $6000-$7fff
+unsigned char wram_array[0x2000];
+#pragma bss-name(pop)
 
 const unsigned char pal_forest_bg[16] = {
     0x0f, 0x15, 0x20, 0x09,  // GUID Palette
@@ -60,18 +80,8 @@ const unsigned char* level_list[LEVEL_TOTAL * 3] = {
 static char exp[] = "00000000";
 static unsigned char c_map[368];
 
-// #pragma bss - name(push, "ZEROPAGE")
-// #pragma data - name(push, "ZEROPAGE")
-
-static unsigned char debug1, debug2;
-static unsigned char pad1;
-static unsigned char pad1_new;
-
-static int collision_index, backup_col_index, backup_nt_index;
-static unsigned char pad_index, temp_y_col, temp_x_col;
-static unsigned char i, z, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter;
-static unsigned char game_state, current_level, paddle_count;
+#pragma rodata-name("CODE")
+#pragma code-name("CODE")
 
 #define ACTOR_NUMBER 5
 typedef struct {
@@ -345,6 +355,11 @@ void load_title_screen() {
     vram_adr(NAMETABLE_A);
     vram_unrle(title_screen);
     game_state = TITLE;
+}
+
+void load_map() {
+    vram_adr(NAMETABLE_B);
+    vram_unrle(map);
 }
 
 void remove_brick(char tile_type) {
@@ -753,8 +768,8 @@ void check_main_input() {
         // if already on pause resume gameplay
     }
 
-    if (pad1 & PAD_SELECT) {
-        // TODO Item selection
+    if (pad1_new & PAD_SELECT) {
+        game_state = MAP;
     }
 }
 
@@ -988,39 +1003,46 @@ void main() {
     // famitone_init(&music_data);
     // sfx_init(&sound_data);
     // nmi_set_callback(famitone_update);
-
     ppu_off();
 
-    bank_spr(1);
+    disable_irq();
+
+    // clear the WRAM, not done by the init code
+    // memfill(void *dst,unsigned char value,unsigned int len);
+    memfill(wram_array, 0, 0x2000);
+
     set_vram_buffer();
 
     load_title_screen();
 
+    load_map();
+
+    bank_spr(1);
+
     ppu_on_all();
 
     while (1) {
-        while (game_state == TITLE) {
-            ppu_wait_nmi();
+        ppu_wait_nmi();
 
+        pad1 = pad_poll(0);
+        pad1_new = get_pad_new(0);
+
+        if (game_state == TITLE && pad1_new & PAD_START) {
             // PRESS START TO PLAY!
-            pad1 = pad_poll(0);
-            pad1_new = get_pad_new(0);
-            if (pad1_new & PAD_START) {
-                game_state = MAIN;
-                current_level = 1;
-                p1_health = 3;
-                p1_max_health = 3;
+            game_state = MAIN;
+            current_level = 1;
+            p1_health = 3;
+            p1_max_health = 3;
 
-                load_level();
-            }
-        }
+            load_level();
 
-        while (game_state == MAIN) {
+        } else if (game_state == MAP && pad1_new & PAD_SELECT) {
+            pal_bg(level_list[current_level * 3 + 2]);
+            set_scroll_x(0x0000);
+            game_state = MAIN;
             ppu_wait_nmi();
 
-            pad1 = pad_poll(0);
-            pad1_new = get_pad_new(0);
-
+        } else if (game_state == MAIN) {
             check_main_input();
             update_skull();
 
@@ -1030,14 +1052,19 @@ void main() {
                 // Next Level!
             }
 
+            if (game_state == MAP){
+                set_chr_mode_4(8);
+                set_chr_mode_5(9);
+                set_scroll_x(0x0100);
+                pal_col(0x01, 0x28);
+                pal_col(0x02, 0x18);
+                // TODO DRAW NAME OF LEVEL
+                // TODO DRAW SKULL AT CORRECT POSITION
+                oam_clear();
+                oam_spr(1, 1, 0x00, 0x00);  //TEMP
+            }
+
             // gray_line();
-
-            // game_loop();
-
-            // if(game_over) ++current_level; else show_game_over();
         }
-
-        // show_screen(!game_lives?SCREEN_GAMEOVER:SCREEN_WELLDONE);//show
-        // game results
     }
 }

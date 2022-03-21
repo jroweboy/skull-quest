@@ -18,10 +18,11 @@ MARCH 2022
     x Animation system
     x Altar story design
     x MAP Design
-    x SELECT button -> map
 
 4:
-    - Altar story
+    - MMC3 Mapper implementation
+    - SELECT button -> map
+    - Altar animation
     - FIRST LEVEL Cimetery design
     
 

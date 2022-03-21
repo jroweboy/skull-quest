@@ -15,8 +15,10 @@
 	.import		_one_vram_buffer
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
+	.import		_set_scroll_x
 	.import		_pal_bg
 	.import		_pal_spr
+	.import		_pal_col
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
@@ -29,14 +31,26 @@
 	.import		_vram_fill
 	.import		_vram_unrle
 	.import		_memcpy
+	.import		_memfill
+	.export		_bankLevel
+	.export		_bankBuffer
+	.export		_banked_call
+	.export		_bank_push
+	.export		_bank_pop
+	.import		_set_prg_8000
+	.import		_set_chr_mode_4
+	.import		_set_chr_mode_5
+	.import		_disable_irq
 	.export		_forest_col_01
 	.export		_forest_col_02
 	.export		_forest_level_01
 	.export		_forest_level_02
 	.export		_title_screen
+	.export		_map
 	.export		_HorizontalPaddleSpr
 	.export		_VerticalPaddleSpr
 	.export		_SkullAnim
+	.export		_wram_array
 	.export		_pal_forest_bg
 	.export		_pal_spr_01
 	.export		_level_list
@@ -52,6 +66,7 @@
 	.export		_init_skull
 	.export		_load_level
 	.export		_load_title_screen
+	.export		_load_map
 	.export		_remove_brick
 	.export		_hit_brick
 	.export		_get_x_speed
@@ -72,6 +87,8 @@
 	.export		_check_paddle_collision
 	.export		_check_main_input
 	.export		_update_skull
+	.export		_draw_skull
+	.export		_draw_paddles
 	.export		_draw_sprites
 	.export		_main
 
@@ -89,6 +106,7 @@ _exp:
 
 .segment	"RODATA"
 
+.segment	"STARTUP"
 _forest_col_01:
 	.byte	$11
 	.byte	$11
@@ -2067,6 +2085,456 @@ _title_screen:
 	.byte	$00
 	.byte	$01
 	.byte	$00
+_map:
+	.byte	$01
+	.byte	$F1
+	.byte	$01
+	.byte	$A1
+	.byte	$81
+	.byte	$01
+	.byte	$1B
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$96
+	.byte	$98
+	.byte	$01
+	.byte	$17
+	.byte	$9C
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$0A
+	.byte	$99
+	.byte	$81
+	.byte	$9A
+	.byte	$81
+	.byte	$01
+	.byte	$05
+	.byte	$9B
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$9D
+	.byte	$A0
+	.byte	$81
+	.byte	$A3
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$A7
+	.byte	$A8
+	.byte	$AB
+	.byte	$AC
+	.byte	$AF
+	.byte	$B0
+	.byte	$B3
+	.byte	$B4
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$B8
+	.byte	$BB
+	.byte	$BC
+	.byte	$BE
+	.byte	$BF
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$9E
+	.byte	$9F
+	.byte	$A1
+	.byte	$A2
+	.byte	$A4
+	.byte	$A5
+	.byte	$A6
+	.byte	$81
+	.byte	$A9
+	.byte	$AA
+	.byte	$AD
+	.byte	$AE
+	.byte	$B1
+	.byte	$B2
+	.byte	$B5
+	.byte	$B6
+	.byte	$B7
+	.byte	$81
+	.byte	$B9
+	.byte	$BA
+	.byte	$BD
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$08
+	.byte	$C0
+	.byte	$C1
+	.byte	$C2
+	.byte	$C3
+	.byte	$C4
+	.byte	$C5
+	.byte	$C6
+	.byte	$C7
+	.byte	$81
+	.byte	$01
+	.byte	$06
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$14
+	.byte	$C8
+	.byte	$81
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$C9
+	.byte	$CA
+	.byte	$81
+	.byte	$81
+	.byte	$C8
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$CD
+	.byte	$CE
+	.byte	$01
+	.byte	$06
+	.byte	$D0
+	.byte	$81
+	.byte	$01
+	.byte	$05
+	.byte	$C8
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$CB
+	.byte	$CC
+	.byte	$81
+	.byte	$81
+	.byte	$C8
+	.byte	$81
+	.byte	$81
+	.byte	$CF
+	.byte	$81
+	.byte	$81
+	.byte	$CE
+	.byte	$01
+	.byte	$02
+	.byte	$81
+	.byte	$81
+	.byte	$D1
+	.byte	$81
+	.byte	$01
+	.byte	$06
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$81
+	.byte	$D2
+	.byte	$D3
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$D9
+	.byte	$DA
+	.byte	$81
+	.byte	$01
+	.byte	$04
+	.byte	$DA
+	.byte	$DC
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$BE
+	.byte	$BF
+	.byte	$81
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$D4
+	.byte	$D5
+	.byte	$D6
+	.byte	$D7
+	.byte	$D8
+	.byte	$81
+	.byte	$81
+	.byte	$D9
+	.byte	$DA
+	.byte	$DB
+	.byte	$DA
+	.byte	$DC
+	.byte	$81
+	.byte	$01
+	.byte	$08
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$C8
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$DD
+	.byte	$DE
+	.byte	$E0
+	.byte	$E0
+	.byte	$E3
+	.byte	$81
+	.byte	$E6
+	.byte	$81
+	.byte	$01
+	.byte	$04
+	.byte	$E3
+	.byte	$E0
+	.byte	$EC
+	.byte	$92
+	.byte	$92
+	.byte	$EC
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$C8
+	.byte	$81
+	.byte	$CD
+	.byte	$D0
+	.byte	$DF
+	.byte	$E1
+	.byte	$E2
+	.byte	$E4
+	.byte	$E5
+	.byte	$E7
+	.byte	$E8
+	.byte	$E9
+	.byte	$E9
+	.byte	$EA
+	.byte	$E5
+	.byte	$EB
+	.byte	$01
+	.byte	$03
+	.byte	$E5
+	.byte	$90
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$CE
+	.byte	$CE
+	.byte	$D0
+	.byte	$81
+	.byte	$81
+	.byte	$D9
+	.byte	$DC
+	.byte	$81
+	.byte	$01
+	.byte	$04
+	.byte	$94
+	.byte	$81
+	.byte	$95
+	.byte	$95
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$C8
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$81
+	.byte	$D1
+	.byte	$B4
+	.byte	$81
+	.byte	$01
+	.byte	$05
+	.byte	$93
+	.byte	$8A
+	.byte	$81
+	.byte	$8E
+	.byte	$B4
+	.byte	$81
+	.byte	$8F
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$CD
+	.byte	$CE
+	.byte	$01
+	.byte	$02
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$02
+	.byte	$D0
+	.byte	$81
+	.byte	$01
+	.byte	$05
+	.byte	$8A
+	.byte	$8A
+	.byte	$89
+	.byte	$8B
+	.byte	$8C
+	.byte	$8D
+	.byte	$88
+	.byte	$81
+	.byte	$81
+	.byte	$CD
+	.byte	$81
+	.byte	$87
+	.byte	$85
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$CE
+	.byte	$01
+	.byte	$03
+	.byte	$D0
+	.byte	$81
+	.byte	$01
+	.byte	$06
+	.byte	$CD
+	.byte	$CE
+	.byte	$CE
+	.byte	$81
+	.byte	$81
+	.byte	$86
+	.byte	$84
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$97
+	.byte	$81
+	.byte	$01
+	.byte	$08
+	.byte	$D0
+	.byte	$CD
+	.byte	$CE
+	.byte	$01
+	.byte	$02
+	.byte	$D0
+	.byte	$CD
+	.byte	$81
+	.byte	$01
+	.byte	$07
+	.byte	$97
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$82
+	.byte	$98
+	.byte	$01
+	.byte	$17
+	.byte	$83
+	.byte	$81
+	.byte	$F1
+	.byte	$01
+	.byte	$03
+	.byte	$81
+	.byte	$01
+	.byte	$1B
+	.byte	$F1
+	.byte	$01
+	.byte	$A1
+	.byte	$00
+	.byte	$01
+	.byte	$3E
+	.byte	$00
+	.byte	$01
+	.byte	$00
 _HorizontalPaddleSpr:
 	.byte	$00
 	.byte	$00
@@ -2150,25 +2618,19 @@ _pal_spr_01:
 	.byte	$14
 	.byte	$24
 	.byte	$34
+.segment	"CODE"
 
 .segment	"BSS"
 
-_c_map:
-	.res	368,$00
-_debug1:
+_bankLevel:
 	.res	1,$00
-_debug2:
-	.res	1,$00
+_bankBuffer:
+	.res	10,$00
+.segment	"ZEROPAGE"
 _pad1:
 	.res	1,$00
 _pad1_new:
 	.res	1,$00
-_collision_index:
-	.res	2,$00
-_backup_col_index:
-	.res	2,$00
-_backup_nt_index:
-	.res	2,$00
 _pad_index:
 	.res	1,$00
 _temp_y_col:
@@ -2205,8 +2667,140 @@ _current_level:
 	.res	1,$00
 _paddle_count:
 	.res	1,$00
+_collision_index:
+	.res	2,$00
+_backup_col_index:
+	.res	2,$00
+_backup_nt_index:
+	.res	2,$00
+.segment	"XRAM"
+_wram_array:
+	.res	8192,$00
+.segment	"BSS"
+_c_map:
+	.res	368,$00
 _actors:
 	.res	95,$00
+
+; ---------------------------------------------------------------
+; void __near__ banked_call (unsigned char bankId, void (*method)(void))
+; ---------------------------------------------------------------
+
+.segment	"STARTUP"
+
+.proc	_banked_call: near
+
+.segment	"STARTUP"
+
+;
+; void banked_call(unsigned char bankId, void (*method)(void)) {
+;
+	jsr     pushax
+;
+; bank_push(bankId);
+;
+	ldy     #$02
+	lda     (sp),y
+	jsr     _bank_push
+;
+; (*method)();
+;
+	ldy     #$01
+	lda     (sp),y
+	tax
+	dey
+	lda     (sp),y
+	jsr     callax
+;
+; bank_pop();
+;
+	jsr     _bank_pop
+;
+; }
+;
+	jmp     incsp3
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ bank_push (unsigned char bankId)
+; ---------------------------------------------------------------
+
+.segment	"STARTUP"
+
+.proc	_bank_push: near
+
+.segment	"STARTUP"
+
+;
+; void bank_push(unsigned char bankId) {
+;
+	jsr     pusha
+;
+; bankBuffer[bankLevel] = bankId;
+;
+	ldy     #$00
+	lda     (sp),y
+	ldy     _bankLevel
+	sta     _bankBuffer,y
+;
+; ++bankLevel;
+;
+	inc     _bankLevel
+;
+; set_prg_8000(bankId);
+;
+	ldy     #$00
+	lda     (sp),y
+	jsr     _set_prg_8000
+;
+; }
+;
+	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ bank_pop (void)
+; ---------------------------------------------------------------
+
+.segment	"STARTUP"
+
+.proc	_bank_pop: near
+
+.segment	"STARTUP"
+
+;
+; --bankLevel;
+;
+	dec     _bankLevel
+;
+; if (bankLevel > 0) {
+;
+	beq     L0002
+;
+; set_prg_8000(bankBuffer[bankLevel-1]);
+;
+	ldx     #$00
+	lda     _bankLevel
+	sec
+	sbc     #$01
+	bcs     L0003
+	dex
+L0003:	sta     ptr1
+	txa
+	clc
+	adc     #>(_bankBuffer)
+	sta     ptr1+1
+	ldy     #<(_bankBuffer)
+	lda     (ptr1),y
+	jmp     _set_prg_8000
+;
+; }
+;
+L0002:	rts
+
+.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ debug (unsigned char value)
@@ -3141,6 +3735,31 @@ L000F:	rts
 ; }
 ;
 	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ load_map (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_load_map: near
+
+.segment	"CODE"
+
+;
+; vram_adr(NAMETABLE_B);
+;
+	ldx     #$24
+	lda     #$00
+	jsr     _vram_adr
+;
+; vram_unrle(map);
+;
+	lda     #<(_map)
+	ldx     #>(_map)
+	jmp     _vram_unrle
 
 .endproc
 
@@ -5383,15 +6002,20 @@ L001C:	lda     _pad1
 	and     #$10
 	ora     tmp1
 ;
-; if (pad1 & PAD_SELECT) {
+; if (pad1_new & PAD_SELECT) {
 ;
-	lda     _pad1
+	lda     _pad1_new
 	and     #$20
-	ora     tmp1
+	beq     L0015
+;
+; game_state = MAP;
+;
+	lda     #$03
+	sta     _game_state
 ;
 ; }
 ;
-	rts
+L0015:	rts
 
 .endproc
 
@@ -6168,76 +6792,21 @@ L0066:	lda     _temp_x
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_sprites (void)
+; void __near__ draw_skull (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_draw_sprites: near
+.proc	_draw_skull: near
 
 .segment	"CODE"
 
 ;
-; oam_clear();
-;
-	jsr     _oam_clear
-;
-; for (i = 0; i < paddle_count; ++i) {
-;
-	lda     #$00
-	sta     _i
-L0011:	lda     _i
-	cmp     _paddle_count
-	bcs     L0012
-;
-; if (i < 2) {
-;
-	cmp     #$02
-	bcs     L0006
-;
-; oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
-;
-	jsr     decsp2
-	ldy     _i
-	lda     _actors,y
-	ldy     #$01
-	sta     (sp),y
-	ldy     _i
-	lda     _actors+5,y
-	ldy     #$00
-	sta     (sp),y
-	lda     #<(_HorizontalPaddleSpr)
-	ldx     #>(_HorizontalPaddleSpr)
-;
-; } else {
-;
-	jmp     L0010
-;
-; oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
-;
-L0006:	jsr     decsp2
-	ldy     _i
-	lda     _actors,y
-	ldy     #$01
-	sta     (sp),y
-	ldy     _i
-	lda     _actors+5,y
-	ldy     #$00
-	sta     (sp),y
-	lda     #<(_VerticalPaddleSpr)
-	ldx     #>(_VerticalPaddleSpr)
-L0010:	jsr     _oam_meta_spr
-;
-; for (i = 0; i < paddle_count; ++i) {
-;
-	inc     _i
-	jmp     L0011
-;
 ; if (actors.counter[SKULL] == 10) {
 ;
-L0012:	lda     _actors+84
+	lda     _actors+84
 	cmp     #$0A
-	bne     L0013
+	bne     L0006
 ;
 ; actors.current_frame[SKULL] = ++actors.current_frame[SKULL] % 6;
 ;
@@ -6255,7 +6824,7 @@ L0012:	lda     _actors+84
 ;
 ; ++actors.counter[SKULL];
 ;
-L0013:	inc     _actors+84
+L0006:	inc     _actors+84
 ;
 ; temp = actors.current_frame[SKULL] << 1;  // Tile
 ;
@@ -6263,7 +6832,7 @@ L0013:	inc     _actors+84
 	asl     a
 	sta     _temp
 ;
-; temp2 = temp + 1;                    // Attribute
+; temp2 = temp + 1;                         // Attribute
 ;
 	clc
 	adc     #$01
@@ -6289,6 +6858,99 @@ L0013:	inc     _actors+84
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ draw_paddles (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_paddles: near
+
+.segment	"CODE"
+
+;
+; for (i = 0; i < paddle_count; ++i) {
+;
+	lda     #$00
+	sta     _i
+L000D:	lda     _i
+	cmp     _paddle_count
+	bcs     L0003
+;
+; if (i < 2) {
+;
+	cmp     #$02
+	bcs     L0006
+;
+; oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
+;
+	jsr     decsp2
+	ldy     _i
+	lda     _actors,y
+	ldy     #$01
+	sta     (sp),y
+	ldy     _i
+	lda     _actors+5,y
+	ldy     #$00
+	sta     (sp),y
+	lda     #<(_HorizontalPaddleSpr)
+	ldx     #>(_HorizontalPaddleSpr)
+;
+; } else {
+;
+	jmp     L000C
+;
+; oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
+;
+L0006:	jsr     decsp2
+	ldy     _i
+	lda     _actors,y
+	ldy     #$01
+	sta     (sp),y
+	ldy     _i
+	lda     _actors+5,y
+	ldy     #$00
+	sta     (sp),y
+	lda     #<(_VerticalPaddleSpr)
+	ldx     #>(_VerticalPaddleSpr)
+L000C:	jsr     _oam_meta_spr
+;
+; for (i = 0; i < paddle_count; ++i) {
+;
+	inc     _i
+	jmp     L000D
+;
+; }
+;
+L0003:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_sprites (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_sprites: near
+
+.segment	"CODE"
+
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
+; draw_paddles();
+;
+	jsr     _draw_paddles
+;
+; draw_skull();
+;
+	jmp     _draw_skull
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -6303,10 +6965,24 @@ L0013:	inc     _actors+84
 ;
 	jsr     _ppu_off
 ;
-; bank_spr(1);
+; disable_irq();
 ;
-	lda     #$01
-	jsr     _bank_spr
+	jsr     _disable_irq
+;
+; memfill(wram_array, 0, 0x2000);
+;
+	jsr     decsp3
+	lda     #<(_wram_array)
+	ldy     #$01
+	sta     (sp),y
+	iny
+	lda     #>(_wram_array)
+	sta     (sp),y
+	lda     #$00
+	tay
+	sta     (sp),y
+	ldx     #$20
+	jsr     _memfill
 ;
 ; set_vram_buffer();
 ;
@@ -6316,17 +6992,22 @@ L0013:	inc     _actors+84
 ;
 	jsr     _load_title_screen
 ;
+; load_map();
+;
+	jsr     _load_map
+;
+; bank_spr(1);
+;
+	lda     #$01
+	jsr     _bank_spr
+;
 ; ppu_on_all();
 ;
 	jsr     _ppu_on_all
 ;
-; while (game_state == TITLE) {
-;
-	jmp     L000D
-;
 ; ppu_wait_nmi();
 ;
-L0005:	jsr     _ppu_wait_nmi
+L0002:	jsr     _ppu_wait_nmi
 ;
 ; pad1 = pad_poll(0);
 ;
@@ -6340,10 +7021,13 @@ L0005:	jsr     _ppu_wait_nmi
 	jsr     _get_pad_new
 	sta     _pad1_new
 ;
-; if (pad1_new & PAD_START) {
+; if (game_state == TITLE && pad1_new & PAD_START) {
 ;
+	lda     _game_state
+	bne     L0015
+	lda     _pad1_new
 	and     #$10
-	beq     L000D
+	beq     L0015
 ;
 ; game_state = MAIN;
 ;
@@ -6367,30 +7051,62 @@ L0005:	jsr     _ppu_wait_nmi
 ;
 	jsr     _load_level
 ;
-; while (game_state == TITLE) {
+; } else if (game_state == MAP && pad1_new & PAD_SELECT) {
 ;
-L000D:	lda     _game_state
-	beq     L0005
+	jmp     L0002
+L0015:	lda     _game_state
+	cmp     #$03
+	bne     L0018
+	lda     _pad1_new
+	and     #$20
+	beq     L0018
 ;
-; while (game_state == MAIN) {
+; pal_bg(level_list[current_level * 3 + 2]);
 ;
-	jmp     L000E
+	ldx     #$00
+	lda     _current_level
+	jsr     mulax3
+	clc
+	adc     #$02
+	bcc     L000E
+	inx
+L000E:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_level_list)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_level_list)
+	sta     ptr1+1
+	ldy     #$01
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jsr     _pal_bg
+;
+; set_scroll_x(0x0000);
+;
+	ldx     #$00
+	txa
+	jsr     _set_scroll_x
+;
+; game_state = MAIN;
+;
+	lda     #$01
+	sta     _game_state
 ;
 ; ppu_wait_nmi();
 ;
-L0009:	jsr     _ppu_wait_nmi
+	jsr     _ppu_wait_nmi
 ;
-; pad1 = pad_poll(0);
+; } else if (game_state == MAIN) {
 ;
-	lda     #$00
-	jsr     _pad_poll
-	sta     _pad1
-;
-; pad1_new = get_pad_new(0);
-;
-	lda     #$00
-	jsr     _get_pad_new
-	sta     _pad1_new
+	jmp     L0002
+L0018:	lda     _game_state
+	cmp     #$01
+	jne     L0002
 ;
 ; check_main_input();
 ;
@@ -6409,15 +7125,62 @@ L0009:	jsr     _ppu_wait_nmi
 	lda     _brick_counter
 	jsr     booleq
 ;
-; while (game_state == MAIN) {
+; if (game_state == MAP){
 ;
-L000E:	lda     _game_state
-	cmp     #$01
-	beq     L0009
+	lda     _game_state
+	cmp     #$03
+	jne     L0002
+;
+; set_chr_mode_4(8);
+;
+	lda     #$08
+	jsr     _set_chr_mode_4
+;
+; set_chr_mode_5(9);
+;
+	lda     #$09
+	jsr     _set_chr_mode_5
+;
+; set_scroll_x(0x0100);
+;
+	ldx     #$01
+	lda     #$00
+	jsr     _set_scroll_x
+;
+; pal_col(0x01, 0x28);
+;
+	lda     #$01
+	jsr     pusha
+	lda     #$28
+	jsr     _pal_col
+;
+; pal_col(0x02, 0x18);
+;
+	lda     #$02
+	jsr     pusha
+	lda     #$18
+	jsr     _pal_col
+;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
+; oam_spr(1, 1, 0x00, 0x00);  //TEMP
+;
+	jsr     decsp3
+	lda     #$01
+	ldy     #$02
+	sta     (sp),y
+	dey
+	sta     (sp),y
+	lda     #$00
+	dey
+	sta     (sp),y
+	jsr     _oam_spr
 ;
 ; while (1) {
 ;
-	jmp     L000D
+	jmp     L0002
 
 .endproc
 

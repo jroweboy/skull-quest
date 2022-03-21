@@ -6,4 +6,7 @@ Press A
 Press B
     - Use item
     - Cancel ??
-    
+
+SELECT
+    - Show map
+    - Pause

@@ -11,7 +11,7 @@ ca65 crt0.s
 if not exist %name%.s exit 7
 ca65 %name%.s -g
 
-ld65 -C nrom_32k_vert.cfg -o %name%.nes crt0.o %name%.o nes.lib -Ln labels.txt
+ld65 -C MMC3_128_128.cfg -o %name%.nes crt0.o %name%.o nes.lib -Ln labels.txt
 
 if %ERRORLEVEL% EQU 0 (
     del *.o
