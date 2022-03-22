@@ -759,7 +759,7 @@ void check_main_input() {
         // TODO ITEM USE
     }
 
-    if (pad1 & PAD_START) {
+    if (pad1 & PAD_SELECT) {
         // TODO ITEM SELECTION...
         // stop music (or lower volume?)
         // palette fade
@@ -768,7 +768,7 @@ void check_main_input() {
         // if already on pause resume gameplay
     }
 
-    if (pad1_new & PAD_SELECT) {
+    if (pad1_new & PAD_START) {
         game_state = MAP;
     }
 }
@@ -1036,7 +1036,7 @@ void main() {
 
             load_level();
 
-        } else if (game_state == MAP && pad1_new & PAD_SELECT) {
+        } else if (game_state == MAP && pad1_new & PAD_START) {
             pal_bg(level_list[current_level * 3 + 2]);
             set_scroll_x(0x0000);
             game_state = MAIN;

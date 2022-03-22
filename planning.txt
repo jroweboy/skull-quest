@@ -20,69 +20,93 @@ MARCH 2022
     x MAP Design
 
 4:
-    - MMC3 Mapper implementation
-    - SELECT button -> map
+    x MMC3 Mapper implementation
+    x SELECT button -> map
+    - Cemetary design
+    - Angelic character design
     - Altar animation
-    - FIRST LEVEL Cimetery design
     
-
 APRIL 2022
-1:
+1:  - Ruin Temple Design
+    - Ruin Town Design
+    - Bridge Design
+    
+2:
+    - Ruin & Bridge level design
+    - Bridge boss design
+    - Boss fight coding
+3:
+    - ITEMS Design
+    - bomb
+    - magnet
+    - keys
+    - multiple skulls?
+    - SELECT BUTTON -> Item selection (fade out background)
+
+4:
     - Forest level ennemies
     - Forest level design
     - Forest boss design & AI 
-2:
-    - Forest music
-3:
-    - ITEMS
-    - magnet
-    - multiple skulls?
-    - bomb
-    - keys
-4:
-    - START BUTTON -> Item selection (fade out background)
 
 MAY
-1- Necromant tower Design
-2- Level design
-3  Ennemies - Boss - Music
-
+1:
+    - Necromant tower Entrance Design
+    - Necromant lower tower Design
+    - Necromant higher tower Design
+2:
+    - Tower Level design
+    - Ennemies - Boss
+    - Save state
+3:
+    - Title Screen
+    - Gameover Screen
+    - Trails & Particles
+4: 
+    - Story system
+    - Story Design - Intro
+    - Story Design - Ending
+    - Dialog system
+     
 
 JUNE
-- Save state
-- Gameover Screen
-- Title Screen
-- Shop system??
-- Angelic character design
-- Dungeon (Design - Level design - Ennemies - Boss - Music)
-- Trails & Particles
-- Desert (Design - Level design - Ennemies - Boss - Music)
-- Boss Music
+1:
+    - Story music
+2:
+    - Ruin music
+3:
+    - Forest music
+4:
+    - Tower music
 
 JULY
-- Mountain / snow (Design - Level design - Ennemies - Boss - Music)
+1:
+    - Title screen music
+2:
+    - Boss music 2
+3:
+    - Boss music 1
+4:
+    - Sound fx
 
 AUGUST
-- LEVEL? (Design - Level design - Ennemies - Boss - Music)
-- Compress collision tables
+1:
+    - Compress collision tables
+    - Map update name location
+2:
+    - 2 Player Pong Game
+3:
+
+4:
 
 SEPTEMBER
-- Story system
-- Story Music
-- Story Design - Intro
-- Story Design - Ending
-- Dialog system
-- 2 Player Pong Game
+    - Testing / Debugging / Optimization
+
+    PHYSICAL EDITION:
+    - Manual Design
+    - Box Art
+    - Goodies
+    - Burning ROMs
+    - Ordering
 
 OCTOBER
-- Testing / Debugging
-
-PHYSICAL EDITION:
-- Manual Design
-- Box Art
-- Goodies
-- Burning ROMs
-- Ordering
-
-NOVEMBER
-- Kickstarter Campaign
+    - Kickstarter Campaign
