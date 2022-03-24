@@ -22,7 +22,9 @@ MARCH 2022
 4:
     x MMC3 Mapper implementation
     x SELECT button -> map
-    - Cemetary design
+    x Cemetery design
+    - Cemetery Level & Collision
+    - Skeletons enemy design
     - Angelic character design
     - Altar animation
     

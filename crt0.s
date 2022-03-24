@@ -385,7 +385,4 @@ sounds_data:
 .segment "CHARS"
 
 	.incbin "Nametable/Forest/chrblock.chr"
-	.incbin "map.pngE/chrblock.chr"
-; the CHARS segment is much bigger, and I could have 
-; incbin-ed many more chr files
-	
+	.incbin "I-CHR/map.pngE/chrblock.chr"	

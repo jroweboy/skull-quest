@@ -5996,16 +5996,16 @@ L001C:	lda     _pad1
 	stx     tmp1
 	ora     tmp1
 ;
-; if (pad1 & PAD_START) {
+; if (pad1 & PAD_SELECT) {
 ;
 	lda     _pad1
-	and     #$10
+	and     #$20
 	ora     tmp1
 ;
-; if (pad1_new & PAD_SELECT) {
+; if (pad1_new & PAD_START) {
 ;
 	lda     _pad1_new
-	and     #$20
+	and     #$10
 	beq     L0015
 ;
 ; game_state = MAP;
@@ -7051,14 +7051,14 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	jsr     _load_level
 ;
-; } else if (game_state == MAP && pad1_new & PAD_SELECT) {
+; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
 L0015:	lda     _game_state
 	cmp     #$03
 	bne     L0018
 	lda     _pad1_new
-	and     #$20
+	and     #$10
 	beq     L0018
 ;
 ; pal_bg(level_list[current_level * 3 + 2]);

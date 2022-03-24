@@ -8,7 +8,7 @@
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
-#include "map.pngE/map.h"
+#include "I-CHR/map.pngE/map.h"
 #include "sprites.h"
 
 #define ONES 7
