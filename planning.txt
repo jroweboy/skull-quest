@@ -23,9 +23,14 @@ MARCH 2022
     x MMC3 Mapper implementation
     x SELECT button -> map
     x Cemetery design
-    - Cemetery Level & Collision
-    - Skeletons enemy design
+    x Cemetery Level & Collision
+    x Skeletons enemy design
+    - Crow animation
+
+5:
+    - Altar implementation
     - Angelic character design
+    - Dialog system
     - Altar animation
     
 APRIL 2022
@@ -79,6 +84,7 @@ JUNE
     - Forest music
 4:
     - Tower music
+5:
 
 JULY
 1:
@@ -99,6 +105,8 @@ AUGUST
 3:
 
 4:
+
+5:
 
 SEPTEMBER
     - Testing / Debugging / Optimization

@@ -5,10 +5,11 @@
 
 // LEVEL NAMETABLES AND COLLISION
 #include "Collision/master_collision.h"
+#include "I-CHR/cemetery.pngE/cemetery.h"
+#include "I-CHR/map.pngE/map.h"
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
-#include "I-CHR/map.pngE/map.h"
 #include "sprites.h"
 
 #define ONES 7
@@ -48,9 +49,9 @@
 static unsigned char pad1;
 static unsigned char pad1_new;
 
-static unsigned char pad_index, temp_y_col, temp_x_col;
+static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, z, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter;
+static unsigned char p1_health, p1_max_health, brick_counter, tombstone;
 static unsigned char game_state, current_level, paddle_count;
 
 static int collision_index, backup_col_index, backup_nt_index;
@@ -61,20 +62,31 @@ static int collision_index, backup_col_index, backup_nt_index;
 unsigned char wram_array[0x2000];
 #pragma bss-name(pop)
 
+const unsigned char pal_cemetery[16] = {
+    0x0f, 0x00, 0x3d, 0x08,  //
+    0x0f, 0x08, 0x18, 0x28,  //
+    0x0f, 0x00, 0x18, 0x10,  //
+    0x0f, 0x15, 0x20, 0x09   // GUID
+};
+
 const unsigned char pal_forest_bg[16] = {
-    0x0f, 0x15, 0x20, 0x09,  // GUID Palette
-    0x0f, 0x29, 0x1a, 0x09,  // Grass Foliage
+    0x0f, 0x15, 0x20, 0x09,  // GUID
+    0x0f, 0x29, 0x1a, 0x09,  // Grass/Foliage
     0x0f, 0x08, 0x17, 0x27,  // Trunk
     0x0f, 0x37, 0x17, 0x09   // Bricks
 };
 
 const char pal_spr_01[16] = {
-    0x0f, 0x20, 0x15, 0x12, 0x0f, 0x11, 0x22, 0x32, 0x0f, 0x13, 0x23, 0x33, 0x0f, 0x14, 0x24, 0x34  //
+    0x0f, 0x20, 0x15, 0x12,  // Skull
+    0x0f, 0x00, 0x0f, 0x38,  // Crow / Door
+    0x0f, 0x17, 0x06, 0x07,  // Tree
+    0x0f, 0x05, 0x0C, 0x10   // Skeleton
 };
 
 const unsigned char* level_list[LEVEL_TOTAL * 3] = {
-    forest_level_01, forest_col_01, pal_forest_bg,  // LEVEL 01
-    forest_level_02, forest_col_02, pal_forest_bg   // LEVEL 02
+    // TODO - LEVEL 00 - ALTAR
+    cemetery, cemetery_col, pal_cemetery,          // LEVEL 01 - Cemetery
+    forest_level_02, forest_col_02, pal_forest_bg  // LEVEL 02
 };
 
 static char exp[] = "00000000";
@@ -84,6 +96,7 @@ static unsigned char c_map[368];
 #pragma code-name("CODE")
 
 #define ACTOR_NUMBER 5
+
 typedef struct {
     unsigned char x[ACTOR_NUMBER];
     unsigned char y[ACTOR_NUMBER];
@@ -148,8 +161,8 @@ void add_xp(unsigned char value, unsigned char pos) {
 }
 
 void show_HUD() {
-    vram_adr(0x23C0);
-    vram_fill(0x00, 8);
+    //vram_adr(0x23C0);
+    //vram_fill(0x00, 8);
 
     // HEALTH
     update_health();
@@ -184,11 +197,14 @@ void show_game_over() {
 void load_paddles() {
     switch (current_level) {
         case 0:
+            // Altar
+        case 1:
+            // Cemetery
             paddle_count = 1;
             actors.x[0] = 0x78;
             actors.y[0] = 0xD0;
             break;
-        case 1:
+        case 2:
             paddle_count = 4;
             actors.x[0] = 0x70;  // 14
             actors.y[0] = 0xD0;  // 26
@@ -198,8 +214,6 @@ void load_paddles() {
             actors.y[2] = 0x70;  // 14
             actors.x[3] = 0xE0;  // 28
             actors.y[3] = 0x70;  // 14
-            break;
-        case 2:
             break;
         case 3:
             break;
@@ -310,32 +324,55 @@ void init_skull() {
     actors.animation_speed[SKULL] = 60;  // Multiple of 6 !!!!
     actors.current_frame[SKULL] = 0;
 }
+void draw_level_specifics() {
+    switch (current_level) {
+        // TODO 0 will be ALTAR....
+        case 0:
+            chr_4_index = 2;
+            chr_5_index = 3;
+            oam_meta_spr(215, 122, crow_left); // TODO Make the crow an actor with animation...
+            oam_meta_spr(128, 64, door1);
+            oam_meta_spr(219, 61, tree);
+        break;
+        case 1:
+        break;
+    }
+}
 
 void load_level() {
     ppu_off();
-
+    temp = current_level * 3;
     vram_adr(NAMETABLE_A);
-    vram_unrle(level_list[current_level * 3]);
+    vram_unrle(level_list[temp]);
 
     // TODO: compress col data! and decompress here:
-    memcpy(c_map, level_list[current_level * 3 + 1], 368);
+    memcpy(c_map, level_list[++temp], 368);
 
-    // Check how many destructable brick there are
+    pal_bg(level_list[++temp]);
+
+    // Check how many tombstones or destructible brick there are
     brick_counter = 0;
+    tombstone = 0;
     for (collision_index = 0; collision_index < 368; ++collision_index) {
         temp = c_map[collision_index] >> 4;
-        if (temp == 3) {
-            ++brick_counter;
+        if (temp == 7) {
+            // Tombstone
+            ++tombstone;
         } else {
-            if (temp == 5) {
+            if (temp == 3) {
                 ++brick_counter;
-            }
-            temp = c_map[collision_index] & 0x0F;
-            if (temp == 4 || temp == 5) {
-                ++brick_counter;
+            } else {
+                if (temp == 5) {
+                    ++brick_counter;
+                }
+                temp = c_map[collision_index] & 0x0F;
+                if (temp == 4 || temp == 5) {
+                    ++brick_counter;
+                }
             }
         }
     }
+    tombstone = tombstone >> 2;  // divided by 4 because tombstones are 4 tiles
 
     load_paddles();
 
@@ -997,6 +1034,10 @@ void draw_sprites(void) {
     draw_paddles();
 
     draw_skull();
+
+    draw_level_specifics();
+
+    // TODO draw_ennemies();
 }
 
 void main() {
@@ -1030,14 +1071,17 @@ void main() {
         if (game_state == TITLE && pad1_new & PAD_START) {
             // PRESS START TO PLAY!
             game_state = MAIN;
-            current_level = 1;
+            current_level = 0;
             p1_health = 3;
             p1_max_health = 3;
 
             load_level();
 
         } else if (game_state == MAP && pad1_new & PAD_START) {
+            // Return to gameplay
             pal_bg(level_list[current_level * 3 + 2]);
+            set_chr_mode_4(chr_4_index);
+            set_chr_mode_5(chr_5_index);
             set_scroll_x(0x0000);
             game_state = MAIN;
             ppu_wait_nmi();
@@ -1052,7 +1096,7 @@ void main() {
                 // Next Level!
             }
 
-            if (game_state == MAP){
+            if (game_state == MAP) {
                 set_chr_mode_4(8);
                 set_chr_mode_5(9);
                 set_scroll_x(0x0100);
@@ -1061,7 +1105,7 @@ void main() {
                 // TODO DRAW NAME OF LEVEL
                 // TODO DRAW SKULL AT CORRECT POSITION
                 oam_clear();
-                oam_spr(1, 1, 0x00, 0x00);  //TEMP
+                oam_spr(1, 1, 0x00, 0x00);  // Show skull TODO Change x,y to actual map position
             }
 
             // gray_line();
