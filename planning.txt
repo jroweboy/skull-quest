@@ -25,7 +25,11 @@ MARCH 2022
     x Cemetery design
     x Cemetery Level & Collision
     x Skeletons enemy design
+    x Animation system
+    x Hit skeleton
+    - Hit tombstone
     - Crow animation
+    - End of level / Door animation
 
 5:
     - Altar implementation

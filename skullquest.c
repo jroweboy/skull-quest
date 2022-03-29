@@ -10,7 +10,8 @@
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
-#include "sprites.h"
+#include "spr_general.h"
+#include "spr_skeleton.h"
 
 #define ONES 7
 #define TENS 6
@@ -50,9 +51,9 @@ static unsigned char pad1;
 static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
-static unsigned char i, z, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
+static unsigned char i, param1, param2, param3, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, tombstone;
-static unsigned char game_state, current_level, paddle_count;
+static unsigned char game_state, current_level, paddle_count, enemy_count;
 
 static int collision_index, backup_col_index, backup_nt_index;
 #pragma bss-name(pop)
@@ -92,10 +93,7 @@ const unsigned char* level_list[LEVEL_TOTAL * 3] = {
 static char exp[] = "00000000";
 static unsigned char c_map[368];
 
-#pragma rodata-name("CODE")
-#pragma code-name("CODE")
-
-#define ACTOR_NUMBER 5
+#define ACTOR_NUMBER 10
 
 typedef struct {
     unsigned char x[ACTOR_NUMBER];
@@ -117,16 +115,63 @@ typedef struct {
     unsigned char counter[ACTOR_NUMBER];
     unsigned char animation_speed[ACTOR_NUMBER];
     unsigned char current_frame[ACTOR_NUMBER];
+    unsigned char state[ACTOR_NUMBER];
 } Actors;
+
+// Actor STATES!
+// Always putting temporary before the next (ex DYING -> DEAD)
+#define IDLE 0
+#define TURNING 1
+#define WALKING 2
+#define DYING 3
+#define DEAD 4
 
 // index 0 - 3 paddles
 // index 4 - 5 skulls
-// index 7 ... ennemies
+// index 6 - ennemies
 Actors actors;
+
+#pragma rodata-name("BANK0")
+#pragma code-name("BANK0")
+
+void init_skeletons() {
+    enemy_count = 2;
+    for (i = 6; i < 8; ++i) {
+        if (i == 6) {
+            actors.x[i] = 40;
+            actors.y[i] = 72;
+            actors.xDir[i] = LEFT;
+        } else {
+            actors.x[i] = 160;
+            actors.y[i] = 104;
+            actors.xDir[i] = RIGHT;
+        }
+        actors.width[i] = 0x04;
+        actors.height[i] = 0x14;
+        actors.bbox_x[i] = 0x01;
+        actors.bbox_y[i] = 0x02;
+        actors.yDir[i] = NULL;
+        actors.xSpeed[i] = 10;
+        actors.ySpeed[i] = 0;
+        actors.xVelocity[i] = 0;
+        actors.yVelocity[i] = 0;
+        actors.minSpeed[i] = 0;
+        actors.maxSpeed[i] = 20;
+        actors.counter[i] = 0;
+        actors.animation_speed[i] = 16;
+        actors.current_frame[i] = 0;
+        actors.state[i] = WALKING;
+    }
+}
+
+#pragma rodata-name("CODE")
+#pragma code-name("CODE")
 
 void debug(unsigned char value) {
     one_vram_buffer(value, NTADR_A(1, 1));
 }
+
+void __fastcall__ animate_skeleton();
 
 void update_health() {
     if (p1_health > 0) {
@@ -161,8 +206,8 @@ void add_xp(unsigned char value, unsigned char pos) {
 }
 
 void show_HUD() {
-    //vram_adr(0x23C0);
-    //vram_fill(0x00, 8);
+    // vram_adr(0x23C0);
+    // vram_fill(0x00, 8);
 
     // HEALTH
     update_health();
@@ -203,6 +248,7 @@ void load_paddles() {
             paddle_count = 1;
             actors.x[0] = 0x78;
             actors.y[0] = 0xD0;
+            banked_call(0, init_skeletons);
             break;
         case 2:
             paddle_count = 4;
@@ -324,18 +370,24 @@ void init_skull() {
     actors.animation_speed[SKULL] = 60;  // Multiple of 6 !!!!
     actors.current_frame[SKULL] = 0;
 }
+
 void draw_level_specifics() {
     switch (current_level) {
         // TODO 0 will be ALTAR....
         case 0:
             chr_4_index = 2;
             chr_5_index = 3;
-            oam_meta_spr(215, 122, crow_left); // TODO Make the crow an actor with animation...
+            if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
+                oam_meta_spr(215, 122, crow_left_skwak);
+            } else {
+                oam_meta_spr(215, 122, crow_left);
+            }
+            animate_skeleton();
             oam_meta_spr(128, 64, door1);
             oam_meta_spr(219, 61, tree);
-        break;
+            break;
         case 1:
-        break;
+            break;
     }
 }
 
@@ -411,79 +463,79 @@ void hit_brick(char tile_type) {
     // Spawn random coin ??
 }
 
-// z index must be defined first
-// not really decimal.... I know it's a mess...
+// param1: actor index
 signed char get_x_speed() {
-    temp_speed = actors.xSpeed[z] >> 7;
-    actors.xRemain[z] += actors.xSpeed[z] & 0b01111111;  // MODULO 128
+    temp_speed = actors.xSpeed[param1] >> 7;
+    actors.xRemain[param1] += actors.xSpeed[param1] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
     // Remain of Speed Float
-    if (actors.xRemain[z] > 127) {
-        actors.xRemain[z] &= 0b01111111;
+    if (actors.xRemain[param1] > 127) {
+        actors.xRemain[param1] &= 0b01111111;
         temp = 1;
     }
 
     // Velocity. (For exemple: when paddle hits the skull, it sets xVelocity to 80)
-    temp2 = ((actors.xVelocity[z] > 40) || (actors.xVelocity[z] % 2)) ? 1 : 0;
+    temp2 = ((actors.xVelocity[param1] > 40) || (actors.xVelocity[param1] % 2)) ? 1 : 0;
 
-    if (actors.xVelocity[z]) {
-        --actors.xVelocity[z];
+    if (actors.xVelocity[param1]) {
+        --actors.xVelocity[param1];
     }
 
-    return (temp_speed + temp + temp2) * actors.xDir[z];
+    return (temp_speed + temp + temp2) * actors.xDir[param1];
 }
 
+// param1: actor index
 signed char get_y_speed() {
-    temp_speed = actors.ySpeed[z] >> 7;
-    actors.yRemain[z] += actors.ySpeed[z] & 0b01111111;  // MODULO 128
+    temp_speed = actors.ySpeed[param1] >> 7;
+    actors.yRemain[param1] += actors.ySpeed[param1] & 0b01111111;  // MODULO 128
     temp = 0;
     temp2 = 0;
 
-    if (actors.yRemain[z] > 127) {
-        actors.yRemain[z] &= 0b01111111;
+    if (actors.yRemain[param1] > 127) {
+        actors.yRemain[param1] &= 0b01111111;
         temp = 1;
     }
 
-    temp2 = ((actors.yVelocity[z] > 40) || (actors.yVelocity[z] % 2)) ? 1 : 0;
+    temp2 = ((actors.yVelocity[param1] > 40) || (actors.yVelocity[param1] % 2)) ? 1 : 0;
 
-    if (actors.yVelocity[z]) {
-        --actors.yVelocity[z];
+    if (actors.yVelocity[param1]) {
+        --actors.yVelocity[param1];
     }
 
-    return (temp_speed + temp + temp2) * actors.yDir[z];
+    return (temp_speed + temp + temp2) * actors.yDir[param1];
 }
 
 void add_x_speed(unsigned char val) {
-    temp = actors.xSpeed[z];
-    actors.xSpeed[z] += val;
-    if (actors.xSpeed[z] > actors.maxSpeed[z] || actors.xSpeed[z] < temp) {
-        actors.xSpeed[z] = actors.maxSpeed[z];
+    temp = actors.xSpeed[param1];
+    actors.xSpeed[param1] += val;
+    if (actors.xSpeed[param1] > actors.maxSpeed[param1] || actors.xSpeed[param1] < temp) {
+        actors.xSpeed[param1] = actors.maxSpeed[param1];
     }
 }
 
 void subtract_x_speed(unsigned char val) {
-    temp = actors.xSpeed[z];
-    actors.xSpeed[z] -= val;
-    if (actors.xSpeed[z] < actors.minSpeed[z] || actors.xSpeed[z] > temp) {
-        actors.xSpeed[z] = actors.minSpeed[z];
+    temp = actors.xSpeed[param1];
+    actors.xSpeed[param1] -= val;
+    if (actors.xSpeed[param1] < actors.minSpeed[param1] || actors.xSpeed[param1] > temp) {
+        actors.xSpeed[param1] = actors.minSpeed[param1];
     }
 }
 
 void add_y_speed(unsigned char val) {
-    temp = actors.ySpeed[z];
-    actors.ySpeed[z] += val;
-    if (actors.ySpeed[z] > actors.maxSpeed[z] || actors.ySpeed[z] < temp) {
-        actors.ySpeed[z] = actors.maxSpeed[z];
+    temp = actors.ySpeed[param1];
+    actors.ySpeed[param1] += val;
+    if (actors.ySpeed[param1] > actors.maxSpeed[param1] || actors.ySpeed[param1] < temp) {
+        actors.ySpeed[param1] = actors.maxSpeed[param1];
     }
 }
 
 void subtract_y_speed(unsigned char val) {
-    temp = actors.ySpeed[z];
-    actors.ySpeed[z] -= val;
-    if (actors.ySpeed[z] < actors.minSpeed[z] || actors.ySpeed[z] > temp) {
-        actors.ySpeed[z] = actors.minSpeed[z];
+    temp = actors.ySpeed[param1];
+    actors.ySpeed[param1] -= val;
+    if (actors.ySpeed[param1] < actors.minSpeed[param1] || actors.ySpeed[param1] > temp) {
+        actors.ySpeed[param1] = actors.minSpeed[param1];
     }
 }
 
@@ -497,6 +549,57 @@ char set_collision_data() {
     backup_col_type = get_collision_type();
     backup_col_index = collision_index;
     return backup_col_type;
+}
+
+// param1 = actor index
+// param2 = index of animation
+// param3 = number of frame in animation
+void set_animation_info() {
+    if (actors.xDir[param1] == RIGHT) {
+        param2 += param3;
+    }
+    if (actors.counter[param1] == actors.animation_speed[param1]) {
+        if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
+            ++actors.state[param1]; // NEXT STATE
+            param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
+            actors.current_frame[param1] = 0;
+        } else {
+            actors.current_frame[param1] = ++actors.current_frame[param1] % param3;
+        }
+        actors.counter[param1] = 0;
+    }
+    ++actors.counter[param1];
+    debug(0x30 + actors.current_frame[param1]);
+}
+
+void animate_skeleton() {
+    for (i = 6; i < 8; ++i) {
+        param1 = i; // actor index
+        if (actors.state[i] != DEAD && actors.state[i] != DYING) {
+            temp_x = actors.x[i] + get_x_speed();
+            // Collision detection at the feet of the skeleton:
+            temp_y_col = actors.y[i] + actors.height[i];
+
+            temp_x_col = temp_x;
+            if (actors.xDir[i] == RIGHT) {
+                temp_x_col += actors.width[i];  
+            }
+
+            if (get_collision_type()) {
+                actors.current_frame[i] = 0;
+                actors.counter[i] = 0;
+                actors.state[i] = TURNING;
+                actors.xDir[param1] = -actors.xDir[param1];
+            } else {
+                actors.x[i] = temp_x;
+            }
+        }
+
+        param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
+        param3 = skeleton_animation_index[actors.state[i]][1]; // number of frames
+        set_animation_info();
+        oam_meta_spr(actors.x[param1], actors.y[param1], skeleton_animation[actors.current_frame[param1] + param2]);
+    }
 }
 
 void do_skull_tile_collision() {
@@ -583,7 +686,23 @@ char is_paddle_collision_skull() {
             actors.y[SKULL] + 1 < temp_y_col + actors.height[pad_index] + actors.bbox_y[pad_index]);
 }
 
+void check_enemy_collision(){
+    for (i = 6; i < 6 + enemy_count; ++i){
+        if (actors.state[i] != DEAD){
+            pad_index = i;
+            if (actors.state[i] != DYING && is_skull_collision_paddle()){
+                actors.counter[i] = 0;
+                actors.current_frame[i] = 0;
+                actors.state[i] = DYING;
+                actors.xDir[SKULL] = -actors.xDir[SKULL];
+                actors.yDir[SKULL] = -actors.yDir[SKULL];
+            }
+        }
+    }
+}
+
 // Paddle collision with wall and skull
+// param1: actor index
 void move_horizontal_paddle() {
     temp_x_col = actors.x[pad_index];
     temp_y_col = actors.y[pad_index];
@@ -621,6 +740,7 @@ void move_horizontal_paddle() {
     }
 }
 
+// param1: actor index
 void move_vertical_paddle() {
     temp_x_col = actors.x[pad_index];
     temp_y_col = actors.y[pad_index];
@@ -754,7 +874,7 @@ void check_paddle_collision() {
 
 void check_main_input() {
     for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
-        z = pad_index;
+        param1 = pad_index;
         if (pad_index < 2) {
             // Horizontal paddle
             if (pad1 & PAD_LEFT) {
@@ -816,7 +936,7 @@ void update_skull() {
 
     if (skull_launched) {
         // Required for get_x_speed()
-        z = SKULL;
+        param1 = SKULL;
 
         temp_x = actors.x[SKULL] + get_x_speed();
         temp_y = actors.y[SKULL] + get_y_speed();
@@ -990,6 +1110,8 @@ void update_skull() {
         }
 
         check_paddle_collision();
+
+        check_enemy_collision();
 
         // We decrement because Skull bbox is 1
         --temp_x;
