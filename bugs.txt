@@ -1,6 +1,6 @@
 - Skull choose direction to launch??
+- Skull glitch on corner Collision DOWN LEFT??
 
 
 Done:
 x Skull collision with top paddle
-X Skull glitch on corner Collision

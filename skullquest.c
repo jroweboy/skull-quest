@@ -12,6 +12,7 @@
 #include "Nametable/title_screen.h"
 #include "spr_general.h"
 #include "spr_skeleton.h"
+#include "spr_skull.h"
 
 #define ONES 7
 #define TENS 6
@@ -122,9 +123,14 @@ typedef struct {
 // Always putting temporary before the next (ex DYING -> DEAD)
 #define IDLE 0
 #define TURNING 1
+
 #define WALKING 2
+#define ROTATE_H 2
+
 #define DYING 3
+
 #define DEAD 4
+#define ROTATE_V 4
 
 // index 0 - 3 paddles
 // index 4 - 5 skulls
@@ -367,8 +373,9 @@ void init_skull() {
     actors.minSpeed[SKULL] = 64;
     actors.maxSpeed[SKULL] = 250;
     actors.counter[SKULL] = 0;
-    actors.animation_speed[SKULL] = 60;  // Multiple of 6 !!!!
+    actors.animation_speed[SKULL] = 8;
     actors.current_frame[SKULL] = 0;
+    actors.state[SKULL] = IDLE;
 }
 
 void draw_level_specifics() {
@@ -555,9 +562,10 @@ char set_collision_data() {
 // param2 = index of animation
 // param3 = number of frame in animation
 void set_animation_info() {
-    if (actors.xDir[param1] == RIGHT) {
+    if (actors.xDir[param1] == 1) { // RIGHT OR DOWN
         param2 += param3;
     }
+
     if (actors.counter[param1] == actors.animation_speed[param1]) {
         if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
             ++actors.state[param1]; // NEXT STATE
@@ -569,7 +577,7 @@ void set_animation_info() {
         actors.counter[param1] = 0;
     }
     ++actors.counter[param1];
-    debug(0x30 + actors.current_frame[param1]);
+    // debug(0x30 + actors.current_frame[param1]);
 }
 
 void animate_skeleton() {
@@ -797,7 +805,7 @@ void check_paddle_collision() {
                 actors.xDir[SKULL] = LEFT;
                 actors.xSpeed[SKULL] = 140;
                 actors.ySpeed[SKULL] = 60;
-            } else if (temp_x <= actors.x[pad_index] + 8) {
+            } else if (temp_x <= actors.x[pad_index] + 10) {
                 actors.xDir[SKULL] = LEFT;
                 actors.xSpeed[SKULL] = 100;
                 actors.ySpeed[SKULL] = 100;
@@ -811,7 +819,7 @@ void check_paddle_collision() {
                 actors.xDir[SKULL] = RIGHT;
                 actors.xSpeed[SKULL] = 140;
                 actors.ySpeed[SKULL] = 60;
-            } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+            } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 10) {
                 actors.xDir[SKULL] = RIGHT;
                 actors.xSpeed[SKULL] = 100;
                 actors.ySpeed[SKULL] = 100;
@@ -909,6 +917,7 @@ void check_main_input() {
             actors.yVelocity[3] = temp;
         } else {
             skull_launched = TRUE;
+            actors.state[SKULL] = ROTATE_H;
         }
     }
 
@@ -1128,15 +1137,11 @@ void update_skull() {
 }
 
 void draw_skull() {
-    if (actors.counter[SKULL] == 10) {
-        actors.current_frame[SKULL] = ++actors.current_frame[SKULL] % 6;
-        actors.counter[SKULL] = 0;
-    }
-    ++actors.counter[SKULL];
-
-    temp = actors.current_frame[SKULL] << 1;  // Tile
-    temp2 = temp + 1;                         // Attribute
-    oam_spr(actors.x[SKULL], actors.y[SKULL], SkullAnim[temp], SkullAnim[temp2]);
+    param1 = SKULL;
+    param2 = skull_animation_index[actors.state[SKULL]][0]; // animation index
+    param3 = skull_animation_index[actors.state[SKULL]][1]; // number of frames
+    set_animation_info();
+    oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL]+param2]);
 }
 
 void draw_paddles() {

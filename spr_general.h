@@ -12,14 +12,6 @@ const unsigned char VerticalPaddleSpr[] = {
     0, 24, 0x06, 0,
     128};
 
-const unsigned char SkullAnim[] = {
-    0x00, 0b00000000,
-    0x01, 0b00000000,
-    0x00, 0b01000000,
-    0x02, 0b00000000,
-    0x03, 0b10000000,
-    0x02, 0b01000000};
-
 const unsigned char tree[] = {
     -10, -33, 0x0c, 2,
     -10, -25, 0x1c, 2,

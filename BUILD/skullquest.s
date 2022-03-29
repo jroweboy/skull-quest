@@ -50,7 +50,6 @@
 	.export		_title_screen
 	.export		_HorizontalPaddleSpr
 	.export		_VerticalPaddleSpr
-	.export		_SkullAnim
 	.export		_tree
 	.export		_crow_left
 	.export		_crow_left_skwak
@@ -88,6 +87,20 @@
 	.export		_skeleton_dying_left7
 	.export		_skeleton_animation_index
 	.export		_skeleton_animation
+	.export		_skull_rotate_left1
+	.export		_skull_rotate_left2
+	.export		_skull_rotate_left3
+	.export		_skull_rotate_left4
+	.export		_skull_rotate_left5
+	.export		_skull_rotate_left6
+	.export		_skull_rotate_right1
+	.export		_skull_rotate_right2
+	.export		_skull_rotate_right3
+	.export		_skull_rotate_right4
+	.export		_skull_rotate_right5
+	.export		_skull_rotate_right6
+	.export		_skull_animation_index
+	.export		_skull_animation
 	.export		_wram_array
 	.export		_pal_cemetery
 	.export		_pal_forest_bg
@@ -3595,19 +3608,6 @@ _VerticalPaddleSpr:
 	.byte	$06
 	.byte	$00
 	.byte	$80
-_SkullAnim:
-	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$00
-	.byte	$00
-	.byte	$40
-	.byte	$02
-	.byte	$00
-	.byte	$03
-	.byte	$80
-	.byte	$02
-	.byte	$40
 _tree:
 	.byte	$F6
 	.byte	$DF
@@ -4406,6 +4406,100 @@ _skeleton_animation:
 	.addr	_skeleton_dying_right7
 	.addr	_skeleton_dying_left7
 	.addr	_skeleton_dying_right7
+_skull_rotate_left1:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$80
+_skull_rotate_left2:
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$40
+	.byte	$80
+_skull_rotate_left3:
+	.byte	$00
+	.byte	$00
+	.byte	$03
+	.byte	$80
+	.byte	$80
+_skull_rotate_left4:
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$00
+	.byte	$80
+_skull_rotate_left5:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$40
+	.byte	$80
+_skull_rotate_left6:
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$00
+	.byte	$80
+_skull_rotate_right1:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$80
+_skull_rotate_right2:
+	.byte	$00
+	.byte	$00
+	.byte	$01
+	.byte	$00
+	.byte	$80
+_skull_rotate_right3:
+	.byte	$00
+	.byte	$00
+	.byte	$00
+	.byte	$40
+	.byte	$80
+_skull_rotate_right4:
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$00
+	.byte	$80
+_skull_rotate_right5:
+	.byte	$00
+	.byte	$00
+	.byte	$03
+	.byte	$80
+	.byte	$80
+_skull_rotate_right6:
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$40
+	.byte	$80
+_skull_animation_index:
+	.byte	$00
+	.byte	$01
+	.byte	$00
+	.byte	$00
+	.byte	$02
+	.byte	$06
+_skull_animation:
+	.addr	_skull_rotate_left1
+	.addr	_skull_rotate_right1
+	.addr	_skull_rotate_left1
+	.addr	_skull_rotate_left2
+	.addr	_skull_rotate_left3
+	.addr	_skull_rotate_left4
+	.addr	_skull_rotate_left5
+	.addr	_skull_rotate_left6
+	.addr	_skull_rotate_right1
+	.addr	_skull_rotate_right2
+	.addr	_skull_rotate_right3
+	.addr	_skull_rotate_right4
+	.addr	_skull_rotate_right5
+	.addr	_skull_rotate_right6
 _pal_cemetery:
 	.byte	$0F
 	.byte	$00
@@ -5718,15 +5812,19 @@ L003C:	sta     _actors+50,y
 	lda     #$00
 	sta     _actors+164
 ;
-; actors.animation_speed[SKULL] = 60;  // Multiple of 6 !!!!
+; actors.animation_speed[SKULL] = 8;
 ;
-	lda     #$3C
+	lda     #$08
 	sta     _actors+174
 ;
 ; actors.current_frame[SKULL] = 0;
 ;
 	lda     #$00
 	sta     _actors+184
+;
+; actors.state[SKULL] = IDLE;
+;
+	sta     _actors+194
 ;
 ; }
 ;
@@ -6977,7 +7075,7 @@ L0003:	lda     _collision_index
 .segment	"CODE"
 
 ;
-; if (actors.xDir[param1] == RIGHT) {
+; if (actors.xDir[param1] == 1) { // RIGHT OR DOWN
 ;
 	lda     #<(_actors+60)
 	ldx     #>(_actors+60)
@@ -7009,12 +7107,12 @@ L0002:	ldy     _param1
 ;
 	lda     _actors+190,y
 	cmp     #$01
-	beq     L001D
+	beq     L001B
 	ldy     _param1
 	lda     _actors+190,y
 	cmp     #$03
 	bne     L0007
-L001D:	ldy     _param1
+L001B:	ldy     _param1
 	lda     _actors+180,y
 	jsr     pusha0
 	lda     _param3
@@ -7047,9 +7145,9 @@ L0011:	sta     ptr1
 	ldx     #$00
 	lda     _actors+190,y
 	asl     a
-	bcc     L001B
+	bcc     L0019
 	inx
-L001B:	sta     ptr1
+L0019:	sta     ptr1
 	txa
 	clc
 	adc     #>(_skeleton_animation_index)
@@ -7118,13 +7216,9 @@ L0018:	sta     ptr1
 	adc     (ptr1),y
 	sta     (ptr1),y
 ;
-; debug(0x30 + actors.current_frame[param1]);
+; }
 ;
-	ldy     _param1
-	lda     _actors+180,y
-	clc
-	adc     #$30
-	jmp     _debug
+	rts
 
 .endproc
 
@@ -8135,7 +8229,7 @@ L004F:	lda     #$FF
 ;
 	lda     #$3C
 ;
-; } else if (temp_x <= actors.x[pad_index] + 8) {
+; } else if (temp_x <= actors.x[pad_index] + 10) {
 ;
 	jmp     L004C
 L000C:	lda     _temp_x
@@ -8143,7 +8237,7 @@ L000C:	lda     _temp_x
 	ldy     _pad_index
 	lda     _actors,y
 	clc
-	adc     #$08
+	adc     #$0A
 	bcc     L0012
 	ldx     #$01
 L0012:	jsr     tosicmp
@@ -8196,7 +8290,7 @@ L0018:	jsr     tosicmp
 ;
 	lda     #$3C
 ;
-; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
+; } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 10) {
 ;
 	jmp     L004C
 L0015:	lda     _temp_x
@@ -8209,7 +8303,7 @@ L0015:	lda     _temp_x
 	bcc     L0047
 	inx
 L0047:	sec
-	sbc     #$08
+	sbc     #$0A
 	bcs     L001D
 	dex
 L001D:	jsr     tosicmp
@@ -8625,6 +8719,11 @@ L001A:	lda     _pad1_new
 ;
 L001B:	lda     #$01
 	sta     _skull_launched
+;
+; actors.state[SKULL] = ROTATE_H;
+;
+	lda     #$02
+	sta     _actors+194
 ;
 ; if (pad1 & PAD_B) {
 ;
@@ -9444,58 +9543,78 @@ L0066:	lda     _temp_x
 .segment	"CODE"
 
 ;
-; if (actors.counter[SKULL] == 10) {
+; param1 = SKULL;
 ;
-	lda     _actors+164
-	cmp     #$0A
-	bne     L0006
+	lda     #$04
+	sta     _param1
 ;
-; actors.current_frame[SKULL] = ++actors.current_frame[SKULL] % 6;
+; param2 = skull_animation_index[actors.state[SKULL]][0]; // animation index
 ;
-	inc     _actors+184
-	lda     _actors+184
-	jsr     pusha0
-	lda     #$06
-	jsr     tosumoda0
-	sta     _actors+184
-;
-; actors.counter[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+164
-;
-; ++actors.counter[SKULL];
-;
-L0006:	inc     _actors+164
-;
-; temp = actors.current_frame[SKULL] << 1;  // Tile
-;
-	lda     _actors+184
+	ldx     #$00
+	lda     _actors+194
 	asl     a
-	sta     _temp
-;
-; temp2 = temp + 1;                         // Attribute
-;
+	bcc     L0004
+	inx
+L0004:	sta     ptr1
+	txa
 	clc
-	adc     #$01
-	sta     _temp2
+	adc     #>(_skull_animation_index)
+	sta     ptr1+1
+	ldy     #<(_skull_animation_index)
+	lda     (ptr1),y
+	sta     _param2
 ;
-; oam_spr(actors.x[SKULL], actors.y[SKULL], SkullAnim[temp], SkullAnim[temp2]);
+; param3 = skull_animation_index[actors.state[SKULL]][1]; // number of frames
 ;
-	jsr     decsp3
+	ldx     #$00
+	lda     _actors+194
+	asl     a
+	bcc     L0006
+	inx
+	clc
+L0006:	adc     #<(_skull_animation_index)
+	sta     ptr1
+	txa
+	adc     #>(_skull_animation_index)
+	sta     ptr1+1
+	ldy     #$01
+	lda     (ptr1),y
+	sta     _param3
+;
+; set_animation_info();
+;
+	jsr     _set_animation_info
+;
+; oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL]+param2]);
+;
+	jsr     decsp2
 	lda     _actors+4
-	ldy     #$02
+	ldy     #$01
 	sta     (sp),y
 	lda     _actors+14
 	dey
 	sta     (sp),y
-	ldy     _temp
-	lda     _SkullAnim,y
-	ldy     #$00
-	sta     (sp),y
-	ldy     _temp2
-	lda     _SkullAnim,y
-	jmp     _oam_spr
+	ldx     #$00
+	lda     _actors+184
+	clc
+	adc     _param2
+	bcc     L0003
+	inx
+L0003:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_skull_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_skull_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jmp     _oam_meta_spr
 
 .endproc
 
