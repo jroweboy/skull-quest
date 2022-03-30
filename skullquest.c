@@ -7,12 +7,15 @@
 #include "Collision/master_collision.h"
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/map.pngE/map.h"
+
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
+// SPRITES METATILES
 #include "spr_general.h"
 #include "spr_skeleton.h"
 #include "spr_skull.h"
+#include "spr_angelic.h"
 
 #define ONES 7
 #define TENS 6
@@ -53,7 +56,7 @@ static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, param1, param2, param3, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter, tombstone;
+static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count;
 static unsigned char game_state, current_level, paddle_count, enemy_count;
 
 static int collision_index, backup_col_index, backup_nt_index;
@@ -66,7 +69,7 @@ unsigned char wram_array[0x2000];
 
 const unsigned char pal_cemetery[16] = {
     0x0f, 0x00, 0x3d, 0x08,  //
-    0x0f, 0x08, 0x18, 0x28,  //
+    0x0f, 0x08, 0x18, 0x22,  // Grass/Dirt
     0x0f, 0x00, 0x18, 0x10,  //
     0x0f, 0x15, 0x20, 0x09   // GUID
 };
@@ -79,10 +82,14 @@ const unsigned char pal_forest_bg[16] = {
 };
 
 const char pal_spr_01[16] = {
-    0x0f, 0x20, 0x15, 0x12,  // Skull
+    0x0f, 0x20, 0x15, 0x12,  // Skull / Skeleton
     0x0f, 0x00, 0x0f, 0x38,  // Crow / Door
     0x0f, 0x17, 0x06, 0x07,  // Tree
-    0x0f, 0x05, 0x0C, 0x10   // Skeleton
+    0x0f, 0x04, 0x23, 0x0C   // Angelic
+};
+
+const char* faces[] = {
+    angelic_face,
 };
 
 const unsigned char* level_list[LEVEL_TOTAL * 3] = {
@@ -251,6 +258,8 @@ void load_paddles() {
             // Altar
         case 1:
             // Cemetery
+            // Achievement 1 : Scarecrow
+            // Achievement 2 : Skeleton buster
             paddle_count = 1;
             actors.x[0] = 0x78;
             actors.y[0] = 0xD0;
@@ -411,12 +420,12 @@ void load_level() {
 
     // Check how many tombstones or destructible brick there are
     brick_counter = 0;
-    tombstone = 0;
+    tombstone_count = 0;
     for (collision_index = 0; collision_index < 368; ++collision_index) {
         temp = c_map[collision_index] >> 4;
         if (temp == 7) {
             // Tombstone
-            ++tombstone;
+            ++tombstone_count;
         } else {
             if (temp == 3) {
                 ++brick_counter;
@@ -431,7 +440,7 @@ void load_level() {
             }
         }
     }
-    tombstone = tombstone >> 2;  // divided by 4 because tombstones are 4 tiles
+    tombstone_count = tombstone_count >> 1; // Divided by 2 because we only count the first 7 in the 0x77
 
     load_paddles();
 
@@ -561,15 +570,12 @@ char set_collision_data() {
 // param1 = actor index
 // param2 = index of animation
 // param3 = number of frame in animation
-void set_animation_info() {
-    if (actors.xDir[param1] == 1) { // RIGHT OR DOWN
-        param2 += param3;
-    }
-
+void set_animation_info(const unsigned char array[][2]) {
     if (actors.counter[param1] == actors.animation_speed[param1]) {
         if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
-            ++actors.state[param1]; // NEXT STATE
-            param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
+            ++actors.state[param1];                                 // NEXT STATE
+            param2 = array[actors.state[i]][0];  // animation index
+            param3 = array[actors.state[i]][1];  // number of frames
             actors.current_frame[param1] = 0;
         } else {
             actors.current_frame[param1] = ++actors.current_frame[param1] % param3;
@@ -577,12 +583,15 @@ void set_animation_info() {
         actors.counter[param1] = 0;
     }
     ++actors.counter[param1];
-    // debug(0x30 + actors.current_frame[param1]);
+
+    if (actors.xDir[param1] == 1) {  // RIGHT OR DOWN
+        param2 += param3;
+    }
 }
 
 void animate_skeleton() {
     for (i = 6; i < 8; ++i) {
-        param1 = i; // actor index
+        param1 = i;  // actor index
         if (actors.state[i] != DEAD && actors.state[i] != DYING) {
             temp_x = actors.x[i] + get_x_speed();
             // Collision detection at the feet of the skeleton:
@@ -590,7 +599,7 @@ void animate_skeleton() {
 
             temp_x_col = temp_x;
             if (actors.xDir[i] == RIGHT) {
-                temp_x_col += actors.width[i];  
+                temp_x_col += actors.width[i];
             }
 
             if (get_collision_type()) {
@@ -603,9 +612,9 @@ void animate_skeleton() {
             }
         }
 
-        param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
-        param3 = skeleton_animation_index[actors.state[i]][1]; // number of frames
-        set_animation_info();
+        param2 = skeleton_animation_index[actors.state[i]][0];  // animation index
+        param3 = skeleton_animation_index[actors.state[i]][1];  // number of frames
+        set_animation_info(skeleton_animation_index);
         oam_meta_spr(actors.x[param1], actors.y[param1], skeleton_animation[actors.current_frame[param1] + param2]);
     }
 }
@@ -648,6 +657,24 @@ void do_skull_tile_collision() {
             hit_brick(TILE_BACK_GRASS);
             break;
         case 0x07:
+            // Tombstone
+            c_map[backup_col_index] = 0x11;
+            temp = 0b01010101;
+            if (((temp_y_col >> 3) - 5) % 2) {
+                if (backup_col_index == 182 || backup_col_index == 185) {
+                    temp = 0b10100101;
+                }
+                backup_col_index += 16;
+            } else {
+                if (backup_col_index == 198 || backup_col_index == 201) {
+                    temp = 0b10100101;
+                }
+                backup_col_index -= 16;
+            }
+            c_map[backup_col_index] = 0x11;
+
+            one_vram_buffer(temp, (backup_nt_index & 0x2C00) | 0x3C0 | ((backup_nt_index >> 4) & 0x38) | ((backup_nt_index >> 2) & 0x07));
+            --tombstone_count;
             break;
         case 0x08:
             break;
@@ -694,11 +721,11 @@ char is_paddle_collision_skull() {
             actors.y[SKULL] + 1 < temp_y_col + actors.height[pad_index] + actors.bbox_y[pad_index]);
 }
 
-void check_enemy_collision(){
-    for (i = 6; i < 6 + enemy_count; ++i){
-        if (actors.state[i] != DEAD){
+void check_enemy_collision() {
+    for (i = 6; i < 6 + enemy_count; ++i) {
+        if (actors.state[i] != DEAD) {
             pad_index = i;
-            if (actors.state[i] != DYING && is_skull_collision_paddle()){
+            if (actors.state[i] != DYING && is_skull_collision_paddle()) {
                 actors.counter[i] = 0;
                 actors.current_frame[i] = 0;
                 actors.state[i] = DYING;
@@ -923,6 +950,9 @@ void check_main_input() {
 
     if (pad1 & PAD_B) {
         // TODO ITEM USE
+        actors.counter[6] = 0;
+        actors.current_frame[6] = 0;
+        actors.state[6] = DYING;
     }
 
     if (pad1 & PAD_SELECT) {
@@ -1138,10 +1168,10 @@ void update_skull() {
 
 void draw_skull() {
     param1 = SKULL;
-    param2 = skull_animation_index[actors.state[SKULL]][0]; // animation index
-    param3 = skull_animation_index[actors.state[SKULL]][1]; // number of frames
-    set_animation_info();
-    oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL]+param2]);
+    param2 = skull_animation_index[actors.state[SKULL]][0];  // animation index
+    param3 = skull_animation_index[actors.state[SKULL]][1];  // number of frames
+    set_animation_info(skull_animation_index);
+    oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL] + param2]);
 }
 
 void draw_paddles() {
@@ -1221,7 +1251,9 @@ void main() {
 
             if (brick_counter == 0) {
                 // Next Level!
+            } else if (tombstone_count == 0) {
             }
+            debug(0x30 + tombstone_count);
 
             if (game_state == MAP) {
                 set_chr_mode_4(8);

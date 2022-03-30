@@ -101,10 +101,17 @@
 	.export		_skull_rotate_right6
 	.export		_skull_animation_index
 	.export		_skull_animation
+	.export		_angelic_idle1
+	.export		_angelic_idle2
+	.export		_angelic_idle3
+	.export		_angelic_face
+	.export		_angelic_animation_index
+	.export		_angelic_animation
 	.export		_wram_array
 	.export		_pal_cemetery
 	.export		_pal_forest_bg
 	.export		_pal_spr_01
+	.export		_faces
 	.export		_level_list
 	.export		_actors
 	.export		_init_skeletons
@@ -151,6 +158,8 @@
 
 .segment	"DATA"
 
+_faces:
+	.addr	_angelic_face
 _level_list:
 	.addr	_cemetery
 	.addr	_cemetery_col
@@ -995,9 +1004,9 @@ _cemetery_col:
 	.byte	$00
 	.byte	$00
 	.byte	$00
+	.byte	$00
+	.byte	$00
 	.byte	$01
-	.byte	$11
-	.byte	$11
 	.byte	$11
 	.byte	$11
 	.byte	$10
@@ -3775,10 +3784,6 @@ _door1:
 	.byte	$00
 	.byte	$50
 	.byte	$41
-	.byte	$F8
-	.byte	$08
-	.byte	$60
-	.byte	$41
 	.byte	$00
 	.byte	$F0
 	.byte	$30
@@ -3790,10 +3795,6 @@ _door1:
 	.byte	$00
 	.byte	$00
 	.byte	$50
-	.byte	$01
-	.byte	$00
-	.byte	$08
-	.byte	$60
 	.byte	$01
 	.byte	$80
 _door2:
@@ -3902,469 +3903,469 @@ _skeleton_right_still:
 	.byte	$01
 	.byte	$00
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$0C
 	.byte	$D8
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$05
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$08
 	.byte	$04
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_right_walk1:
 	.byte	$01
 	.byte	$FF
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$0C
 	.byte	$DA
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$04
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$08
 	.byte	$03
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_right_walk2:
 	.byte	$02
 	.byte	$00
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$0C
 	.byte	$DB
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$05
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$04
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_right_walk3:
 	.byte	$01
 	.byte	$0C
 	.byte	$DE
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$04
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$02
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$FF
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_right_walk4:
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$05
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$03
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$00
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_right_turn:
 	.byte	$FF
 	.byte	$00
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$0C
 	.byte	$D8
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$05
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F8
 	.byte	$04
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_still:
 	.byte	$FF
 	.byte	$00
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$0C
 	.byte	$D8
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$05
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F8
 	.byte	$04
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_walk1:
 	.byte	$FF
 	.byte	$FF
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$0C
 	.byte	$DA
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$04
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F8
 	.byte	$03
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_walk2:
 	.byte	$FE
 	.byte	$00
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$0C
 	.byte	$DB
-	.byte	$43
+	.byte	$40
 	.byte	$FF
 	.byte	$05
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F7
 	.byte	$04
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_walk3:
 	.byte	$FF
 	.byte	$0C
 	.byte	$DE
-	.byte	$43
+	.byte	$40
 	.byte	$FF
 	.byte	$04
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F7
 	.byte	$02
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$FE
 	.byte	$FF
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_walk4:
 	.byte	$00
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$05
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F8
 	.byte	$03
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$FF
 	.byte	$00
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_left_turn:
 	.byte	$01
 	.byte	$00
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$0C
 	.byte	$D8
-	.byte	$03
+	.byte	$00
 	.byte	$00
 	.byte	$05
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$08
 	.byte	$04
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right1:
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$07
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$04
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$00
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right2:
 	.byte	$01
 	.byte	$09
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$06
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$01
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right3:
 	.byte	$01
 	.byte	$0B
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$08
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$03
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right4:
 	.byte	$00
 	.byte	$0C
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$0C
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$02
 	.byte	$07
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right5:
 	.byte	$FF
 	.byte	$0C
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$0C
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$06
 	.byte	$09
 	.byte	$DD
-	.byte	$C3
+	.byte	$C0
 	.byte	$80
 _skeleton_dying_right6:
 	.byte	$FE
 	.byte	$0C
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$0C
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$07
 	.byte	$0C
 	.byte	$DD
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _skeleton_dying_right7:
 	.byte	$FE
 	.byte	$0C
 	.byte	$D9
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$0C
 	.byte	$DC
-	.byte	$03
+	.byte	$00
 	.byte	$09
 	.byte	$0C
 	.byte	$DD
-	.byte	$83
+	.byte	$80
 	.byte	$80
 _skeleton_dying_left1:
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$07
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$04
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$00
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_dying_left2:
 	.byte	$01
 	.byte	$09
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$06
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$01
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_dying_left3:
 	.byte	$01
 	.byte	$0B
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$08
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$03
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_dying_left4:
 	.byte	$02
 	.byte	$0C
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$0C
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$00
 	.byte	$07
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_dying_left5:
 	.byte	$03
 	.byte	$0C
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$0C
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$FC
 	.byte	$09
 	.byte	$DD
-	.byte	$83
+	.byte	$80
 	.byte	$80
 _skeleton_dying_left6:
 	.byte	$04
 	.byte	$0C
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$0C
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$FB
 	.byte	$0C
 	.byte	$DD
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _skeleton_dying_left7:
 	.byte	$04
 	.byte	$0C
 	.byte	$D9
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$0C
 	.byte	$DF
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$0C
 	.byte	$DC
-	.byte	$43
+	.byte	$40
 	.byte	$F9
 	.byte	$0C
 	.byte	$DD
-	.byte	$C3
+	.byte	$C0
 	.byte	$80
 _skeleton_animation_index:
 	.byte	$00
@@ -4500,6 +4501,139 @@ _skull_animation:
 	.addr	_skull_rotate_right4
 	.addr	_skull_rotate_right5
 	.addr	_skull_rotate_right6
+_angelic_idle1:
+	.byte	$00
+	.byte	$00
+	.byte	$D3
+	.byte	$03
+	.byte	$07
+	.byte	$00
+	.byte	$D3
+	.byte	$43
+	.byte	$00
+	.byte	$08
+	.byte	$C2
+	.byte	$03
+	.byte	$08
+	.byte	$08
+	.byte	$C3
+	.byte	$03
+	.byte	$00
+	.byte	$10
+	.byte	$C0
+	.byte	$03
+	.byte	$08
+	.byte	$10
+	.byte	$C1
+	.byte	$03
+	.byte	$80
+_angelic_idle2:
+	.byte	$00
+	.byte	$01
+	.byte	$D3
+	.byte	$03
+	.byte	$07
+	.byte	$01
+	.byte	$D3
+	.byte	$43
+	.byte	$00
+	.byte	$09
+	.byte	$C2
+	.byte	$03
+	.byte	$08
+	.byte	$09
+	.byte	$C3
+	.byte	$03
+	.byte	$00
+	.byte	$11
+	.byte	$C0
+	.byte	$03
+	.byte	$08
+	.byte	$11
+	.byte	$C1
+	.byte	$03
+	.byte	$80
+_angelic_idle3:
+	.byte	$00
+	.byte	$02
+	.byte	$D3
+	.byte	$03
+	.byte	$07
+	.byte	$02
+	.byte	$D3
+	.byte	$43
+	.byte	$00
+	.byte	$0A
+	.byte	$C2
+	.byte	$03
+	.byte	$08
+	.byte	$0A
+	.byte	$C3
+	.byte	$03
+	.byte	$00
+	.byte	$12
+	.byte	$C0
+	.byte	$03
+	.byte	$08
+	.byte	$12
+	.byte	$C1
+	.byte	$03
+	.byte	$80
+_angelic_face:
+	.byte	$FE
+	.byte	$0C
+	.byte	$D2
+	.byte	$03
+	.byte	$06
+	.byte	$00
+	.byte	$D0
+	.byte	$03
+	.byte	$0E
+	.byte	$00
+	.byte	$D1
+	.byte	$03
+	.byte	$06
+	.byte	$08
+	.byte	$E0
+	.byte	$03
+	.byte	$0E
+	.byte	$08
+	.byte	$E1
+	.byte	$03
+	.byte	$16
+	.byte	$00
+	.byte	$E3
+	.byte	$03
+	.byte	$06
+	.byte	$10
+	.byte	$F0
+	.byte	$03
+	.byte	$0E
+	.byte	$12
+	.byte	$F1
+	.byte	$03
+	.byte	$0E
+	.byte	$10
+	.byte	$F2
+	.byte	$03
+	.byte	$16
+	.byte	$0F
+	.byte	$F3
+	.byte	$03
+	.byte	$16
+	.byte	$08
+	.byte	$E2
+	.byte	$03
+	.byte	$80
+_angelic_animation_index:
+	.byte	$00
+	.byte	$05
+_angelic_animation:
+	.addr	_angelic_idle1
+	.addr	_angelic_idle2
+	.addr	_angelic_idle3
+	.addr	_angelic_idle3
+	.addr	_angelic_idle2
 _pal_cemetery:
 	.byte	$0F
 	.byte	$00
@@ -4508,7 +4642,7 @@ _pal_cemetery:
 	.byte	$0F
 	.byte	$08
 	.byte	$18
-	.byte	$28
+	.byte	$22
 	.byte	$0F
 	.byte	$00
 	.byte	$18
@@ -4548,9 +4682,9 @@ _pal_spr_01:
 	.byte	$06
 	.byte	$07
 	.byte	$0F
-	.byte	$05
+	.byte	$04
+	.byte	$23
 	.byte	$0C
-	.byte	$10
 .segment	"BANK0"
 .segment	"CODE"
 
@@ -4603,7 +4737,7 @@ _p1_max_health:
 	.res	1,$00
 _brick_counter:
 	.res	1,$00
-_tombstone:
+_tombstone_count:
 	.res	1,$00
 _game_state:
 	.res	1,$00
@@ -4967,7 +5101,7 @@ L0026:	lda     _i
 ;
 	rts
 ;
-; param1 = i; // actor index
+; param1 = i;  // actor index
 ;
 L002A:	sta     _param1
 ;
@@ -5018,7 +5152,7 @@ L0010:	ldy     #$00
 	cmp     #$01
 	bne     L000F
 ;
-; temp_x_col += actors.width[i];  
+; temp_x_col += actors.width[i];
 ;
 	ldy     _i
 	lda     _actors+20,y
@@ -5083,7 +5217,7 @@ L0012:	ldy     _i
 	lda     _temp_x
 	sta     _actors,y
 ;
-; param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
+; param2 = skeleton_animation_index[actors.state[i]][0];  // animation index
 ;
 L0006:	ldy     _i
 	ldx     #$00
@@ -5100,7 +5234,7 @@ L0022:	sta     ptr1
 	lda     (ptr1),y
 	sta     _param2
 ;
-; param3 = skeleton_animation_index[actors.state[i]][1]; // number of frames
+; param3 = skeleton_animation_index[actors.state[i]][1];  // number of frames
 ;
 	ldy     _i
 	ldx     #$00
@@ -5118,8 +5252,10 @@ L0025:	adc     #<(_skeleton_animation_index)
 	lda     (ptr1),y
 	sta     _param3
 ;
-; set_animation_info();
+; set_animation_info(skeleton_animation_index);
 ;
+	lda     #<(_skeleton_animation_index)
+	ldx     #>(_skeleton_animation_index)
 	jsr     _set_animation_info
 ;
 ; oam_meta_spr(actors.x[param1], actors.y[param1], skeleton_animation[actors.current_frame[param1] + param2]);
@@ -6038,9 +6174,9 @@ L0017:	adc     #<(_level_list)
 	lda     #$00
 	sta     _brick_counter
 ;
-; tombstone = 0;
+; tombstone_count = 0;
 ;
-	sta     _tombstone
+	sta     _tombstone_count
 ;
 ; for (collision_index = 0; collision_index < 368; ++collision_index) {
 ;
@@ -6075,9 +6211,9 @@ L0006:	bpl     L001B
 	cmp     #$07
 	bne     L0018
 ;
-; ++tombstone;
+; ++tombstone_count;
 ;
-	inc     _tombstone
+	inc     _tombstone_count
 ;
 ; } else {
 ;
@@ -6133,12 +6269,11 @@ L0004:	inc     _collision_index
 	inc     _collision_index+1
 	jmp     L0002
 ;
-; tombstone = tombstone >> 2;  // divided by 4 because tombstones are 4 tiles
+; tombstone_count = tombstone_count >> 1; // Divided by 2 because we only count the first 7 in the 0x77
 ;
-L001B:	lda     _tombstone
+L001B:	lda     _tombstone_count
 	lsr     a
-	lsr     a
-	sta     _tombstone
+	sta     _tombstone_count
 ;
 ; load_paddles();
 ;
@@ -7065,7 +7200,7 @@ L0003:	lda     _collision_index
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ set_animation_info (void)
+; void __near__ set_animation_info (const unsigned char (*array)[2])
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
@@ -7075,63 +7210,47 @@ L0003:	lda     _collision_index
 .segment	"CODE"
 
 ;
-; if (actors.xDir[param1] == 1) { // RIGHT OR DOWN
+; void set_animation_info(const unsigned char array[][2]) {
 ;
-	lda     #<(_actors+60)
-	ldx     #>(_actors+60)
-	clc
-	adc     _param1
-	bcc     L0003
-	inx
-L0003:	ldy     #$00
-	jsr     ldaidx
-	cmp     #$01
-	bne     L0002
-;
-; param2 += param3;
-;
-	lda     _param3
-	clc
-	adc     _param2
-	sta     _param2
+	jsr     pushax
 ;
 ; if (actors.counter[param1] == actors.animation_speed[param1]) {
 ;
-L0002:	ldy     _param1
+	ldy     _param1
 	lda     _actors+160,y
 	ldy     _param1
 	cmp     _actors+170,y
-	jne     L0004
+	jne     L0002
 ;
 ; if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
 ;
 	lda     _actors+190,y
 	cmp     #$01
-	beq     L001B
+	beq     L0020
 	ldy     _param1
 	lda     _actors+190,y
 	cmp     #$03
-	bne     L0007
-L001B:	ldy     _param1
+	bne     L0005
+L0020:	ldy     _param1
 	lda     _actors+180,y
 	jsr     pusha0
 	lda     _param3
 	sec
 	sbc     #$01
-	bcs     L000E
+	bcs     L000C
 	ldx     #$FF
-L000E:	jsr     tosicmp
-	bne     L0007
+L000C:	jsr     tosicmp
+	bne     L0005
 ;
-; ++actors.state[param1]; // NEXT STATE
+; ++actors.state[param1];                                 // NEXT STATE
 ;
 	lda     #<(_actors+190)
 	ldx     #>(_actors+190)
 	clc
 	adc     _param1
-	bcc     L0011
+	bcc     L000F
 	inx
-L0011:	sta     ptr1
+L000F:	sta     ptr1
 	stx     ptr1+1
 	ldy     #$00
 	lda     #$01
@@ -7139,22 +7258,44 @@ L0011:	sta     ptr1
 	adc     (ptr1),y
 	sta     (ptr1),y
 ;
-; param2 = skeleton_animation_index[actors.state[i]][0]; // animation index
+; param2 = array[actors.state[i]][0];  // animation index
 ;
 	ldy     _i
 	ldx     #$00
 	lda     _actors+190,y
 	asl     a
-	bcc     L0019
+	bcc     L001D
 	inx
-L0019:	sta     ptr1
-	txa
 	clc
-	adc     #>(_skeleton_animation_index)
+L001D:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
 	sta     ptr1+1
-	ldy     #<(_skeleton_animation_index)
+	dey
 	lda     (ptr1),y
 	sta     _param2
+;
+; param3 = array[actors.state[i]][1];  // number of frames
+;
+	ldy     _i
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L001E
+	inx
+	clc
+L001E:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	lda     (ptr1),y
+	sta     _param3
 ;
 ; actors.current_frame[param1] = 0;
 ;
@@ -7168,7 +7309,7 @@ L0019:	sta     ptr1
 ;
 ; actors.current_frame[param1] = ++actors.current_frame[param1] % param3;
 ;
-L0007:	lda     #<(_actors+180)
+L0005:	lda     #<(_actors+180)
 	ldx     #>(_actors+180)
 	clc
 	adc     _param1
@@ -7202,7 +7343,7 @@ L0014:	ldy     _param1
 ;
 ; ++actors.counter[param1];
 ;
-L0004:	lda     #<(_actors+160)
+L0002:	lda     #<(_actors+160)
 	ldx     #>(_actors+160)
 	clc
 	adc     _param1
@@ -7216,9 +7357,28 @@ L0018:	sta     ptr1
 	adc     (ptr1),y
 	sta     (ptr1),y
 ;
+; if (actors.xDir[param1] == 1) {  // RIGHT OR DOWN
+;
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _param1
+	bcc     L0023
+	inx
+L0023:	jsr     ldaidx
+	cmp     #$01
+	bne     L0019
+;
+; param2 += param3;
+;
+	lda     _param3
+	clc
+	adc     _param2
+	sta     _param2
+;
 ; }
 ;
-	rts
+L0019:	jmp     incsp2
 
 .endproc
 
@@ -7240,7 +7400,7 @@ L0018:	sta     ptr1
 ; }
 ;
 	cmp     #$01
-	bne     L001C
+	bne     L002F
 ;
 ; }
 ;
@@ -7248,12 +7408,12 @@ L0018:	sta     ptr1
 ;
 ; }
 ;
-L001C:	cmp     #$02
+L002F:	cmp     #$02
 	beq     L0005
 	cmp     #$03
-	beq     L0019
+	beq     L0028
 	cmp     #$04
-	bne     L001D
+	bne     L0030
 ;
 ; }
 ;
@@ -7261,12 +7421,14 @@ L001C:	cmp     #$02
 ;
 ; }
 ;
-L001D:	cmp     #$05
-	jeq     L001A
+L0030:	cmp     #$05
+	jeq     L0029
 	cmp     #$06
-	jeq     L001B
+	jeq     L002A
 	cmp     #$07
-	bne     L001E
+	jeq     L000F
+	cmp     #$08
+	bne     L0031
 ;
 ; }
 ;
@@ -7274,8 +7436,8 @@ L001D:	cmp     #$05
 ;
 ; }
 ;
-L001E:	cmp     #$08
-	bne     L001F
+L0031:	cmp     #$09
+	bne     L0032
 ;
 ; }
 ;
@@ -7283,8 +7445,8 @@ L001E:	cmp     #$08
 ;
 ; }
 ;
-L001F:	cmp     #$09
-	bne     L0020
+L0032:	cmp     #$0A
+	bne     L0033
 ;
 ; }
 ;
@@ -7292,8 +7454,8 @@ L001F:	cmp     #$09
 ;
 ; }
 ;
-L0020:	cmp     #$0A
-	bne     L0021
+L0033:	cmp     #$0B
+	bne     L0034
 ;
 ; }
 ;
@@ -7301,17 +7463,43 @@ L0020:	cmp     #$0A
 ;
 ; }
 ;
-L0021:	cmp     #$0B
-	beq     L0003
-	cmp     #$0C
-	beq     L0003
-	cmp     #$0D
-	beq     L0003
-	cmp     #$0E
-	beq     L0003
-	cmp     #$0F
-	beq     L0003
+L0034:	cmp     #$0C
+	bne     L0035
+;
+; }
+;
 	rts
+;
+; }
+;
+L0035:	cmp     #$0D
+	bne     L0036
+;
+; }
+;
+	rts
+;
+; }
+;
+L0036:	cmp     #$0E
+	bne     L0037
+;
+; }
+;
+	rts
+;
+; }
+;
+L0037:	cmp     #$0F
+	bne     L0038
+;
+; }
+;
+	rts
+;
+; }
+;
+L0038:	rts
 ;
 ; if (p1_health) {
 ;
@@ -7328,7 +7516,7 @@ L0006:	jmp     _update_health
 ;
 ; remove_brick(TILE_BACK);
 ;
-L0019:	lda     #$10
+L0028:	lda     #$10
 	jsr     _remove_brick
 ;
 ; backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
@@ -7346,16 +7534,16 @@ L0019:	lda     #$10
 	sec
 	sbc     #$01
 	sta     _backup_nt_index
-	bcs     L0018
+	bcs     L0027
 	dec     _backup_nt_index+1
-	jmp     L0018
+	jmp     L0027
 L0008:	inc     _backup_nt_index
-	bne     L0018
+	bne     L0027
 	inc     _backup_nt_index+1
 ;
 ; --brick_counter;
 ;
-L0018:	dec     _brick_counter
+L0027:	dec     _brick_counter
 ;
 ; hit_brick(TILE_BACK);
 ;
@@ -7371,7 +7559,7 @@ L0018:	dec     _brick_counter
 ;
 ; hit_brick(0x11);
 ;
-L001A:	lda     #$11
+L0029:	lda     #$11
 	jsr     _hit_brick
 ;
 ; add_xp(5, TENS);
@@ -7391,12 +7579,154 @@ L001A:	lda     #$11
 ;
 ; hit_brick(TILE_BACK_GRASS);
 ;
-L001B:	lda     #$23
+L002A:	lda     #$23
 	jmp     _hit_brick
 ;
-; }
+; c_map[backup_col_index] = 0x11;
 ;
-L0003:	rts
+L000F:	lda     _backup_col_index
+	clc
+	adc     #<(_c_map)
+	tay
+	lda     _backup_col_index+1
+	adc     #>(_c_map)
+	tax
+	tya
+	jsr     pushax
+	lda     #$11
+	ldy     #$00
+	jsr     staspidx
+;
+; temp = 0b01010101;
+;
+	lda     #$55
+	sta     _temp
+;
+; if (((temp_y_col >> 3) - 5) % 2) {
+;
+	ldx     #$00
+	lda     _temp_y_col
+	lsr     a
+	lsr     a
+	lsr     a
+	sec
+	sbc     #$05
+	bcs     L0011
+	dex
+L0011:	jsr     pushax
+	ldx     #$00
+	lda     #$02
+	jsr     tosmoda0
+	stx     tmp1
+	ora     tmp1
+	beq     L0010
+;
+; if (backup_col_index == 182 || backup_col_index == 185) {
+;
+	lda     _backup_col_index+1
+	bne     L002B
+	lda     _backup_col_index
+	cmp     #$B6
+	beq     L0014
+L002B:	lda     _backup_col_index+1
+	bne     L0012
+	lda     _backup_col_index
+	cmp     #$B9
+	bne     L0012
+;
+; temp = 0b10100101;
+;
+L0014:	lda     #$A5
+	sta     _temp
+;
+; backup_col_index += 16;
+;
+L0012:	lda     #$10
+	clc
+	adc     _backup_col_index
+	sta     _backup_col_index
+	bcc     L001E
+	inc     _backup_col_index+1
+;
+; } else {
+;
+	jmp     L001E
+;
+; if (backup_col_index == 198 || backup_col_index == 201) {
+;
+L0010:	lda     _backup_col_index+1
+	bne     L002D
+	lda     _backup_col_index
+	cmp     #$C6
+	beq     L001B
+L002D:	lda     _backup_col_index+1
+	bne     L0019
+	lda     _backup_col_index
+	cmp     #$C9
+	bne     L0019
+;
+; temp = 0b10100101;
+;
+L001B:	lda     #$A5
+	sta     _temp
+;
+; backup_col_index -= 16;
+;
+L0019:	lda     _backup_col_index
+	sec
+	sbc     #$10
+	sta     _backup_col_index
+	bcs     L001E
+	dec     _backup_col_index+1
+;
+; c_map[backup_col_index] = 0x11;
+;
+L001E:	lda     _backup_col_index
+	clc
+	adc     #<(_c_map)
+	sta     ptr1
+	lda     _backup_col_index+1
+	adc     #>(_c_map)
+	sta     ptr1+1
+	lda     #$11
+	ldy     #$00
+	sta     (ptr1),y
+;
+; one_vram_buffer(temp, (backup_nt_index & 0x2C00) | 0x3C0 | ((backup_nt_index >> 4) & 0x38) | ((backup_nt_index >> 2) & 0x07));
+;
+	lda     _temp
+	jsr     pusha
+	lda     _backup_nt_index+1
+	and     #$2C
+	tax
+	lda     #$C0
+	sta     ptr1
+	txa
+	ora     #$03
+	sta     ptr1+1
+	lda     _backup_nt_index
+	ldx     _backup_nt_index+1
+	jsr     asrax4
+	and     #$38
+	ora     ptr1
+	sta     ptr1
+	lda     ptr1+1
+	sta     ptr1+1
+	lda     _backup_nt_index
+	ldx     _backup_nt_index+1
+	jsr     asrax2
+	and     #$07
+	ora     ptr1
+	ldx     ptr1+1
+	jsr     _one_vram_buffer
+;
+; --tombstone_count;
+;
+	dec     _tombstone_count
+;
+; break;
+;
+	rts
 
 .endproc
 
@@ -7783,7 +8113,7 @@ L000D:	lda     #$01
 .segment	"CODE"
 
 ;
-; for (i = 6; i < 6 + enemy_count; ++i){
+; for (i = 6; i < 6 + enemy_count; ++i) {
 ;
 	lda     #$06
 	sta     _i
@@ -7797,7 +8127,7 @@ L0015:	lda     _i
 L0006:	jsr     tosicmp
 	bpl     L0003
 ;
-; if (actors.state[i] != DEAD){
+; if (actors.state[i] != DEAD) {
 ;
 	ldy     _i
 	lda     _actors+190,y
@@ -7809,7 +8139,7 @@ L0006:	jsr     tosicmp
 	lda     _i
 	sta     _pad_index
 ;
-; if (actors.state[i] != DYING && is_skull_collision_paddle()){
+; if (actors.state[i] != DYING && is_skull_collision_paddle()) {
 ;
 	ldy     _i
 	lda     _actors+190,y
@@ -7854,7 +8184,7 @@ L0006:	jsr     tosicmp
 	cmp     #$80
 	sta     _actors+74
 ;
-; for (i = 6; i < 6 + enemy_count; ++i){
+; for (i = 6; i < 6 + enemy_count; ++i) {
 ;
 L0017:	inc     _i
 	jmp     L0015
@@ -8728,15 +9058,29 @@ L001B:	lda     #$01
 ; if (pad1 & PAD_B) {
 ;
 L001C:	lda     _pad1
-	ldx     #$00
 	and     #$40
-	stx     tmp1
-	ora     tmp1
+	beq     L001D
+;
+; actors.counter[6] = 0;
+;
+	lda     #$00
+	sta     _actors+166
+;
+; actors.current_frame[6] = 0;
+;
+	sta     _actors+186
+;
+; actors.state[6] = DYING;
+;
+	lda     #$03
+	sta     _actors+196
 ;
 ; if (pad1 & PAD_SELECT) {
 ;
-	lda     _pad1
+L001D:	lda     _pad1
+	ldx     #$00
 	and     #$20
+	stx     tmp1
 	ora     tmp1
 ;
 ; if (pad1_new & PAD_START) {
@@ -9548,7 +9892,7 @@ L0066:	lda     _temp_x
 	lda     #$04
 	sta     _param1
 ;
-; param2 = skull_animation_index[actors.state[SKULL]][0]; // animation index
+; param2 = skull_animation_index[actors.state[SKULL]][0];  // animation index
 ;
 	ldx     #$00
 	lda     _actors+194
@@ -9564,7 +9908,7 @@ L0004:	sta     ptr1
 	lda     (ptr1),y
 	sta     _param2
 ;
-; param3 = skull_animation_index[actors.state[SKULL]][1]; // number of frames
+; param3 = skull_animation_index[actors.state[SKULL]][1];  // number of frames
 ;
 	ldx     #$00
 	lda     _actors+194
@@ -9581,11 +9925,13 @@ L0006:	adc     #<(_skull_animation_index)
 	lda     (ptr1),y
 	sta     _param3
 ;
-; set_animation_info();
+; set_animation_info(skull_animation_index);
 ;
+	lda     #<(_skull_animation_index)
+	ldx     #>(_skull_animation_index)
 	jsr     _set_animation_info
 ;
-; oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL]+param2]);
+; oam_meta_spr(actors.x[SKULL], actors.y[SKULL], skull_animation[actors.current_frame[SKULL] + param2]);
 ;
 	jsr     decsp2
 	lda     _actors+4
@@ -9789,10 +10135,10 @@ L0002:	jsr     _ppu_wait_nmi
 ; if (game_state == TITLE && pad1_new & PAD_START) {
 ;
 	lda     _game_state
-	bne     L0015
+	bne     L0018
 	lda     _pad1_new
 	and     #$10
-	beq     L0015
+	beq     L0018
 ;
 ; game_state = MAIN;
 ;
@@ -9820,12 +10166,12 @@ L0002:	jsr     _ppu_wait_nmi
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
-L0015:	lda     _game_state
+L0018:	lda     _game_state
 	cmp     #$03
-	bne     L0018
+	bne     L001B
 	lda     _pad1_new
 	and     #$10
-	beq     L0018
+	beq     L001B
 ;
 ; pal_bg(level_list[current_level * 3 + 2]);
 ;
@@ -9880,7 +10226,7 @@ L000E:	stx     tmp1
 ; } else if (game_state == MAIN) {
 ;
 	jmp     L0002
-L0018:	lda     _game_state
+L001B:	lda     _game_state
 	cmp     #$01
 	jne     L0002
 ;
@@ -9899,7 +10245,19 @@ L0018:	lda     _game_state
 ; if (brick_counter == 0) {
 ;
 	lda     _brick_counter
+;
+; } else if (tombstone_count == 0) {
+;
+	beq     L001C
+	lda     _tombstone_count
 	jsr     booleq
+;
+; debug(0x30 + tombstone_count);
+;
+L001C:	lda     _tombstone_count
+	clc
+	adc     #$30
+	jsr     _debug
 ;
 ; if (game_state == MAP) {
 ;

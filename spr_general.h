@@ -77,11 +77,9 @@ const unsigned char door1[] = {
     -8, -16, 0x30, 1 | OAM_FLIP_H,
     -8, -8, 0x40, 1 | OAM_FLIP_H,
     -8, 0, 0x50, 1 | OAM_FLIP_H,
-    -8, 8, 0x60, 1 | OAM_FLIP_H,
     0, -16, 0x30, 1,
     0, -8, 0x40, 1,
     0, 0, 0x50, 1,
-    0, 8, 0x60, 1,
     128
 
 };

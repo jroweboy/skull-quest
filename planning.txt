@@ -29,16 +29,17 @@ MARCH 2022
 
 5:
     x Hit skeleton
-    - Hit tombstone
+    x Hit tombstone
     - Crow animation
-    - End of level / Door animation
     - Altar implementation
-    - Angelic character design
+    x Angelic character design
     - Dialog system
-    - Altar animation
+    - End of level / Door animation
     
 APRIL 2022
-1:  - Ruin Temple Design
+1:
+    - Altar animation
+    - Ruin Temple Design
     - Ruin Town Design
     - Bridge Design
     
@@ -107,7 +108,7 @@ AUGUST
 2:
     - 2 Player Pong Game
 3:
-
+    - Achievements...
 4:
 
 5:
