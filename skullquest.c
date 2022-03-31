@@ -3,19 +3,21 @@
 #include "MMC3/mmc3_code.h"
 #include "MMC3/mmc3_code.c"
 
-// LEVEL NAMETABLES AND COLLISION
+// NAMETABLES COLLISION PALETTE
 #include "Collision/master_collision.h"
+#include "I-CHR/altar.pngE/altar.h"
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/map.pngE/map.h"
-
 #include "Nametable/Forest/level01.h"
 #include "Nametable/Forest/level02.h"
 #include "Nametable/title_screen.h"
+#include "palettes.h"
+
 // SPRITES METATILES
+#include "spr_angelic.h"
 #include "spr_general.h"
 #include "spr_skeleton.h"
 #include "spr_skull.h"
-#include "spr_angelic.h"
 
 #define ONES 7
 #define TENS 6
@@ -26,7 +28,6 @@
 #define MILLIONS 1
 #define TEN_MILLIONS 0
 
-#define LEVEL_TOTAL 2
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
 #define TILE_BACK 0x10
@@ -57,7 +58,7 @@ static unsigned char pad1_new;
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, param1, param2, param3, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count;
-static unsigned char game_state, current_level, paddle_count, enemy_count;
+static unsigned char game_state, current_level, paddle_count, enemy_count, story_step;
 
 static int collision_index, backup_col_index, backup_nt_index;
 #pragma bss-name(pop)
@@ -67,35 +68,13 @@ static int collision_index, backup_col_index, backup_nt_index;
 unsigned char wram_array[0x2000];
 #pragma bss-name(pop)
 
-const unsigned char pal_cemetery[16] = {
-    0x0f, 0x00, 0x3d, 0x08,  //
-    0x0f, 0x08, 0x18, 0x22,  // Grass/Dirt
-    0x0f, 0x00, 0x18, 0x10,  //
-    0x0f, 0x15, 0x20, 0x09   // GUID
-};
-
-const unsigned char pal_forest_bg[16] = {
-    0x0f, 0x15, 0x20, 0x09,  // GUID
-    0x0f, 0x29, 0x1a, 0x09,  // Grass/Foliage
-    0x0f, 0x08, 0x17, 0x27,  // Trunk
-    0x0f, 0x37, 0x17, 0x09   // Bricks
-};
-
-const char pal_spr_01[16] = {
-    0x0f, 0x20, 0x15, 0x12,  // Skull / Skeleton
-    0x0f, 0x00, 0x0f, 0x38,  // Crow / Door
-    0x0f, 0x17, 0x06, 0x07,  // Tree
-    0x0f, 0x04, 0x23, 0x0C   // Angelic
-};
-
-const char* faces[] = {
+const unsigned char* faces[] = {
     angelic_face,
 };
 
-const unsigned char* level_list[LEVEL_TOTAL * 3] = {
-    // TODO - LEVEL 00 - ALTAR
-    cemetery, cemetery_col, pal_cemetery,          // LEVEL 01 - Cemetery
-    forest_level_02, forest_col_02, pal_forest_bg  // LEVEL 02
+const unsigned char* level_list[] = {
+    altar, cemetery_col, pal_altar_bg, pal_altar_spr,            // LEVEL 00-ALTAR
+    cemetery, cemetery_col, pal_cemetery_bg, pal_cemetery_spr   // LEVEL 01-Cemetery
 };
 
 static char exp[] = "00000000";
@@ -130,18 +109,18 @@ typedef struct {
 // Always putting temporary before the next (ex DYING -> DEAD)
 #define IDLE 0
 #define TURNING 1
-
 #define WALKING 2
+
 #define ROTATE_H 2
 
 #define DYING 3
-
 #define DEAD 4
+
 #define ROTATE_V 4
 
-// index 0 - 3 paddles
-// index 4 - 5 skulls
-// index 6 - ennemies
+// index 0-3 paddles
+// index 4-5 skulls
+// index 6-ennemies
 Actors actors;
 
 #pragma rodata-name("BANK0")
@@ -184,7 +163,12 @@ void debug(unsigned char value) {
     one_vram_buffer(value, NTADR_A(1, 1));
 }
 
-void __fastcall__ animate_skeleton();
+void animate_skeleton();
+
+// param1 = actor index
+// param2 = index of animation
+// param3 = number of frame in animation
+void set_animation_info(const unsigned char array[][2]);
 
 void update_health() {
     if (p1_health > 0) {
@@ -217,6 +201,12 @@ void add_xp(unsigned char value, unsigned char pos) {
     exp[pos] = 0x30 + result;
     update_xp();
 }
+void clear_HUD() {
+    multi_vram_buffer_horz(0x00, 16, NAMETABLE_A);
+    multi_vram_buffer_horz(0x00, 16, NAMETABLE_A);
+    multi_vram_buffer_horz(0x00, 16, NAMETABLE_A);
+    multi_vram_buffer_horz(0x00, 16, NAMETABLE_A);
+}
 
 void show_HUD() {
     // vram_adr(0x23C0);
@@ -243,6 +233,14 @@ void show_HUD() {
     // OTHER??
 }
 
+void show_map() {
+    set_chr_mode_4(8);
+    set_chr_mode_5(9);
+    set_scroll_x(0x0100);
+    pal_col(0x01, 0x28);
+    pal_col(0x02, 0x18);
+}
+
 void show_title_screen() {
     // show press start
     // wait for input
@@ -252,10 +250,22 @@ void show_game_over() {
     // TODO
 }
 
-void load_paddles() {
+void init_level_specifics() {
     switch (current_level) {
         case 0:
             // Altar
+            actors.x[0] = 64;
+            actors.x[1] = 88;
+            actors.x[2] = 160;
+            actors.x[3] = 184;
+            for (i = 0; i < 4; ++i) {
+                actors.y[i] = 72;
+                actors.animation_speed[i] = 8;
+                actors.current_frame[i] = i;
+                actors.state[i] = IDLE;
+                actors.xDir[i] = LEFT;
+            }
+            break;
         case 1:
             // Cemetery
             // Achievement 1 : Scarecrow
@@ -264,6 +274,7 @@ void load_paddles() {
             actors.x[0] = 0x78;
             actors.y[0] = 0xD0;
             banked_call(0, init_skeletons);
+            game_state = STORY;
             break;
         case 2:
             paddle_count = 4;
@@ -389,8 +400,18 @@ void init_skull() {
 
 void draw_level_specifics() {
     switch (current_level) {
-        // TODO 0 will be ALTAR....
         case 0:
+            // ALTAR
+            for (i = 0; i < 4; ++i) {
+                param1 = i;
+                param2 = torch_animation_index[actors.state[i]][0];  // animation index
+                param3 = torch_animation_index[actors.state[i]][1];  // number of frames
+                set_animation_info(torch_animation_index);
+                oam_meta_spr(actors.x[param1], actors.y[param1], torch_animation[actors.current_frame[param1] + param2]);
+            }
+            break;
+        case 1:
+            // CEMETERY
             chr_4_index = 2;
             chr_5_index = 3;
             if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
@@ -402,14 +423,14 @@ void draw_level_specifics() {
             oam_meta_spr(128, 64, door1);
             oam_meta_spr(219, 61, tree);
             break;
-        case 1:
+        case 2:
             break;
     }
 }
 
 void load_level() {
     ppu_off();
-    temp = current_level * 3;
+    temp = current_level * 4;
     vram_adr(NAMETABLE_A);
     vram_unrle(level_list[temp]);
 
@@ -417,6 +438,7 @@ void load_level() {
     memcpy(c_map, level_list[++temp], 368);
 
     pal_bg(level_list[++temp]);
+    pal_spr(level_list[++temp]);
 
     // Check how many tombstones or destructible brick there are
     brick_counter = 0;
@@ -440,9 +462,9 @@ void load_level() {
             }
         }
     }
-    tombstone_count = tombstone_count >> 1; // Divided by 2 because we only count the first 7 in the 0x77
+    tombstone_count = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
 
-    load_paddles();
+    init_level_specifics();
 
     init_skull();
 
@@ -456,7 +478,7 @@ void load_level() {
 
 void load_title_screen() {
     pal_bg((const char*)pal_forest_bg);
-    pal_spr(pal_spr_01);
+    pal_spr(pal_cemetery_spr);
     vram_adr(NAMETABLE_A);
     vram_unrle(title_screen);
     game_state = TITLE;
@@ -573,7 +595,7 @@ char set_collision_data() {
 void set_animation_info(const unsigned char array[][2]) {
     if (actors.counter[param1] == actors.animation_speed[param1]) {
         if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
-            ++actors.state[param1];                                 // NEXT STATE
+            ++actors.state[param1];              // NEXT STATE
             param2 = array[actors.state[i]][0];  // animation index
             param3 = array[actors.state[i]][1];  // number of frames
             actors.current_frame[param1] = 0;
@@ -584,7 +606,7 @@ void set_animation_info(const unsigned char array[][2]) {
     }
     ++actors.counter[param1];
 
-    if (actors.xDir[param1] == 1) {  // RIGHT OR DOWN
+    if (actors.xDir[param1] == RIGHT) {
         param2 += param3;
     }
 }
@@ -1197,6 +1219,50 @@ void draw_sprites(void) {
     // TODO draw_ennemies();
 }
 
+void play_story() {
+    switch (current_level) {
+        case 0:
+            // Altar
+            oam_clear();
+            draw_level_specifics();
+            // switch (story_step) {
+            //     case 0:
+            //         break;
+            // }
+            break;
+        case 1:
+            // Cemetery
+            switch (story_step) {
+                case 0:
+                    load_level();
+                    show_map();
+                    actors.x[SKULL] = 125;
+                    actors.y[SKULL] = 0;
+                    ++story_step;
+                case 1:
+                    ++actors.y[SKULL];
+                    if (actors.x[SKULL] < 162) {
+                        ++actors.x[SKULL];
+                    }
+                    if (actors.y[SKULL] > 200) {
+                        ++story_step;
+                    }
+                    break;
+                case 2:
+                    // TODO
+                    break;
+                default:
+                    p1_health = 3;
+                    p1_max_health = 3;
+                    game_state = MAIN;
+            }
+            oam_clear();
+            draw_skull();
+            // delay???
+            break;
+    }
+}
+
 void main() {
     // famitone_init(&music_data);
     // sfx_init(&sound_data);
@@ -1227,21 +1293,25 @@ void main() {
 
         if (game_state == TITLE && pad1_new & PAD_START) {
             // PRESS START TO PLAY!
-            game_state = MAIN;
+            game_state = STORY;
+            story_step = 0;
             current_level = 0;
-            p1_health = 3;
-            p1_max_health = 3;
-
             load_level();
-
         } else if (game_state == MAP && pad1_new & PAD_START) {
             // Return to gameplay
-            pal_bg(level_list[current_level * 3 + 2]);
+            pal_bg(level_list[current_level * 4 + 2]);
             set_chr_mode_4(chr_4_index);
             set_chr_mode_5(chr_5_index);
             set_scroll_x(0x0000);
             game_state = MAIN;
             ppu_wait_nmi();
+
+        } else if (game_state == STORY) {
+            // STORY TIME!!!
+            play_story();
+            if (pad1_new & PAD_A) {
+                game_state = MAIN;
+            }
 
         } else if (game_state == MAIN) {
             check_main_input();
@@ -1256,11 +1326,7 @@ void main() {
             debug(0x30 + tombstone_count);
 
             if (game_state == MAP) {
-                set_chr_mode_4(8);
-                set_chr_mode_5(9);
-                set_scroll_x(0x0100);
-                pal_col(0x01, 0x28);
-                pal_col(0x02, 0x18);
+                show_map();
                 // TODO DRAW NAME OF LEVEL
                 // TODO DRAW SKULL AT CORRECT POSITION
                 oam_clear();
