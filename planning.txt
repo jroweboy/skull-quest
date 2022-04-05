@@ -30,15 +30,17 @@ MARCH 2022
 5:
     x Hit skeleton
     x Hit tombstone
-    - Crow animation
-    - Altar implementation
+    x Altar implementation
     x Angelic character design
-    - Dialog system
-    - End of level / Door animation
+    x Story system
+    - Lightning animation 52 height
+    - Altar Story
     
 APRIL 2022
 1:
-    - Altar animation
+    - Crow animation
+    - Dialog system
+    - End of cemetery level / Door animation
     - Ruin Temple Design
     - Ruin Town Design
     - Bridge Design

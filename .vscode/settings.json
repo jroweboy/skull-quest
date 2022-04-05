@@ -4,7 +4,8 @@
         "master_colmaps.h": "c",
         "title_screen.h": "c",
         "level01.h": "c",
-        "master_collision.h": "c"
+        "master_collision.h": "c",
+        "spr_lightning.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

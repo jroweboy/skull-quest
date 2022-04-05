@@ -389,3 +389,4 @@ sounds_data:
 	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    3
 	.incbin "I-CHR/sprites01.pngE/chrblock.chr"	; 4kb Main sprites   4  -  5   -  6  -  7
 	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
+	.incbin "I-CHR/sprites01.pngE/lightning.chr"; 1kb Lightning A

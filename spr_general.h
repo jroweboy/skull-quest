@@ -123,22 +123,22 @@ const unsigned char door4[] = {
 
 const unsigned char torch_flicker1[] = {
     0, 0, 0x12, 3,
-    0, 8, 0x14, 2,
+    0, 8, 0x14, 1,
     128};
 
 const unsigned char torch_flicker2[] = {
     0, 0, 0x13, 3,
-    0, 8, 0x14, 2,
+    0, 8, 0x14, 1,
     128};
 
 const unsigned char torch_flicker3[] = {
     0, 0, 0x12, 3 | OAM_FLIP_H,
-    0, 8, 0x14, 2,
+    0, 8, 0x14, 1,
     128};
 
 const unsigned char torch_flicker4[] = {
     0, 0, 0x16, 3,
-    0, 8, 0x14, 2,
+    0, 8, 0x14, 1,
     128};
 
 // 1st element: Animation index
@@ -153,3 +153,4 @@ const unsigned char* const torch_animation[] = {
     torch_flicker3,
     torch_flicker4,
 };
+

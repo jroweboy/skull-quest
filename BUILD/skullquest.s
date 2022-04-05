@@ -16,9 +16,11 @@
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
 	.import		_set_scroll_x
+	.import		_set_scroll_y
 	.import		_pal_bg
 	.import		_pal_spr
 	.import		_pal_col
+	.import		_pal_bright
 	.import		_ppu_wait_nmi
 	.import		_ppu_off
 	.import		_ppu_on_all
@@ -37,23 +39,25 @@
 	.export		_bank_push
 	.export		_bank_pop
 	.import		_set_prg_8000
+	.import		_set_chr_mode_1
 	.import		_set_chr_mode_4
 	.import		_set_chr_mode_5
 	.import		_disable_irq
+	.export		_animate_skeleton
+	.export		_set_animation_info
 	.export		_forest_col_01
 	.export		_forest_col_02
 	.export		_cemetery_col
 	.export		_altar
 	.export		_cemetery
 	.export		_map
-	.export		_forest_level_01
-	.export		_forest_level_02
 	.export		_title_screen
-	.export		_pal_cemetery_bg
 	.export		_pal_forest_bg
-	.export		_pal_altar_spr
+	.export		_pal_cemetery_bg
 	.export		_pal_cemetery_spr
 	.export		_pal_altar_bg
+	.export		_pal_altar_spr
+	.export		_pal_altar_lightning
 	.export		_angelic_idle1
 	.export		_angelic_idle2
 	.export		_angelic_idle3
@@ -119,14 +123,37 @@
 	.export		_skull_rotate_right6
 	.export		_skull_animation_index
 	.export		_skull_animation
+	.export		_hero_head_up
+	.export		_hero_head_down
+	.export		_necromancer_idle
+	.export		_necromancer_raising1
+	.export		_necromancer_raising2
+	.export		_necromancer_hit
+	.export		_necromancer_animation_index
+	.export		_necromancer_animation
+	.export		_lightning_dead
+	.export		_lightning_0_data
+	.export		_lightning_1_data
+	.export		_lightning_2_data
+	.export		_lightning_3_data
+	.export		_lightning_4_data
+	.export		_lightning_5_data
+	.export		_lightning_6_data
+	.export		_lightning_7_data
+	.export		_lightning_8_data
+	.export		_lightning_9_data
+	.export		_lightning_10_data
+	.export		_lightning_11_data
+	.export		_lightning_animation_index
+	.export		_lightning_animation
 	.export		_wram_array
 	.export		_faces
 	.export		_level_list
 	.export		_actors
 	.export		_init_skeletons
+	.export		_init_level_specifics
+	.export		_init_skull
 	.export		_debug
-	.export		_animate_skeleton
-	.export		_set_animation_info
 	.export		_update_health
 	.export		_update_xp
 	.export		_add_xp
@@ -135,8 +162,6 @@
 	.export		_show_map
 	.export		_show_title_screen
 	.export		_show_game_over
-	.export		_init_level_specifics
-	.export		_init_skull
 	.export		_draw_level_specifics
 	.export		_load_level
 	.export		_load_title_screen
@@ -1359,129 +1384,121 @@ _altar:
 	.byte	$01
 	.byte	$02
 	.byte	$25
-	.byte	$96
-	.byte	$97
+	.byte	$9B
+	.byte	$9C
 	.byte	$01
 	.byte	$02
 	.byte	$19
-	.byte	$96
-	.byte	$97
-	.byte	$01
-	.byte	$01
-	.byte	$88
-	.byte	$89
-	.byte	$01
-	.byte	$02
-	.byte	$0B
-	.byte	$A6
-	.byte	$A7
-	.byte	$01
-	.byte	$02
-	.byte	$0B
-	.byte	$88
-	.byte	$89
-	.byte	$01
-	.byte	$01
-	.byte	$98
-	.byte	$99
-	.byte	$01
-	.byte	$02
-	.byte	$0A
-	.byte	$B4
-	.byte	$B6
-	.byte	$B7
-	.byte	$B5
-	.byte	$01
-	.byte	$02
-	.byte	$0A
-	.byte	$98
-	.byte	$99
-	.byte	$01
-	.byte	$01
-	.byte	$A8
-	.byte	$A9
-	.byte	$01
-	.byte	$02
-	.byte	$04
-	.byte	$B2
-	.byte	$01
-	.byte	$01
-	.byte	$B2
-	.byte	$01
-	.byte	$01
-	.byte	$B2
-	.byte	$9A
 	.byte	$9B
-	.byte	$B2
+	.byte	$9C
 	.byte	$01
 	.byte	$01
-	.byte	$B2
-	.byte	$01
-	.byte	$01
-	.byte	$B2
+	.byte	$89
+	.byte	$8A
 	.byte	$01
 	.byte	$02
-	.byte	$04
-	.byte	$A8
+	.byte	$0B
+	.byte	$84
+	.byte	$94
+	.byte	$01
+	.byte	$02
+	.byte	$0B
+	.byte	$89
+	.byte	$8A
+	.byte	$01
+	.byte	$01
+	.byte	$99
+	.byte	$9A
+	.byte	$01
+	.byte	$02
+	.byte	$0A
+	.byte	$B3
+	.byte	$A4
+	.byte	$B9
+	.byte	$B4
+	.byte	$01
+	.byte	$02
+	.byte	$0A
+	.byte	$99
+	.byte	$9A
+	.byte	$01
+	.byte	$01
 	.byte	$A9
-	.byte	$01
-	.byte	$01
-	.byte	$B8
-	.byte	$B9
+	.byte	$AA
 	.byte	$01
 	.byte	$02
 	.byte	$04
-	.byte	$B3
+	.byte	$B1
 	.byte	$01
 	.byte	$01
-	.byte	$B3
+	.byte	$B1
 	.byte	$01
 	.byte	$01
-	.byte	$B3
+	.byte	$B1
+	.byte	$8B
+	.byte	$8C
+	.byte	$B1
 	.byte	$01
 	.byte	$01
-	.byte	$B3
+	.byte	$B1
 	.byte	$01
 	.byte	$01
-	.byte	$B3
-	.byte	$01
-	.byte	$01
-	.byte	$B3
+	.byte	$B1
 	.byte	$01
 	.byte	$02
 	.byte	$04
-	.byte	$B8
-	.byte	$B9
+	.byte	$A9
+	.byte	$AA
+	.byte	$01
+	.byte	$01
+	.byte	$AB
+	.byte	$AC
+	.byte	$01
+	.byte	$02
+	.byte	$04
+	.byte	$B2
+	.byte	$01
+	.byte	$01
+	.byte	$B2
+	.byte	$01
+	.byte	$01
+	.byte	$B2
+	.byte	$01
+	.byte	$01
+	.byte	$B2
+	.byte	$01
+	.byte	$01
+	.byte	$B2
+	.byte	$01
+	.byte	$01
+	.byte	$B2
+	.byte	$01
+	.byte	$02
+	.byte	$04
+	.byte	$AB
+	.byte	$AC
 	.byte	$01
 	.byte	$02
 	.byte	$06
 	.byte	$00
 	.byte	$00
-	.byte	$B2
+	.byte	$B1
 	.byte	$00
 	.byte	$00
-	.byte	$B2
+	.byte	$B1
 	.byte	$00
 	.byte	$00
-	.byte	$B2
-	.byte	$AA
-	.byte	$AB
-	.byte	$B2
+	.byte	$B1
+	.byte	$A2
+	.byte	$A3
+	.byte	$B1
 	.byte	$00
 	.byte	$00
-	.byte	$B2
+	.byte	$B1
 	.byte	$00
 	.byte	$00
-	.byte	$B2
+	.byte	$B1
 	.byte	$00
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$0B
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$11
 	.byte	$00
 	.byte	$01
 	.byte	$02
@@ -1495,127 +1512,79 @@ _altar:
 	.byte	$00
 	.byte	$01
 	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$A1
+	.byte	$30
+	.byte	$81
 	.byte	$82
-	.byte	$A3
+	.byte	$81
 	.byte	$82
-	.byte	$A3
+	.byte	$81
 	.byte	$82
 	.byte	$01
 	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$06
+	.byte	$18
 	.byte	$80
+	.byte	$91
+	.byte	$85
+	.byte	$86
+	.byte	$87
+	.byte	$88
 	.byte	$93
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$94
 	.byte	$80
 	.byte	$01
 	.byte	$02
-	.byte	$06
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$05
+	.byte	$16
 	.byte	$80
 	.byte	$A0
 	.byte	$81
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$84
+	.byte	$95
+	.byte	$96
+	.byte	$97
+	.byte	$98
+	.byte	$83
 	.byte	$90
 	.byte	$80
 	.byte	$01
 	.byte	$02
-	.byte	$05
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$05
+	.byte	$15
 	.byte	$90
 	.byte	$A0
 	.byte	$91
-	.byte	$11
-	.byte	$02
-	.byte	$03
+	.byte	$A5
+	.byte	$A6
+	.byte	$A7
+	.byte	$A8
 	.byte	$92
 	.byte	$A0
 	.byte	$A0
 	.byte	$01
 	.byte	$02
-	.byte	$05
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$05
+	.byte	$15
 	.byte	$A0
 	.byte	$B0
-	.byte	$83
-	.byte	$11
-	.byte	$02
-	.byte	$03
+	.byte	$A1
+	.byte	$B5
+	.byte	$B6
+	.byte	$B7
+	.byte	$B8
 	.byte	$82
 	.byte	$B0
 	.byte	$A0
 	.byte	$01
 	.byte	$02
-	.byte	$05
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$05
+	.byte	$15
 	.byte	$B0
 	.byte	$00
 	.byte	$91
-	.byte	$94
+	.byte	$93
 	.byte	$91
-	.byte	$94
+	.byte	$93
 	.byte	$91
-	.byte	$94
+	.byte	$93
 	.byte	$00
 	.byte	$B0
 	.byte	$01
 	.byte	$02
-	.byte	$05
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
+	.byte	$17
 	.byte	$00
 	.byte	$BA
 	.byte	$BB
@@ -1624,11 +1593,7 @@ _altar:
 	.byte	$00
 	.byte	$01
 	.byte	$02
-	.byte	$07
-	.byte	$00
-	.byte	$01
-	.byte	$02
-	.byte	$07
+	.byte	$10
 	.byte	$00
 	.byte	$00
 	.byte	$01
@@ -1723,11 +1688,9 @@ _altar:
 	.byte	$00
 	.byte	$02
 	.byte	$04
-	.byte	$57
 	.byte	$55
 	.byte	$02
-	.byte	$03
-	.byte	$5D
+	.byte	$05
 	.byte	$00
 	.byte	$00
 	.byte	$55
@@ -2814,1173 +2777,6 @@ _map:
 	.byte	$00
 	.byte	$01
 	.byte	$00
-_forest_level_01:
-	.byte	$01
-	.byte	$00
-	.byte	$01
-	.byte	$A0
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$08
-	.byte	$08
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$08
-	.byte	$09
-	.byte	$08
-	.byte	$09
-	.byte	$08
-	.byte	$09
-	.byte	$08
-	.byte	$09
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$18
-	.byte	$18
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$18
-	.byte	$19
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$10
-	.byte	$01
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$06
-	.byte	$07
-	.byte	$10
-	.byte	$01
-	.byte	$07
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$10
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$16
-	.byte	$17
-	.byte	$10
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$10
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$10
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$10
-	.byte	$01
-	.byte	$09
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$10
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$01
-	.byte	$02
-	.byte	$11
-	.byte	$01
-	.byte	$11
-	.byte	$10
-	.byte	$01
-	.byte	$02
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$08
-	.byte	$09
-	.byte	$10
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$0F
-	.byte	$10
-	.byte	$10
-	.byte	$08
-	.byte	$09
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$10
-	.byte	$01
-	.byte	$11
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$18
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$19
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$18
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$19
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$14
-	.byte	$15
-	.byte	$08
-	.byte	$18
-	.byte	$08
-	.byte	$09
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$10
-	.byte	$01
-	.byte	$11
-	.byte	$08
-	.byte	$18
-	.byte	$19
-	.byte	$09
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$06
-	.byte	$07
-	.byte	$10
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$0F
-	.byte	$10
-	.byte	$10
-	.byte	$06
-	.byte	$07
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$16
-	.byte	$17
-	.byte	$10
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$11
-	.byte	$10
-	.byte	$16
-	.byte	$17
-	.byte	$05
-	.byte	$01
-	.byte	$02
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$01
-	.byte	$02
-	.byte	$11
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$11
-	.byte	$10
-	.byte	$01
-	.byte	$02
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$02
-	.byte	$04
-	.byte	$01
-	.byte	$0F
-	.byte	$11
-	.byte	$01
-	.byte	$02
-	.byte	$10
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$15
-	.byte	$10
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$15
-	.byte	$10
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$15
-	.byte	$10
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$10
-	.byte	$11
-	.byte	$01
-	.byte	$15
-	.byte	$10
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$09
-	.byte	$10
-	.byte	$01
-	.byte	$17
-	.byte	$08
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$05
-	.byte	$19
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$18
-	.byte	$05
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$01
-	.byte	$1D
-	.byte	$00
-	.byte	$01
-	.byte	$20
-	.byte	$55
-	.byte	$01
-	.byte	$06
-	.byte	$51
-	.byte	$55
-	.byte	$A5
-	.byte	$A5
-	.byte	$55
-	.byte	$55
-	.byte	$A5
-	.byte	$A5
-	.byte	$55
-	.byte	$01
-	.byte	$03
-	.byte	$5A
-	.byte	$5A
-	.byte	$55
-	.byte	$01
-	.byte	$04
-	.byte	$F5
-	.byte	$01
-	.byte	$03
-	.byte	$55
-	.byte	$01
-	.byte	$02
-	.byte	$65
-	.byte	$5F
-	.byte	$01
-	.byte	$03
-	.byte	$95
-	.byte	$55
-	.byte	$01
-	.byte	$09
-	.byte	$F5
-	.byte	$01
-	.byte	$05
-	.byte	$55
-	.byte	$05
-	.byte	$01
-	.byte	$06
-	.byte	$05
-	.byte	$01
-	.byte	$00
-_forest_level_02:
-	.byte	$06
-	.byte	$00
-	.byte	$06
-	.byte	$A0
-	.byte	$05
-	.byte	$06
-	.byte	$1D
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$09
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$0A
-	.byte	$0B
-	.byte	$08
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$18
-	.byte	$19
-	.byte	$10
-	.byte	$06
-	.byte	$17
-	.byte	$18
-	.byte	$19
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$13
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$11
-	.byte	$06
-	.byte	$0B
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$10
-	.byte	$06
-	.byte	$0B
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$0B
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$06
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$10
-	.byte	$04
-	.byte	$10
-	.byte	$04
-	.byte	$06
-	.byte	$05
-	.byte	$10
-	.byte	$04
-	.byte	$10
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$10
-	.byte	$04
-	.byte	$06
-	.byte	$03
-	.byte	$10
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$01
-	.byte	$10
-	.byte	$04
-	.byte	$04
-	.byte	$10
-	.byte	$01
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$06
-	.byte	$07
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$04
-	.byte	$04
-	.byte	$06
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$04
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$04
-	.byte	$04
-	.byte	$06
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$04
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$05
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$10
-	.byte	$04
-	.byte	$10
-	.byte	$10
-	.byte	$04
-	.byte	$06
-	.byte	$03
-	.byte	$10
-	.byte	$10
-	.byte	$04
-	.byte	$10
-	.byte	$10
-	.byte	$11
-	.byte	$06
-	.byte	$04
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$04
-	.byte	$10
-	.byte	$06
-	.byte	$09
-	.byte	$04
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$10
-	.byte	$06
-	.byte	$0B
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$11
-	.byte	$11
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$10
-	.byte	$06
-	.byte	$0B
-	.byte	$02
-	.byte	$03
-	.byte	$02
-	.byte	$03
-	.byte	$11
-	.byte	$11
-	.byte	$10
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$0C
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$11
-	.byte	$06
-	.byte	$0B
-	.byte	$12
-	.byte	$13
-	.byte	$12
-	.byte	$13
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$0D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$1C
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$11
-	.byte	$06
-	.byte	$13
-	.byte	$10
-	.byte	$06
-	.byte	$02
-	.byte	$1D
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$08
-	.byte	$09
-	.byte	$10
-	.byte	$06
-	.byte	$17
-	.byte	$08
-	.byte	$09
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$18
-	.byte	$19
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$1A
-	.byte	$1B
-	.byte	$18
-	.byte	$19
-	.byte	$05
-	.byte	$00
-	.byte	$00
-	.byte	$05
-	.byte	$06
-	.byte	$1D
-	.byte	$00
-	.byte	$06
-	.byte	$28
-	.byte	$55
-	.byte	$F5
-	.byte	$06
-	.byte	$05
-	.byte	$55
-	.byte	$DD
-	.byte	$55
-	.byte	$15
-	.byte	$05
-	.byte	$05
-	.byte	$45
-	.byte	$55
-	.byte	$77
-	.byte	$DD
-	.byte	$55
-	.byte	$11
-	.byte	$00
-	.byte	$00
-	.byte	$44
-	.byte	$55
-	.byte	$77
-	.byte	$DD
-	.byte	$55
-	.byte	$11
-	.byte	$00
-	.byte	$00
-	.byte	$44
-	.byte	$55
-	.byte	$77
-	.byte	$DD
-	.byte	$55
-	.byte	$11
-	.byte	$00
-	.byte	$00
-	.byte	$44
-	.byte	$55
-	.byte	$77
-	.byte	$5D
-	.byte	$F5
-	.byte	$06
-	.byte	$05
-	.byte	$57
-	.byte	$05
-	.byte	$06
-	.byte	$06
-	.byte	$05
-	.byte	$06
-	.byte	$00
 _title_screen:
 	.byte	$01
 	.byte	$00
@@ -4054,6 +2850,23 @@ _title_screen:
 	.byte	$00
 	.byte	$01
 	.byte	$00
+_pal_forest_bg:
+	.byte	$0F
+	.byte	$15
+	.byte	$30
+	.byte	$09
+	.byte	$0F
+	.byte	$29
+	.byte	$1A
+	.byte	$09
+	.byte	$0F
+	.byte	$08
+	.byte	$17
+	.byte	$27
+	.byte	$0F
+	.byte	$37
+	.byte	$17
+	.byte	$09
 _pal_cemetery_bg:
 	.byte	$0F
 	.byte	$00
@@ -4069,45 +2882,11 @@ _pal_cemetery_bg:
 	.byte	$10
 	.byte	$0F
 	.byte	$15
-	.byte	$20
+	.byte	$30
 	.byte	$09
-_pal_forest_bg:
-	.byte	$0F
-	.byte	$15
-	.byte	$20
-	.byte	$09
-	.byte	$0F
-	.byte	$29
-	.byte	$1A
-	.byte	$09
-	.byte	$0F
-	.byte	$08
-	.byte	$17
-	.byte	$27
-	.byte	$0F
-	.byte	$37
-	.byte	$17
-	.byte	$09
-_pal_altar_spr:
-	.byte	$10
-	.byte	$20
-	.byte	$15
-	.byte	$11
-	.byte	$10
-	.byte	$00
-	.byte	$0F
-	.byte	$38
-	.byte	$10
-	.byte	$17
-	.byte	$06
-	.byte	$07
-	.byte	$10
-	.byte	$09
-	.byte	$19
-	.byte	$29
 _pal_cemetery_spr:
 	.byte	$0F
-	.byte	$20
+	.byte	$30
 	.byte	$15
 	.byte	$12
 	.byte	$0F
@@ -4139,6 +2918,40 @@ _pal_altar_bg:
 	.byte	$0F
 	.byte	$07
 	.byte	$11
+_pal_altar_spr:
+	.byte	$10
+	.byte	$30
+	.byte	$15
+	.byte	$11
+	.byte	$10
+	.byte	$05
+	.byte	$0C
+	.byte	$27
+	.byte	$10
+	.byte	$17
+	.byte	$08
+	.byte	$36
+	.byte	$10
+	.byte	$09
+	.byte	$19
+	.byte	$29
+_pal_altar_lightning:
+	.byte	$10
+	.byte	$30
+	.byte	$15
+	.byte	$11
+	.byte	$10
+	.byte	$05
+	.byte	$0C
+	.byte	$27
+	.byte	$10
+	.byte	$21
+	.byte	$31
+	.byte	$30
+	.byte	$10
+	.byte	$09
+	.byte	$19
+	.byte	$29
 _angelic_idle1:
 	.byte	$00
 	.byte	$00
@@ -4598,7 +3411,7 @@ _torch_flicker1:
 	.byte	$00
 	.byte	$08
 	.byte	$14
-	.byte	$02
+	.byte	$01
 	.byte	$80
 _torch_flicker2:
 	.byte	$00
@@ -4608,7 +3421,7 @@ _torch_flicker2:
 	.byte	$00
 	.byte	$08
 	.byte	$14
-	.byte	$02
+	.byte	$01
 	.byte	$80
 _torch_flicker3:
 	.byte	$00
@@ -4618,7 +3431,7 @@ _torch_flicker3:
 	.byte	$00
 	.byte	$08
 	.byte	$14
-	.byte	$02
+	.byte	$01
 	.byte	$80
 _torch_flicker4:
 	.byte	$00
@@ -4628,7 +3441,7 @@ _torch_flicker4:
 	.byte	$00
 	.byte	$08
 	.byte	$14
-	.byte	$02
+	.byte	$01
 	.byte	$80
 _torch_animation_index:
 	.byte	$00
@@ -5240,6 +4053,1306 @@ _skull_animation:
 	.addr	_skull_rotate_right4
 	.addr	_skull_rotate_right5
 	.addr	_skull_rotate_right6
+_hero_head_up:
+	.byte	$05
+	.byte	$03
+	.byte	$35
+	.byte	$02
+	.byte	$00
+	.byte	$00
+	.byte	$34
+	.byte	$02
+	.byte	$00
+	.byte	$08
+	.byte	$44
+	.byte	$02
+	.byte	$00
+	.byte	$10
+	.byte	$54
+	.byte	$02
+	.byte	$08
+	.byte	$08
+	.byte	$45
+	.byte	$02
+	.byte	$08
+	.byte	$10
+	.byte	$55
+	.byte	$02
+	.byte	$09
+	.byte	$00
+	.byte	$34
+	.byte	$42
+	.byte	$80
+_hero_head_down:
+	.byte	$05
+	.byte	$04
+	.byte	$36
+	.byte	$02
+	.byte	$00
+	.byte	$00
+	.byte	$34
+	.byte	$02
+	.byte	$00
+	.byte	$08
+	.byte	$44
+	.byte	$02
+	.byte	$00
+	.byte	$10
+	.byte	$54
+	.byte	$02
+	.byte	$08
+	.byte	$08
+	.byte	$45
+	.byte	$02
+	.byte	$08
+	.byte	$10
+	.byte	$55
+	.byte	$02
+	.byte	$09
+	.byte	$00
+	.byte	$34
+	.byte	$42
+	.byte	$80
+_necromancer_idle:
+	.byte	$00
+	.byte	$00
+	.byte	$70
+	.byte	$01
+	.byte	$08
+	.byte	$00
+	.byte	$71
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$72
+	.byte	$01
+	.byte	$08
+	.byte	$08
+	.byte	$73
+	.byte	$01
+	.byte	$00
+	.byte	$10
+	.byte	$74
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$75
+	.byte	$01
+	.byte	$0F
+	.byte	$FA
+	.byte	$65
+	.byte	$01
+	.byte	$03
+	.byte	$FC
+	.byte	$60
+	.byte	$02
+	.byte	$09
+	.byte	$07
+	.byte	$64
+	.byte	$01
+	.byte	$0D
+	.byte	$04
+	.byte	$56
+	.byte	$82
+	.byte	$08
+	.byte	$10
+	.byte	$77
+	.byte	$01
+	.byte	$0A
+	.byte	$08
+	.byte	$77
+	.byte	$01
+	.byte	$11
+	.byte	$02
+	.byte	$77
+	.byte	$C1
+	.byte	$80
+_necromancer_raising1:
+	.byte	$00
+	.byte	$00
+	.byte	$70
+	.byte	$01
+	.byte	$08
+	.byte	$00
+	.byte	$71
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$72
+	.byte	$01
+	.byte	$08
+	.byte	$08
+	.byte	$73
+	.byte	$01
+	.byte	$00
+	.byte	$10
+	.byte	$74
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$75
+	.byte	$01
+	.byte	$0E
+	.byte	$F8
+	.byte	$66
+	.byte	$01
+	.byte	$03
+	.byte	$FC
+	.byte	$60
+	.byte	$02
+	.byte	$09
+	.byte	$06
+	.byte	$64
+	.byte	$01
+	.byte	$0D
+	.byte	$02
+	.byte	$56
+	.byte	$82
+	.byte	$0A
+	.byte	$05
+	.byte	$77
+	.byte	$01
+	.byte	$09
+	.byte	$0C
+	.byte	$77
+	.byte	$01
+	.byte	$0A
+	.byte	$00
+	.byte	$77
+	.byte	$01
+	.byte	$01
+	.byte	$08
+	.byte	$64
+	.byte	$41
+	.byte	$FD
+	.byte	$05
+	.byte	$56
+	.byte	$02
+	.byte	$80
+_necromancer_raising2:
+	.byte	$00
+	.byte	$00
+	.byte	$70
+	.byte	$01
+	.byte	$08
+	.byte	$00
+	.byte	$71
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$72
+	.byte	$01
+	.byte	$08
+	.byte	$08
+	.byte	$73
+	.byte	$01
+	.byte	$00
+	.byte	$10
+	.byte	$74
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$75
+	.byte	$01
+	.byte	$0E
+	.byte	$F5
+	.byte	$66
+	.byte	$01
+	.byte	$03
+	.byte	$FC
+	.byte	$60
+	.byte	$02
+	.byte	$09
+	.byte	$01
+	.byte	$64
+	.byte	$81
+	.byte	$0E
+	.byte	$FE
+	.byte	$56
+	.byte	$82
+	.byte	$0A
+	.byte	$05
+	.byte	$77
+	.byte	$01
+	.byte	$09
+	.byte	$0A
+	.byte	$77
+	.byte	$01
+	.byte	$0A
+	.byte	$FD
+	.byte	$76
+	.byte	$01
+	.byte	$FF
+	.byte	$07
+	.byte	$64
+	.byte	$41
+	.byte	$FA
+	.byte	$04
+	.byte	$56
+	.byte	$02
+	.byte	$80
+_necromancer_hit:
+	.byte	$00
+	.byte	$00
+	.byte	$70
+	.byte	$01
+	.byte	$08
+	.byte	$00
+	.byte	$71
+	.byte	$01
+	.byte	$00
+	.byte	$08
+	.byte	$72
+	.byte	$01
+	.byte	$08
+	.byte	$08
+	.byte	$73
+	.byte	$01
+	.byte	$00
+	.byte	$10
+	.byte	$74
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$75
+	.byte	$01
+	.byte	$0E
+	.byte	$FA
+	.byte	$66
+	.byte	$01
+	.byte	$03
+	.byte	$FC
+	.byte	$60
+	.byte	$02
+	.byte	$09
+	.byte	$07
+	.byte	$64
+	.byte	$01
+	.byte	$0D
+	.byte	$04
+	.byte	$56
+	.byte	$82
+	.byte	$0F
+	.byte	$10
+	.byte	$77
+	.byte	$C1
+	.byte	$0A
+	.byte	$08
+	.byte	$77
+	.byte	$01
+	.byte	$11
+	.byte	$02
+	.byte	$76
+	.byte	$C1
+	.byte	$FF
+	.byte	$07
+	.byte	$64
+	.byte	$41
+	.byte	$FA
+	.byte	$04
+	.byte	$56
+	.byte	$02
+	.byte	$80
+_necromancer_animation_index:
+	.byte	$00
+	.byte	$01
+	.byte	$01
+	.byte	$02
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$01
+	.byte	$03
+	.byte	$01
+_necromancer_animation:
+	.addr	_necromancer_idle
+	.addr	_necromancer_raising1
+	.addr	_necromancer_raising2
+	.addr	_necromancer_hit
+_lightning_dead:
+	.byte	$00
+	.byte	$00
+	.byte	$FF
+	.byte	$00
+	.byte	$80
+_lightning_0_data:
+	.byte	$F1
+	.byte	$DE
+	.byte	$C0
+	.byte	$02
+	.byte	$F9
+	.byte	$DE
+	.byte	$C1
+	.byte	$02
+	.byte	$01
+	.byte	$DE
+	.byte	$C2
+	.byte	$02
+	.byte	$09
+	.byte	$DE
+	.byte	$C3
+	.byte	$02
+	.byte	$01
+	.byte	$D6
+	.byte	$C4
+	.byte	$02
+	.byte	$09
+	.byte	$D6
+	.byte	$C5
+	.byte	$02
+	.byte	$80
+_lightning_1_data:
+	.byte	$EF
+	.byte	$D8
+	.byte	$C6
+	.byte	$02
+	.byte	$F7
+	.byte	$D8
+	.byte	$C7
+	.byte	$02
+	.byte	$FF
+	.byte	$D8
+	.byte	$C8
+	.byte	$02
+	.byte	$07
+	.byte	$D8
+	.byte	$C6
+	.byte	$42
+	.byte	$F7
+	.byte	$E0
+	.byte	$C9
+	.byte	$02
+	.byte	$F1
+	.byte	$E2
+	.byte	$C5
+	.byte	$82
+	.byte	$05
+	.byte	$DD
+	.byte	$C5
+	.byte	$02
+	.byte	$FF
+	.byte	$E0
+	.byte	$CA
+	.byte	$02
+	.byte	$80
+_lightning_2_data:
+	.byte	$F1
+	.byte	$D8
+	.byte	$CB
+	.byte	$02
+	.byte	$F9
+	.byte	$D8
+	.byte	$CC
+	.byte	$02
+	.byte	$01
+	.byte	$D8
+	.byte	$CD
+	.byte	$02
+	.byte	$09
+	.byte	$DB
+	.byte	$C6
+	.byte	$42
+	.byte	$F1
+	.byte	$E0
+	.byte	$CE
+	.byte	$02
+	.byte	$F9
+	.byte	$E0
+	.byte	$CF
+	.byte	$02
+	.byte	$F9
+	.byte	$E8
+	.byte	$D0
+	.byte	$02
+	.byte	$FA
+	.byte	$EF
+	.byte	$D1
+	.byte	$02
+	.byte	$F1
+	.byte	$F0
+	.byte	$D2
+	.byte	$02
+	.byte	$F5
+	.byte	$F4
+	.byte	$D1
+	.byte	$42
+	.byte	$FD
+	.byte	$00
+	.byte	$D3
+	.byte	$02
+	.byte	$FF
+	.byte	$0A
+	.byte	$D3
+	.byte	$C2
+	.byte	$F8
+	.byte	$11
+	.byte	$D2
+	.byte	$02
+	.byte	$04
+	.byte	$11
+	.byte	$D2
+	.byte	$42
+	.byte	$FD
+	.byte	$18
+	.byte	$D0
+	.byte	$42
+	.byte	$01
+	.byte	$E0
+	.byte	$C8
+	.byte	$82
+	.byte	$80
+_lightning_3_data:
+	.byte	$EF
+	.byte	$D8
+	.byte	$C6
+	.byte	$02
+	.byte	$F7
+	.byte	$D8
+	.byte	$C7
+	.byte	$02
+	.byte	$FF
+	.byte	$D8
+	.byte	$C8
+	.byte	$02
+	.byte	$07
+	.byte	$D8
+	.byte	$C6
+	.byte	$42
+	.byte	$F7
+	.byte	$E0
+	.byte	$C9
+	.byte	$02
+	.byte	$F1
+	.byte	$E2
+	.byte	$C5
+	.byte	$82
+	.byte	$05
+	.byte	$DD
+	.byte	$C5
+	.byte	$02
+	.byte	$FF
+	.byte	$E0
+	.byte	$CA
+	.byte	$02
+	.byte	$FC
+	.byte	$E4
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$EC
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$F4
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$FC
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$04
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$0C
+	.byte	$D4
+	.byte	$02
+	.byte	$FC
+	.byte	$14
+	.byte	$D4
+	.byte	$02
+	.byte	$EE
+	.byte	$1A
+	.byte	$C0
+	.byte	$42
+	.byte	$F6
+	.byte	$17
+	.byte	$CE
+	.byte	$C2
+	.byte	$04
+	.byte	$18
+	.byte	$C6
+	.byte	$82
+	.byte	$0A
+	.byte	$17
+	.byte	$C5
+	.byte	$42
+	.byte	$FC
+	.byte	$18
+	.byte	$D4
+	.byte	$02
+	.byte	$80
+_lightning_4_data:
+	.byte	$FE
+	.byte	$E0
+	.byte	$D5
+	.byte	$02
+	.byte	$FC
+	.byte	$F0
+	.byte	$D6
+	.byte	$02
+	.byte	$FC
+	.byte	$F8
+	.byte	$D9
+	.byte	$02
+	.byte	$F3
+	.byte	$FE
+	.byte	$D1
+	.byte	$42
+	.byte	$FC
+	.byte	$00
+	.byte	$D8
+	.byte	$02
+	.byte	$00
+	.byte	$F0
+	.byte	$DA
+	.byte	$02
+	.byte	$05
+	.byte	$F7
+	.byte	$D2
+	.byte	$42
+	.byte	$FC
+	.byte	$08
+	.byte	$DB
+	.byte	$42
+	.byte	$FC
+	.byte	$10
+	.byte	$DB
+	.byte	$C2
+	.byte	$F4
+	.byte	$10
+	.byte	$DC
+	.byte	$02
+	.byte	$F4
+	.byte	$08
+	.byte	$DD
+	.byte	$02
+	.byte	$F4
+	.byte	$18
+	.byte	$DE
+	.byte	$02
+	.byte	$FC
+	.byte	$18
+	.byte	$DF
+	.byte	$02
+	.byte	$02
+	.byte	$19
+	.byte	$C5
+	.byte	$C2
+	.byte	$02
+	.byte	$0C
+	.byte	$D7
+	.byte	$02
+	.byte	$02
+	.byte	$0F
+	.byte	$CA
+	.byte	$82
+	.byte	$FE
+	.byte	$E8
+	.byte	$D6
+	.byte	$02
+	.byte	$80
+_lightning_5_data:
+	.byte	$FB
+	.byte	$E0
+	.byte	$D5
+	.byte	$42
+	.byte	$FD
+	.byte	$F0
+	.byte	$D6
+	.byte	$42
+	.byte	$FD
+	.byte	$F8
+	.byte	$D9
+	.byte	$42
+	.byte	$04
+	.byte	$ED
+	.byte	$D1
+	.byte	$82
+	.byte	$FD
+	.byte	$00
+	.byte	$D8
+	.byte	$42
+	.byte	$F8
+	.byte	$F4
+	.byte	$DA
+	.byte	$42
+	.byte	$F4
+	.byte	$F7
+	.byte	$D2
+	.byte	$02
+	.byte	$FD
+	.byte	$08
+	.byte	$DB
+	.byte	$02
+	.byte	$FD
+	.byte	$10
+	.byte	$DB
+	.byte	$82
+	.byte	$00
+	.byte	$10
+	.byte	$D6
+	.byte	$42
+	.byte	$05
+	.byte	$08
+	.byte	$DD
+	.byte	$42
+	.byte	$06
+	.byte	$18
+	.byte	$C7
+	.byte	$C2
+	.byte	$0D
+	.byte	$14
+	.byte	$DF
+	.byte	$82
+	.byte	$E9
+	.byte	$20
+	.byte	$C5
+	.byte	$82
+	.byte	$F7
+	.byte	$0C
+	.byte	$D7
+	.byte	$42
+	.byte	$EF
+	.byte	$1B
+	.byte	$C1
+	.byte	$02
+	.byte	$FE
+	.byte	$18
+	.byte	$DB
+	.byte	$C2
+	.byte	$F6
+	.byte	$18
+	.byte	$E0
+	.byte	$02
+	.byte	$F0
+	.byte	$13
+	.byte	$D2
+	.byte	$02
+	.byte	$FB
+	.byte	$E8
+	.byte	$D6
+	.byte	$42
+	.byte	$80
+_lightning_6_data:
+	.byte	$FA
+	.byte	$F4
+	.byte	$E2
+	.byte	$02
+	.byte	$FC
+	.byte	$E1
+	.byte	$D5
+	.byte	$02
+	.byte	$F9
+	.byte	$E5
+	.byte	$E1
+	.byte	$02
+	.byte	$FA
+	.byte	$EC
+	.byte	$D0
+	.byte	$02
+	.byte	$01
+	.byte	$FB
+	.byte	$CC
+	.byte	$02
+	.byte	$F4
+	.byte	$F9
+	.byte	$D2
+	.byte	$02
+	.byte	$04
+	.byte	$00
+	.byte	$D5
+	.byte	$02
+	.byte	$03
+	.byte	$08
+	.byte	$D0
+	.byte	$02
+	.byte	$FA
+	.byte	$10
+	.byte	$E3
+	.byte	$02
+	.byte	$02
+	.byte	$10
+	.byte	$E4
+	.byte	$02
+	.byte	$FA
+	.byte	$18
+	.byte	$E5
+	.byte	$02
+	.byte	$02
+	.byte	$18
+	.byte	$E6
+	.byte	$02
+	.byte	$F2
+	.byte	$10
+	.byte	$E7
+	.byte	$02
+	.byte	$F2
+	.byte	$18
+	.byte	$E8
+	.byte	$02
+	.byte	$E8
+	.byte	$18
+	.byte	$EA
+	.byte	$02
+	.byte	$EA
+	.byte	$10
+	.byte	$E9
+	.byte	$02
+	.byte	$EE
+	.byte	$1D
+	.byte	$EB
+	.byte	$02
+	.byte	$02
+	.byte	$1F
+	.byte	$EB
+	.byte	$02
+	.byte	$07
+	.byte	$18
+	.byte	$E8
+	.byte	$42
+	.byte	$0F
+	.byte	$19
+	.byte	$D1
+	.byte	$02
+	.byte	$12
+	.byte	$1B
+	.byte	$C6
+	.byte	$42
+	.byte	$12
+	.byte	$0F
+	.byte	$CC
+	.byte	$02
+	.byte	$1A
+	.byte	$15
+	.byte	$D2
+	.byte	$42
+	.byte	$0A
+	.byte	$12
+	.byte	$CB
+	.byte	$82
+	.byte	$80
+_lightning_7_data:
+	.byte	$FB
+	.byte	$E8
+	.byte	$EC
+	.byte	$02
+	.byte	$00
+	.byte	$E3
+	.byte	$D2
+	.byte	$C2
+	.byte	$F3
+	.byte	$E7
+	.byte	$ED
+	.byte	$02
+	.byte	$F1
+	.byte	$EF
+	.byte	$D6
+	.byte	$02
+	.byte	$F2
+	.byte	$F5
+	.byte	$E4
+	.byte	$C2
+	.byte	$F5
+	.byte	$F6
+	.byte	$DE
+	.byte	$02
+	.byte	$FC
+	.byte	$F7
+	.byte	$E3
+	.byte	$82
+	.byte	$03
+	.byte	$F3
+	.byte	$E3
+	.byte	$02
+	.byte	$06
+	.byte	$F6
+	.byte	$DE
+	.byte	$02
+	.byte	$0D
+	.byte	$F7
+	.byte	$EC
+	.byte	$82
+	.byte	$06
+	.byte	$00
+	.byte	$EE
+	.byte	$C2
+	.byte	$08
+	.byte	$0E
+	.byte	$E4
+	.byte	$02
+	.byte	$FD
+	.byte	$18
+	.byte	$F0
+	.byte	$02
+	.byte	$12
+	.byte	$0E
+	.byte	$DD
+	.byte	$C2
+	.byte	$0C
+	.byte	$FB
+	.byte	$EA
+	.byte	$42
+	.byte	$06
+	.byte	$08
+	.byte	$EF
+	.byte	$42
+	.byte	$02
+	.byte	$0F
+	.byte	$ED
+	.byte	$02
+	.byte	$FE
+	.byte	$10
+	.byte	$C8
+	.byte	$02
+	.byte	$F6
+	.byte	$11
+	.byte	$EF
+	.byte	$02
+	.byte	$F1
+	.byte	$0B
+	.byte	$EE
+	.byte	$42
+	.byte	$EE
+	.byte	$06
+	.byte	$EC
+	.byte	$82
+	.byte	$F0
+	.byte	$13
+	.byte	$EE
+	.byte	$42
+	.byte	$EC
+	.byte	$0D
+	.byte	$DD
+	.byte	$02
+	.byte	$F8
+	.byte	$19
+	.byte	$DB
+	.byte	$82
+	.byte	$FA
+	.byte	$0C
+	.byte	$E2
+	.byte	$82
+	.byte	$ED
+	.byte	$13
+	.byte	$D1
+	.byte	$02
+	.byte	$EA
+	.byte	$0C
+	.byte	$D3
+	.byte	$42
+	.byte	$ED
+	.byte	$1C
+	.byte	$D2
+	.byte	$02
+	.byte	$00
+	.byte	$18
+	.byte	$C8
+	.byte	$02
+	.byte	$08
+	.byte	$18
+	.byte	$CD
+	.byte	$02
+	.byte	$0E
+	.byte	$0F
+	.byte	$EE
+	.byte	$02
+	.byte	$80
+_lightning_8_data:
+	.byte	$FD
+	.byte	$18
+	.byte	$F1
+	.byte	$02
+	.byte	$FA
+	.byte	$10
+	.byte	$ED
+	.byte	$42
+	.byte	$FD
+	.byte	$08
+	.byte	$F2
+	.byte	$02
+	.byte	$05
+	.byte	$08
+	.byte	$F3
+	.byte	$02
+	.byte	$F5
+	.byte	$0B
+	.byte	$F2
+	.byte	$02
+	.byte	$ED
+	.byte	$10
+	.byte	$F4
+	.byte	$02
+	.byte	$13
+	.byte	$14
+	.byte	$D3
+	.byte	$C2
+	.byte	$E5
+	.byte	$18
+	.byte	$CE
+	.byte	$02
+	.byte	$F6
+	.byte	$19
+	.byte	$F5
+	.byte	$02
+	.byte	$F2
+	.byte	$13
+	.byte	$C6
+	.byte	$02
+	.byte	$ED
+	.byte	$18
+	.byte	$F6
+	.byte	$02
+	.byte	$E6
+	.byte	$0C
+	.byte	$CB
+	.byte	$02
+	.byte	$F6
+	.byte	$0C
+	.byte	$DE
+	.byte	$82
+	.byte	$02
+	.byte	$17
+	.byte	$E4
+	.byte	$82
+	.byte	$08
+	.byte	$15
+	.byte	$E8
+	.byte	$02
+	.byte	$F1
+	.byte	$1F
+	.byte	$EB
+	.byte	$02
+	.byte	$0A
+	.byte	$0E
+	.byte	$F4
+	.byte	$42
+	.byte	$03
+	.byte	$1F
+	.byte	$EB
+	.byte	$42
+	.byte	$09
+	.byte	$1B
+	.byte	$C6
+	.byte	$42
+	.byte	$0A
+	.byte	$01
+	.byte	$EA
+	.byte	$42
+	.byte	$0B
+	.byte	$FA
+	.byte	$EA
+	.byte	$02
+	.byte	$04
+	.byte	$F7
+	.byte	$F2
+	.byte	$02
+	.byte	$FF
+	.byte	$FB
+	.byte	$EB
+	.byte	$42
+	.byte	$F8
+	.byte	$00
+	.byte	$C0
+	.byte	$02
+	.byte	$F5
+	.byte	$FB
+	.byte	$D4
+	.byte	$02
+	.byte	$F2
+	.byte	$F9
+	.byte	$F2
+	.byte	$82
+	.byte	$F2
+	.byte	$F2
+	.byte	$EE
+	.byte	$02
+	.byte	$F6
+	.byte	$EA
+	.byte	$E3
+	.byte	$02
+	.byte	$FE
+	.byte	$EE
+	.byte	$E3
+	.byte	$C2
+	.byte	$FF
+	.byte	$E8
+	.byte	$C1
+	.byte	$82
+	.byte	$80
+_lightning_9_data:
+	.byte	$FD
+	.byte	$17
+	.byte	$F7
+	.byte	$02
+	.byte	$03
+	.byte	$11
+	.byte	$F5
+	.byte	$C2
+	.byte	$01
+	.byte	$0B
+	.byte	$DA
+	.byte	$42
+	.byte	$FC
+	.byte	$0F
+	.byte	$D1
+	.byte	$02
+	.byte	$F8
+	.byte	$06
+	.byte	$E2
+	.byte	$82
+	.byte	$F2
+	.byte	$08
+	.byte	$F3
+	.byte	$02
+	.byte	$FD
+	.byte	$03
+	.byte	$F2
+	.byte	$02
+	.byte	$E8
+	.byte	$13
+	.byte	$D5
+	.byte	$42
+	.byte	$EF
+	.byte	$17
+	.byte	$EB
+	.byte	$02
+	.byte	$EB
+	.byte	$1B
+	.byte	$C6
+	.byte	$02
+	.byte	$F7
+	.byte	$1F
+	.byte	$EB
+	.byte	$02
+	.byte	$04
+	.byte	$1F
+	.byte	$EB
+	.byte	$42
+	.byte	$EA
+	.byte	$0B
+	.byte	$F4
+	.byte	$02
+	.byte	$15
+	.byte	$13
+	.byte	$F5
+	.byte	$42
+	.byte	$08
+	.byte	$19
+	.byte	$EA
+	.byte	$02
+	.byte	$0F
+	.byte	$1D
+	.byte	$F3
+	.byte	$02
+	.byte	$0A
+	.byte	$08
+	.byte	$F3
+	.byte	$42
+	.byte	$06
+	.byte	$03
+	.byte	$DA
+	.byte	$42
+	.byte	$07
+	.byte	$FB
+	.byte	$F5
+	.byte	$02
+	.byte	$01
+	.byte	$F9
+	.byte	$C6
+	.byte	$42
+	.byte	$FF
+	.byte	$ED
+	.byte	$EE
+	.byte	$02
+	.byte	$F6
+	.byte	$1A
+	.byte	$C6
+	.byte	$42
+	.byte	$F9
+	.byte	$F3
+	.byte	$DA
+	.byte	$42
+	.byte	$FA
+	.byte	$FA
+	.byte	$D3
+	.byte	$C2
+	.byte	$FD
+	.byte	$E6
+	.byte	$DD
+	.byte	$02
+	.byte	$FB
+	.byte	$E3
+	.byte	$F8
+	.byte	$02
+	.byte	$80
+_lightning_10_data:
+	.byte	$03
+	.byte	$11
+	.byte	$F5
+	.byte	$C2
+	.byte	$01
+	.byte	$0B
+	.byte	$DA
+	.byte	$42
+	.byte	$F8
+	.byte	$06
+	.byte	$F9
+	.byte	$82
+	.byte	$F0
+	.byte	$0B
+	.byte	$F3
+	.byte	$02
+	.byte	$05
+	.byte	$05
+	.byte	$EB
+	.byte	$02
+	.byte	$EF
+	.byte	$17
+	.byte	$EB
+	.byte	$02
+	.byte	$E7
+	.byte	$1B
+	.byte	$C6
+	.byte	$02
+	.byte	$F7
+	.byte	$1F
+	.byte	$EB
+	.byte	$02
+	.byte	$04
+	.byte	$1F
+	.byte	$EB
+	.byte	$42
+	.byte	$E5
+	.byte	$10
+	.byte	$DA
+	.byte	$42
+	.byte	$18
+	.byte	$12
+	.byte	$F5
+	.byte	$42
+	.byte	$12
+	.byte	$1E
+	.byte	$F3
+	.byte	$02
+	.byte	$0E
+	.byte	$0B
+	.byte	$F3
+	.byte	$42
+	.byte	$08
+	.byte	$FE
+	.byte	$DA
+	.byte	$42
+	.byte	$F6
+	.byte	$1A
+	.byte	$C6
+	.byte	$42
+	.byte	$FE
+	.byte	$EE
+	.byte	$DA
+	.byte	$42
+	.byte	$FD
+	.byte	$F7
+	.byte	$D3
+	.byte	$C2
+	.byte	$04
+	.byte	$E7
+	.byte	$DD
+	.byte	$42
+	.byte	$FD
+	.byte	$E1
+	.byte	$F8
+	.byte	$02
+	.byte	$07
+	.byte	$F8
+	.byte	$EB
+	.byte	$02
+	.byte	$0C
+	.byte	$1A
+	.byte	$C6
+	.byte	$02
+	.byte	$80
+_lightning_11_data:
+	.byte	$09
+	.byte	$15
+	.byte	$DA
+	.byte	$42
+	.byte	$F8
+	.byte	$06
+	.byte	$F9
+	.byte	$82
+	.byte	$EE
+	.byte	$09
+	.byte	$F3
+	.byte	$02
+	.byte	$05
+	.byte	$05
+	.byte	$EB
+	.byte	$02
+	.byte	$EF
+	.byte	$10
+	.byte	$D3
+	.byte	$02
+	.byte	$E3
+	.byte	$1D
+	.byte	$C6
+	.byte	$02
+	.byte	$F7
+	.byte	$21
+	.byte	$EB
+	.byte	$02
+	.byte	$04
+	.byte	$21
+	.byte	$EB
+	.byte	$42
+	.byte	$E1
+	.byte	$0E
+	.byte	$DA
+	.byte	$42
+	.byte	$1C
+	.byte	$12
+	.byte	$F5
+	.byte	$42
+	.byte	$16
+	.byte	$20
+	.byte	$F3
+	.byte	$02
+	.byte	$10
+	.byte	$09
+	.byte	$F3
+	.byte	$42
+	.byte	$0D
+	.byte	$1F
+	.byte	$C6
+	.byte	$42
+	.byte	$0C
+	.byte	$1A
+	.byte	$C6
+	.byte	$02
+	.byte	$80
+_lightning_animation_index:
+	.byte	$00
+	.byte	$01
+	.byte	$01
+	.byte	$0D
+	.byte	$00
+	.byte	$01
+_lightning_animation:
+	.addr	_lightning_dead
+	.addr	_lightning_0_data
+	.addr	_lightning_1_data
+	.addr	_lightning_2_data
+	.addr	_lightning_3_data
+	.addr	_lightning_4_data
+	.addr	_lightning_5_data
+	.addr	_lightning_6_data
+	.addr	_lightning_7_data
+	.addr	_lightning_8_data
+	.addr	_lightning_8_data
+	.addr	_lightning_9_data
+	.addr	_lightning_10_data
+	.addr	_lightning_11_data
 .segment	"BANK0"
 .segment	"CODE"
 
@@ -5303,6 +5416,8 @@ _paddle_count:
 _enemy_count:
 	.res	1,$00
 _story_step:
+	.res	1,$00
+_story_counter:
 	.res	1,$00
 _collision_index:
 	.res	2,$00
@@ -5436,6 +5551,447 @@ L0003:	sta     ptr1
 ; }
 ;
 L0002:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ animate_skeleton (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_animate_skeleton: near
+
+.segment	"CODE"
+
+;
+; for (i = 6; i < 8; ++i) {
+;
+	lda     #$06
+	sta     _i
+L0020:	lda     _i
+	cmp     #$08
+	bcc     L0025
+;
+; }
+;
+	rts
+;
+; param1 = i;  // actor index
+;
+L0025:	sta     _param1
+;
+; if (actors.state[i] != DEAD && actors.state[i] != DYING) {
+;
+	ldy     _i
+	lda     _actors+190,y
+	cmp     #$04
+	jeq     L0024
+	ldy     _i
+	lda     _actors+190,y
+	cmp     #$03
+	jeq     L0024
+;
+; temp_x = actors.x[i] + get_x_speed();
+;
+	ldy     _i
+	lda     _actors,y
+	jsr     pusha0
+	jsr     _get_x_speed
+	jsr     tosaddax
+	sta     _temp_x
+;
+; temp_y_col = actors.y[i] + actors.height[i];
+;
+	ldy     _i
+	lda     _actors+30,y
+	clc
+	ldy     _i
+	adc     _actors+10,y
+	sta     _temp_y_col
+;
+; temp_x_col = temp_x;
+;
+	lda     _temp_x
+	sta     _temp_x_col
+;
+; if (actors.xDir[i] == RIGHT) {
+;
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _i
+	bcc     L0010
+	inx
+L0010:	ldy     #$00
+	jsr     ldaidx
+	cmp     #$01
+	bne     L000F
+;
+; temp_x_col += actors.width[i];
+;
+	ldy     _i
+	lda     _actors+20,y
+	clc
+	adc     _temp_x_col
+	sta     _temp_x_col
+;
+; if (get_collision_type()) {
+;
+L000F:	jsr     _get_collision_type
+	tax
+	beq     L0012
+;
+; actors.current_frame[i] = 0;
+;
+	ldy     _i
+	lda     #$00
+	sta     _actors+180,y
+;
+; actors.counter[i] = 0;
+;
+	ldy     _i
+	sta     _actors+160,y
+;
+; actors.state[i] = TURNING;
+;
+	ldy     _i
+	lda     #$01
+	sta     _actors+190,y
+;
+; actors.xDir[param1] = -actors.xDir[param1];
+;
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _param1
+	bcc     L0016
+	inx
+L0016:	sta     sreg
+	stx     sreg+1
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	clc
+	adc     _param1
+	bcc     L0017
+	inx
+L0017:	ldy     #$00
+	jsr     ldaidx
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     (sreg),y
+;
+; } else {
+;
+	jmp     L0024
+;
+; actors.x[i] = temp_x;
+;
+L0012:	ldy     _i
+	lda     _temp_x
+	sta     _actors,y
+;
+; set_animation_info(i, skeleton_animation_index);
+;
+L0024:	lda     _i
+	jsr     pusha
+	lda     #<(_skeleton_animation_index)
+	ldx     #>(_skeleton_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(actors.x[i], actors.y[i], skeleton_animation[actors.current_frame[i] + param2]);
+;
+	jsr     decsp2
+	ldy     _i
+	lda     _actors,y
+	ldy     #$01
+	sta     (sp),y
+	ldy     _i
+	lda     _actors+10,y
+	ldy     #$00
+	sta     (sp),y
+	ldy     _i
+	ldx     #$00
+	lda     _actors+180,y
+	clc
+	adc     _param2
+	bcc     L001E
+	inx
+L001E:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_skeleton_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_skeleton_animation)
+	sta     ptr1+1
+	ldy     #$01
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jsr     _oam_meta_spr
+;
+; for (i = 6; i < 8; ++i) {
+;
+	inc     _i
+	jmp     L0020
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ set_animation_info (const unsigned char index, const unsigned char (*array)[2])
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_set_animation_info: near
+
+.segment	"CODE"
+
+;
+; void set_animation_info(const unsigned char index, const unsigned char array[][2]) {
+;
+	jsr     pushax
+;
+; param2 = array[actors.state[index]][0];  // animation index
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0022
+	inx
+	clc
+L0022:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	dey
+	lda     (ptr1),y
+	sta     _param2
+;
+; param3 = array[actors.state[index]][1];  // number of frames
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0023
+	inx
+	clc
+L0023:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	lda     (ptr1),y
+	sta     _param3
+;
+; if (actors.counter[index] == actors.animation_speed[index]) {
+;
+	iny
+	lda     (sp),y
+	tay
+	lda     _actors+160,y
+	sta     ptr1
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+170,y
+	cmp     ptr1
+	jne     L0005
+;
+; if ((actors.state[index] == TURNING || actors.state[index] == DYING) && actors.current_frame[index] == param3 - 1) {
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+190,y
+	cmp     #$01
+	beq     L0027
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+190,y
+	cmp     #$03
+	jne     L0008
+L0027:	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+180,y
+	jsr     pusha0
+	lda     _param3
+	sec
+	sbc     #$01
+	bcs     L000F
+	ldx     #$FF
+L000F:	jsr     tosicmp
+	bne     L0008
+;
+; ++actors.state[index];              // NEXT STATE
+;
+	lda     #<(_actors+190)
+	ldx     #>(_actors+190)
+	ldy     #$02
+	clc
+	adc     (sp),y
+	bcc     L0012
+	inx
+L0012:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
+	lda     #$01
+	clc
+	adc     (ptr1),y
+	sta     (ptr1),y
+;
+; param2 = array[actors.state[index]][0];  // animation index
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0024
+	inx
+	clc
+L0024:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	dey
+	lda     (ptr1),y
+	sta     _param2
+;
+; param3 = array[actors.state[index]][1];  // number of frames
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0025
+	inx
+	clc
+L0025:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	lda     (ptr1),y
+	sta     _param3
+;
+; actors.current_frame[index] = 0;
+;
+	iny
+	lda     (sp),y
+	tay
+	lda     #$00
+	sta     _actors+180,y
+;
+; } else {
+;
+	jmp     L0017
+;
+; actors.current_frame[index] = ++actors.current_frame[index] % param3;
+;
+L0008:	lda     #<(_actors+180)
+	ldx     #>(_actors+180)
+	ldy     #$02
+	clc
+	adc     (sp),y
+	bcc     L0018
+	inx
+L0018:	jsr     pushax
+	lda     #<(_actors+180)
+	ldx     #>(_actors+180)
+	ldy     #$04
+	clc
+	adc     (sp),y
+	bcc     L0019
+	inx
+L0019:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
+	lda     #$01
+	clc
+	adc     (ptr1),y
+	sta     (ptr1),y
+	jsr     pusha0
+	lda     _param3
+	jsr     tosumoda0
+	ldy     #$00
+	jsr     staspidx
+;
+; actors.counter[index] = 0;
+;
+L0017:	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     #$00
+	sta     _actors+160,y
+;
+; ++actors.counter[index];
+;
+L0005:	lda     #<(_actors+160)
+	ldx     #>(_actors+160)
+	ldy     #$02
+	clc
+	adc     (sp),y
+	bcc     L001B
+	inx
+L001B:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
+	lda     #$01
+	clc
+	adc     (ptr1),y
+	sta     (ptr1),y
+;
+; if (actors.xDir[index] == RIGHT) {
+;
+	lda     #<(_actors+60)
+	ldx     #>(_actors+60)
+	ldy     #$02
+	clc
+	adc     (sp),y
+	bcc     L001D
+	inx
+L001D:	ldy     #$00
+	jsr     ldaidx
+	cmp     #$01
+	bne     L001C
+;
+; param2 += param3;
+;
+	lda     _param3
+	clc
+	adc     _param2
+	sta     _param2
+;
+; }
+;
+L001C:	jmp     incsp3
 
 .endproc
 
@@ -5606,6 +6162,501 @@ L001D:	sta     _actors+60,y
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ init_level_specifics (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_init_level_specifics: near
+
+.segment	"BANK0"
+
+;
+; switch (current_level) {
+;
+	lda     _current_level
+;
+; }
+;
+	jeq     L0046
+	cmp     #$01
+	jeq     L0049
+	cmp     #$02
+	jeq     L004A
+	cmp     #$03
+	jeq     L004B
+	cmp     #$04
+	jeq     L004B
+	cmp     #$05
+	jeq     L004B
+	cmp     #$06
+	jeq     L004B
+	cmp     #$07
+	jeq     L004B
+	cmp     #$08
+	jeq     L004B
+	cmp     #$09
+	jeq     L004B
+	cmp     #$0A
+	jeq     L004B
+	cmp     #$0B
+	jeq     L004B
+	cmp     #$0C
+	jeq     L004B
+	cmp     #$0D
+	jeq     L004B
+	cmp     #$0E
+	jeq     L004B
+	cmp     #$0F
+	jeq     L004B
+	cmp     #$10
+	jeq     L004B
+	cmp     #$11
+	jeq     L004B
+	cmp     #$12
+	jeq     L004B
+	cmp     #$13
+	jeq     L004B
+	cmp     #$14
+	jeq     L004B
+	cmp     #$15
+	jeq     L004B
+	cmp     #$16
+	jeq     L004B
+	cmp     #$17
+	jeq     L004B
+	cmp     #$18
+	jeq     L004B
+	cmp     #$19
+	jeq     L004B
+	cmp     #$1A
+	jeq     L004B
+	cmp     #$1B
+	jeq     L004B
+	cmp     #$1C
+	jeq     L004B
+	cmp     #$1D
+	jeq     L004B
+	cmp     #$1E
+	jeq     L004B
+	cmp     #$1F
+	jeq     L004B
+	cmp     #$20
+	jeq     L004B
+	cmp     #$21
+	jeq     L004B
+	jmp     L004B
+;
+; set_chr_mode_1(0x0A);
+;
+L0046:	lda     #$0A
+	jsr     _set_chr_mode_1
+;
+; actors.x[0] = 64;
+;
+	lda     #$40
+	sta     _actors
+;
+; actors.x[1] = 88;
+;
+	lda     #$58
+	sta     _actors+1
+;
+; actors.x[2] = 160;
+;
+	lda     #$A0
+	sta     _actors+2
+;
+; actors.x[3] = 184;
+;
+	lda     #$B8
+	sta     _actors+3
+;
+; for (i = 0; i < 4; ++i) {
+;
+	lda     #$00
+	sta     _i
+L0047:	lda     _i
+	cmp     #$04
+	bcs     L0048
+;
+; actors.y[i] = 72;
+;
+	ldy     _i
+	lda     #$48
+	sta     _actors+10,y
+;
+; actors.animation_speed[i] = 8;
+;
+	ldy     _i
+	lda     #$08
+	sta     _actors+170,y
+;
+; actors.current_frame[i] = i;
+;
+	ldy     _i
+	lda     _i
+	sta     _actors+180,y
+;
+; actors.state[i] = IDLE;
+;
+	ldy     _i
+	lda     #$00
+	sta     _actors+190,y
+;
+; actors.xDir[i] = LEFT;
+;
+	ldy     _i
+	lda     #$FF
+	sta     _actors+60,y
+;
+; for (i = 0; i < 4; ++i) {
+;
+	inc     _i
+	jmp     L0047
+;
+; actors.state[LIGHTNING] = IDLE;
+;
+L0048:	lda     #$00
+	sta     _actors+196
+;
+; actors.animation_speed[LIGHTNING] = 8;
+;
+	lda     #$08
+	sta     _actors+176
+;
+; actors.animation_speed[NECROMANCER] = 20;
+;
+	lda     #$14
+	sta     _actors+175
+;
+; actors.current_frame[NECROMANCER] = 0;
+;
+	lda     #$00
+	sta     _actors+185
+;
+; actors.state[NECROMANCER] = IDLE;
+;
+	sta     _actors+195
+;
+; actors.xDir[NECROMANCER] = LEFT;
+;
+	lda     #$FF
+	sta     _actors+65
+;
+; break;
+;
+	jmp     L004B
+;
+; set_chr_mode_1(0x07);
+;
+L0049:	lda     #$07
+	jsr     _set_chr_mode_1
+;
+; paddle_count = 1;
+;
+	lda     #$01
+	sta     _paddle_count
+;
+; actors.x[0] = 0x78;
+;
+	lda     #$78
+	sta     _actors
+;
+; actors.y[0] = 0xD0;
+;
+	lda     #$D0
+	sta     _actors+10
+;
+; banked_call(0, init_skeletons);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_skeletons)
+	ldx     #>(_init_skeletons)
+	jsr     _banked_call
+;
+; game_state = STORY;
+;
+	lda     #$02
+	sta     _game_state
+;
+; break;
+;
+	jmp     L004B
+;
+; paddle_count = 4;
+;
+L004A:	lda     #$04
+	sta     _paddle_count
+;
+; actors.x[0] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors
+;
+; actors.y[0] = 0xD0;  // 26
+;
+	lda     #$D0
+	sta     _actors+10
+;
+; actors.x[1] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+1
+;
+; actors.y[1] = 0x38;  // 7
+;
+	lda     #$38
+	sta     _actors+11
+;
+; actors.x[2] = 0x18;  // 3
+;
+	lda     #$18
+	sta     _actors+2
+;
+; actors.y[2] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+12
+;
+; actors.x[3] = 0xE0;  // 28
+;
+	lda     #$E0
+	sta     _actors+3
+;
+; actors.y[3] = 0x70;  // 14
+;
+	lda     #$70
+	sta     _actors+13
+;
+; for (i = 0; i < paddle_count; ++i) {
+;
+L004B:	lda     #$00
+	sta     _i
+L004C:	lda     _i
+	cmp     _paddle_count
+	bcc     L004D
+;
+; }
+;
+	rts
+;
+; if (i < 2) {
+;
+L004D:	cmp     #$02
+	bcs     L0033
+;
+; actors.width[i] = 0x20;   // 32
+;
+	ldy     _i
+	lda     #$20
+	sta     _actors+20,y
+;
+; actors.height[i] = 0x04;  // 4
+;
+	ldy     _i
+	lda     #$04
+	sta     _actors+30,y
+;
+; actors.bbox_x[i] = 0x00;  // 2
+;
+	ldy     _i
+	lda     #$00
+	sta     _actors+40,y
+;
+; actors.bbox_y[i] = 0x02;
+;
+	ldy     _i
+	lda     #$02
+;
+; } else {
+;
+	jmp     L0045
+;
+; actors.width[i] = 0x04;
+;
+L0033:	ldy     _i
+	lda     #$04
+	sta     _actors+20,y
+;
+; actors.height[i] = 0x20;
+;
+	ldy     _i
+	lda     #$20
+	sta     _actors+30,y
+;
+; actors.bbox_x[i] = 0x02;
+;
+	ldy     _i
+	lda     #$02
+	sta     _actors+40,y
+;
+; actors.bbox_y[i] = 0x00;
+;
+	ldy     _i
+	lda     #$00
+L0045:	sta     _actors+50,y
+;
+; actors.xDir[i] = 0;
+;
+	ldy     _i
+	lda     #$00
+	sta     _actors+60,y
+;
+; actors.yDir[i] = 0;
+;
+	ldy     _i
+	sta     _actors+70,y
+;
+; actors.xSpeed[i] = 0;
+;
+	ldy     _i
+	sta     _actors+80,y
+;
+; actors.ySpeed[i] = 0;
+;
+	ldy     _i
+	sta     _actors+90,y
+;
+; actors.xVelocity[i] = 0;
+;
+	ldy     _i
+	sta     _actors+120,y
+;
+; actors.yVelocity[i] = 0;
+;
+	ldy     _i
+	sta     _actors+130,y
+;
+; actors.minSpeed[i] = 0;
+;
+	ldy     _i
+	sta     _actors+140,y
+;
+; actors.maxSpeed[i] = 250;
+;
+	ldy     _i
+	lda     #$FA
+	sta     _actors+150,y
+;
+; for (i = 0; i < paddle_count; ++i) {
+;
+	inc     _i
+	jmp     L004C
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ init_skull (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_init_skull: near
+
+.segment	"BANK0"
+
+;
+; actors.x[SKULL] = 0xFF;
+;
+	lda     #$FF
+	sta     _actors+4
+;
+; actors.y[SKULL] = 0xFF;
+;
+	sta     _actors+14
+;
+; actors.width[SKULL] = 6;
+;
+	lda     #$06
+	sta     _actors+24
+;
+; actors.height[SKULL] = 6;
+;
+	sta     _actors+34
+;
+; actors.bbox_x[SKULL] = 1;
+;
+	lda     #$01
+	sta     _actors+44
+;
+; actors.bbox_y[SKULL] = 1;
+;
+	sta     _actors+54
+;
+; actors.xDir[SKULL] = RIGHT;
+;
+	sta     _actors+64
+;
+; actors.yDir[SKULL] = UP;
+;
+	lda     #$FF
+	sta     _actors+74
+;
+; actors.xSpeed[SKULL] = 100;
+;
+	lda     #$64
+	sta     _actors+84
+;
+; actors.ySpeed[SKULL] = 100;
+;
+	sta     _actors+94
+;
+; actors.xRemain[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+104
+;
+; actors.yRemain[SKULL] = 0;
+;
+	sta     _actors+114
+;
+; actors.xVelocity[SKULL] = 0;
+;
+	sta     _actors+124
+;
+; actors.yVelocity[SKULL] = 0;
+;
+	sta     _actors+134
+;
+; actors.minSpeed[SKULL] = 64;
+;
+	lda     #$40
+	sta     _actors+144
+;
+; actors.maxSpeed[SKULL] = 250;
+;
+	lda     #$FA
+	sta     _actors+154
+;
+; actors.counter[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+164
+;
+; actors.animation_speed[SKULL] = 8;
+;
+	lda     #$08
+	sta     _actors+174
+;
+; actors.current_frame[SKULL] = 0;
+;
+	lda     #$00
+	sta     _actors+184
+;
+; actors.state[SKULL] = ROTATE_H;
+;
+	lda     #$02
+	sta     _actors+194
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ debug (unsigned char value)
 ; ---------------------------------------------------------------
 
@@ -5632,410 +6683,6 @@ L001D:	sta     _actors+60,y
 ; }
 ;
 	jmp     incsp1
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ animate_skeleton (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_animate_skeleton: near
-
-.segment	"CODE"
-
-;
-; for (i = 6; i < 8; ++i) {
-;
-	lda     #$06
-	sta     _i
-L0026:	lda     _i
-	cmp     #$08
-	bcc     L002A
-;
-; }
-;
-	rts
-;
-; param1 = i;  // actor index
-;
-L002A:	sta     _param1
-;
-; if (actors.state[i] != DEAD && actors.state[i] != DYING) {
-;
-	ldy     _i
-	lda     _actors+190,y
-	cmp     #$04
-	jeq     L0006
-	ldy     _i
-	lda     _actors+190,y
-	cmp     #$03
-	jeq     L0006
-;
-; temp_x = actors.x[i] + get_x_speed();
-;
-	ldy     _i
-	lda     _actors,y
-	jsr     pusha0
-	jsr     _get_x_speed
-	jsr     tosaddax
-	sta     _temp_x
-;
-; temp_y_col = actors.y[i] + actors.height[i];
-;
-	ldy     _i
-	lda     _actors+30,y
-	clc
-	ldy     _i
-	adc     _actors+10,y
-	sta     _temp_y_col
-;
-; temp_x_col = temp_x;
-;
-	lda     _temp_x
-	sta     _temp_x_col
-;
-; if (actors.xDir[i] == RIGHT) {
-;
-	lda     #<(_actors+60)
-	ldx     #>(_actors+60)
-	clc
-	adc     _i
-	bcc     L0010
-	inx
-L0010:	ldy     #$00
-	jsr     ldaidx
-	cmp     #$01
-	bne     L000F
-;
-; temp_x_col += actors.width[i];
-;
-	ldy     _i
-	lda     _actors+20,y
-	clc
-	adc     _temp_x_col
-	sta     _temp_x_col
-;
-; if (get_collision_type()) {
-;
-L000F:	jsr     _get_collision_type
-	tax
-	beq     L0012
-;
-; actors.current_frame[i] = 0;
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+180,y
-;
-; actors.counter[i] = 0;
-;
-	ldy     _i
-	sta     _actors+160,y
-;
-; actors.state[i] = TURNING;
-;
-	ldy     _i
-	lda     #$01
-	sta     _actors+190,y
-;
-; actors.xDir[param1] = -actors.xDir[param1];
-;
-	lda     #<(_actors+60)
-	ldx     #>(_actors+60)
-	clc
-	adc     _param1
-	bcc     L0016
-	inx
-L0016:	sta     sreg
-	stx     sreg+1
-	lda     #<(_actors+60)
-	ldx     #>(_actors+60)
-	clc
-	adc     _param1
-	bcc     L0017
-	inx
-L0017:	ldy     #$00
-	jsr     ldaidx
-	eor     #$FF
-	clc
-	adc     #$01
-	cmp     #$80
-	sta     (sreg),y
-;
-; } else {
-;
-	jmp     L0006
-;
-; actors.x[i] = temp_x;
-;
-L0012:	ldy     _i
-	lda     _temp_x
-	sta     _actors,y
-;
-; param2 = skeleton_animation_index[actors.state[i]][0];  // animation index
-;
-L0006:	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L0022
-	inx
-L0022:	sta     ptr1
-	txa
-	clc
-	adc     #>(_skeleton_animation_index)
-	sta     ptr1+1
-	ldy     #<(_skeleton_animation_index)
-	lda     (ptr1),y
-	sta     _param2
-;
-; param3 = skeleton_animation_index[actors.state[i]][1];  // number of frames
-;
-	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L0025
-	inx
-	clc
-L0025:	adc     #<(_skeleton_animation_index)
-	sta     ptr1
-	txa
-	adc     #>(_skeleton_animation_index)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	sta     _param3
-;
-; set_animation_info(skeleton_animation_index);
-;
-	lda     #<(_skeleton_animation_index)
-	ldx     #>(_skeleton_animation_index)
-	jsr     _set_animation_info
-;
-; oam_meta_spr(actors.x[param1], actors.y[param1], skeleton_animation[actors.current_frame[param1] + param2]);
-;
-	jsr     decsp2
-	ldy     _param1
-	lda     _actors,y
-	ldy     #$01
-	sta     (sp),y
-	ldy     _param1
-	lda     _actors+10,y
-	ldy     #$00
-	sta     (sp),y
-	ldy     _param1
-	ldx     #$00
-	lda     _actors+180,y
-	clc
-	adc     _param2
-	bcc     L0021
-	inx
-L0021:	stx     tmp1
-	asl     a
-	rol     tmp1
-	clc
-	adc     #<(_skeleton_animation)
-	sta     ptr1
-	lda     tmp1
-	adc     #>(_skeleton_animation)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	tax
-	dey
-	lda     (ptr1),y
-	jsr     _oam_meta_spr
-;
-; for (i = 6; i < 8; ++i) {
-;
-	inc     _i
-	jmp     L0026
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ set_animation_info (const unsigned char (*array)[2])
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_set_animation_info: near
-
-.segment	"CODE"
-
-;
-; void set_animation_info(const unsigned char array[][2]) {
-;
-	jsr     pushax
-;
-; if (actors.counter[param1] == actors.animation_speed[param1]) {
-;
-	ldy     _param1
-	lda     _actors+160,y
-	ldy     _param1
-	cmp     _actors+170,y
-	jne     L0002
-;
-; if ((actors.state[param1] == TURNING || actors.state[param1] == DYING) && actors.current_frame[param1] == param3 - 1) {
-;
-	lda     _actors+190,y
-	cmp     #$01
-	beq     L0020
-	ldy     _param1
-	lda     _actors+190,y
-	cmp     #$03
-	bne     L0005
-L0020:	ldy     _param1
-	lda     _actors+180,y
-	jsr     pusha0
-	lda     _param3
-	sec
-	sbc     #$01
-	bcs     L000C
-	ldx     #$FF
-L000C:	jsr     tosicmp
-	bne     L0005
-;
-; ++actors.state[param1];              // NEXT STATE
-;
-	lda     #<(_actors+190)
-	ldx     #>(_actors+190)
-	clc
-	adc     _param1
-	bcc     L000F
-	inx
-L000F:	sta     ptr1
-	stx     ptr1+1
-	ldy     #$00
-	lda     #$01
-	clc
-	adc     (ptr1),y
-	sta     (ptr1),y
-;
-; param2 = array[actors.state[i]][0];  // animation index
-;
-	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L001D
-	inx
-	clc
-L001D:	ldy     #$00
-	adc     (sp),y
-	sta     ptr1
-	txa
-	iny
-	adc     (sp),y
-	sta     ptr1+1
-	dey
-	lda     (ptr1),y
-	sta     _param2
-;
-; param3 = array[actors.state[i]][1];  // number of frames
-;
-	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L001E
-	inx
-	clc
-L001E:	ldy     #$00
-	adc     (sp),y
-	sta     ptr1
-	txa
-	iny
-	adc     (sp),y
-	sta     ptr1+1
-	lda     (ptr1),y
-	sta     _param3
-;
-; actors.current_frame[param1] = 0;
-;
-	ldy     _param1
-	lda     #$00
-	sta     _actors+180,y
-;
-; } else {
-;
-	jmp     L0014
-;
-; actors.current_frame[param1] = ++actors.current_frame[param1] % param3;
-;
-L0005:	lda     #<(_actors+180)
-	ldx     #>(_actors+180)
-	clc
-	adc     _param1
-	bcc     L0015
-	inx
-L0015:	jsr     pushax
-	lda     #<(_actors+180)
-	ldx     #>(_actors+180)
-	clc
-	adc     _param1
-	bcc     L0016
-	inx
-L0016:	sta     ptr1
-	stx     ptr1+1
-	ldy     #$00
-	lda     #$01
-	clc
-	adc     (ptr1),y
-	sta     (ptr1),y
-	jsr     pusha0
-	lda     _param3
-	jsr     tosumoda0
-	ldy     #$00
-	jsr     staspidx
-;
-; actors.counter[param1] = 0;
-;
-L0014:	ldy     _param1
-	lda     #$00
-	sta     _actors+160,y
-;
-; ++actors.counter[param1];
-;
-L0002:	lda     #<(_actors+160)
-	ldx     #>(_actors+160)
-	clc
-	adc     _param1
-	bcc     L0018
-	inx
-L0018:	sta     ptr1
-	stx     ptr1+1
-	ldy     #$00
-	lda     #$01
-	clc
-	adc     (ptr1),y
-	sta     (ptr1),y
-;
-; if (actors.xDir[param1] == RIGHT) {
-;
-	lda     #<(_actors+60)
-	ldx     #>(_actors+60)
-	clc
-	adc     _param1
-	bcc     L0023
-	inx
-L0023:	jsr     ldaidx
-	cmp     #$01
-	bne     L0019
-;
-; param2 += param3;
-;
-	lda     _param3
-	clc
-	adc     _param2
-	sta     _param2
-;
-; }
-;
-L0019:	jmp     incsp2
 
 .endproc
 
@@ -6385,12 +7032,6 @@ L0008:	sta     ptr1
 	lda     #$09
 	jsr     _set_chr_mode_5
 ;
-; set_scroll_x(0x0100);
-;
-	ldx     #$01
-	lda     #$00
-	jsr     _set_scroll_x
-;
 ; pal_col(0x01, 0x28);
 ;
 	lda     #$01
@@ -6403,7 +7044,13 @@ L0008:	sta     ptr1
 	lda     #$02
 	jsr     pusha
 	lda     #$18
-	jmp     _pal_col
+	jsr     _pal_col
+;
+; set_scroll_x(0x0100);
+;
+	ldx     #$01
+	lda     #$00
+	jmp     _set_scroll_x
 
 .endproc
 
@@ -6442,456 +7089,6 @@ L0008:	sta     ptr1
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ init_level_specifics (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_init_level_specifics: near
-
-.segment	"CODE"
-
-;
-; switch (current_level) {
-;
-	lda     _current_level
-;
-; }
-;
-	jeq     L0046
-	cmp     #$01
-	jeq     L0049
-	cmp     #$02
-	jeq     L004A
-	cmp     #$03
-	jeq     L004B
-	cmp     #$04
-	jeq     L004B
-	cmp     #$05
-	jeq     L004B
-	cmp     #$06
-	jeq     L004B
-	cmp     #$07
-	jeq     L004B
-	cmp     #$08
-	jeq     L004B
-	cmp     #$09
-	jeq     L004B
-	cmp     #$0A
-	jeq     L004B
-	cmp     #$0B
-	jeq     L004B
-	cmp     #$0C
-	jeq     L004B
-	cmp     #$0D
-	jeq     L004B
-	cmp     #$0E
-	jeq     L004B
-	cmp     #$0F
-	jeq     L004B
-	cmp     #$10
-	jeq     L004B
-	cmp     #$11
-	jeq     L004B
-	cmp     #$12
-	jeq     L004B
-	cmp     #$13
-	jeq     L004B
-	cmp     #$14
-	jeq     L004B
-	cmp     #$15
-	jeq     L004B
-	cmp     #$16
-	jeq     L004B
-	cmp     #$17
-	jeq     L004B
-	cmp     #$18
-	jeq     L004B
-	cmp     #$19
-	jeq     L004B
-	cmp     #$1A
-	jeq     L004B
-	cmp     #$1B
-	jeq     L004B
-	cmp     #$1C
-	jeq     L004B
-	cmp     #$1D
-	jeq     L004B
-	cmp     #$1E
-	jeq     L004B
-	cmp     #$1F
-	jeq     L004B
-	cmp     #$20
-	jeq     L004B
-	cmp     #$21
-	jeq     L004B
-	jmp     L004B
-;
-; actors.x[0] = 64;
-;
-L0046:	lda     #$40
-	sta     _actors
-;
-; actors.x[1] = 88;
-;
-	lda     #$58
-	sta     _actors+1
-;
-; actors.x[2] = 160;
-;
-	lda     #$A0
-	sta     _actors+2
-;
-; actors.x[3] = 184;
-;
-	lda     #$B8
-	sta     _actors+3
-;
-; for (i = 0; i < 4; ++i) {
-;
-	lda     #$00
-	sta     _i
-L0047:	lda     _i
-	cmp     #$04
-	bcs     L004B
-;
-; actors.y[i] = 72;
-;
-	ldy     _i
-	lda     #$48
-	sta     _actors+10,y
-;
-; actors.animation_speed[i] = 8;
-;
-	ldy     _i
-	lda     #$08
-	sta     _actors+170,y
-;
-; actors.current_frame[i] = i;
-;
-	ldy     _i
-	lda     _i
-	sta     _actors+180,y
-;
-; actors.state[i] = IDLE;
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+190,y
-;
-; actors.xDir[i] = LEFT;
-;
-	ldy     _i
-	lda     #$FF
-	sta     _actors+60,y
-;
-; for (i = 0; i < 4; ++i) {
-;
-	inc     _i
-	jmp     L0047
-;
-; paddle_count = 1;
-;
-L0049:	sta     _paddle_count
-;
-; actors.x[0] = 0x78;
-;
-	lda     #$78
-	sta     _actors
-;
-; actors.y[0] = 0xD0;
-;
-	lda     #$D0
-	sta     _actors+10
-;
-; banked_call(0, init_skeletons);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_init_skeletons)
-	ldx     #>(_init_skeletons)
-	jsr     _banked_call
-;
-; game_state = STORY;
-;
-	lda     #$02
-	sta     _game_state
-;
-; break;
-;
-	jmp     L004B
-;
-; paddle_count = 4;
-;
-L004A:	lda     #$04
-	sta     _paddle_count
-;
-; actors.x[0] = 0x70;  // 14
-;
-	lda     #$70
-	sta     _actors
-;
-; actors.y[0] = 0xD0;  // 26
-;
-	lda     #$D0
-	sta     _actors+10
-;
-; actors.x[1] = 0x70;  // 14
-;
-	lda     #$70
-	sta     _actors+1
-;
-; actors.y[1] = 0x38;  // 7
-;
-	lda     #$38
-	sta     _actors+11
-;
-; actors.x[2] = 0x18;  // 3
-;
-	lda     #$18
-	sta     _actors+2
-;
-; actors.y[2] = 0x70;  // 14
-;
-	lda     #$70
-	sta     _actors+12
-;
-; actors.x[3] = 0xE0;  // 28
-;
-	lda     #$E0
-	sta     _actors+3
-;
-; actors.y[3] = 0x70;  // 14
-;
-	lda     #$70
-	sta     _actors+13
-;
-; for (i = 0; i < paddle_count; ++i) {
-;
-L004B:	lda     #$00
-	sta     _i
-L004C:	lda     _i
-	cmp     _paddle_count
-	bcc     L004D
-;
-; }
-;
-	rts
-;
-; if (i < 2) {
-;
-L004D:	cmp     #$02
-	bcs     L0033
-;
-; actors.width[i] = 0x20;   // 32
-;
-	ldy     _i
-	lda     #$20
-	sta     _actors+20,y
-;
-; actors.height[i] = 0x04;  // 4
-;
-	ldy     _i
-	lda     #$04
-	sta     _actors+30,y
-;
-; actors.bbox_x[i] = 0x00;  // 2
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+40,y
-;
-; actors.bbox_y[i] = 0x02;
-;
-	ldy     _i
-	lda     #$02
-;
-; } else {
-;
-	jmp     L0045
-;
-; actors.width[i] = 0x04;
-;
-L0033:	ldy     _i
-	lda     #$04
-	sta     _actors+20,y
-;
-; actors.height[i] = 0x20;
-;
-	ldy     _i
-	lda     #$20
-	sta     _actors+30,y
-;
-; actors.bbox_x[i] = 0x02;
-;
-	ldy     _i
-	lda     #$02
-	sta     _actors+40,y
-;
-; actors.bbox_y[i] = 0x00;
-;
-	ldy     _i
-	lda     #$00
-L0045:	sta     _actors+50,y
-;
-; actors.xDir[i] = 0;
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+60,y
-;
-; actors.yDir[i] = 0;
-;
-	ldy     _i
-	sta     _actors+70,y
-;
-; actors.xSpeed[i] = 0;
-;
-	ldy     _i
-	sta     _actors+80,y
-;
-; actors.ySpeed[i] = 0;
-;
-	ldy     _i
-	sta     _actors+90,y
-;
-; actors.xVelocity[i] = 0;
-;
-	ldy     _i
-	sta     _actors+120,y
-;
-; actors.yVelocity[i] = 0;
-;
-	ldy     _i
-	sta     _actors+130,y
-;
-; actors.minSpeed[i] = 0;
-;
-	ldy     _i
-	sta     _actors+140,y
-;
-; actors.maxSpeed[i] = 250;
-;
-	ldy     _i
-	lda     #$FA
-	sta     _actors+150,y
-;
-; for (i = 0; i < paddle_count; ++i) {
-;
-	inc     _i
-	jmp     L004C
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ init_skull (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_init_skull: near
-
-.segment	"CODE"
-
-;
-; actors.x[SKULL] = 0xFF;
-;
-	lda     #$FF
-	sta     _actors+4
-;
-; actors.y[SKULL] = 0xFF;
-;
-	sta     _actors+14
-;
-; actors.width[SKULL] = 6;
-;
-	lda     #$06
-	sta     _actors+24
-;
-; actors.height[SKULL] = 6;
-;
-	sta     _actors+34
-;
-; actors.bbox_x[SKULL] = 1;
-;
-	lda     #$01
-	sta     _actors+44
-;
-; actors.bbox_y[SKULL] = 1;
-;
-	sta     _actors+54
-;
-; actors.xDir[SKULL] = RIGHT;
-;
-	sta     _actors+64
-;
-; actors.yDir[SKULL] = UP;
-;
-	lda     #$FF
-	sta     _actors+74
-;
-; actors.xSpeed[SKULL] = 100;
-;
-	lda     #$64
-	sta     _actors+84
-;
-; actors.ySpeed[SKULL] = 100;
-;
-	sta     _actors+94
-;
-; actors.xRemain[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+104
-;
-; actors.yRemain[SKULL] = 0;
-;
-	sta     _actors+114
-;
-; actors.xVelocity[SKULL] = 0;
-;
-	sta     _actors+124
-;
-; actors.yVelocity[SKULL] = 0;
-;
-	sta     _actors+134
-;
-; actors.minSpeed[SKULL] = 64;
-;
-	lda     #$40
-	sta     _actors+144
-;
-; actors.maxSpeed[SKULL] = 250;
-;
-	lda     #$FA
-	sta     _actors+154
-;
-; actors.counter[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+164
-;
-; actors.animation_speed[SKULL] = 8;
-;
-	lda     #$08
-	sta     _actors+174
-;
-; actors.current_frame[SKULL] = 0;
-;
-	lda     #$00
-	sta     _actors+184
-;
-; actors.state[SKULL] = IDLE;
-;
-	sta     _actors+194
-;
-; }
-;
-	rts
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ draw_level_specifics (void)
 ; ---------------------------------------------------------------
 
@@ -6910,9 +7107,9 @@ L0045:	sta     _actors+50,y
 ;
 	beq     L001C
 	cmp     #$01
-	jeq     L001E
+	jeq     L001F
 	cmp     #$02
-	bne     L0022
+	bne     L0023
 ;
 ; }
 ;
@@ -6920,83 +7117,41 @@ L0045:	sta     _actors+50,y
 ;
 ; }
 ;
-L0022:	rts
+L0023:	rts
 ;
 ; for (i = 0; i < 4; ++i) {
 ;
 L001C:	sta     _i
 L001D:	lda     _i
 	cmp     #$04
-	bcc     L0023
+	bcs     L001E
 ;
-; }
+; set_animation_info(i, torch_animation_index);
 ;
-	rts
-;
-; param1 = i;
-;
-L0023:	sta     _param1
-;
-; param2 = torch_animation_index[actors.state[i]][0];  // animation index
-;
-	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L0017
-	inx
-L0017:	sta     ptr1
-	txa
-	clc
-	adc     #>(_torch_animation_index)
-	sta     ptr1+1
-	ldy     #<(_torch_animation_index)
-	lda     (ptr1),y
-	sta     _param2
-;
-; param3 = torch_animation_index[actors.state[i]][1];  // number of frames
-;
-	ldy     _i
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L001A
-	inx
-	clc
-L001A:	adc     #<(_torch_animation_index)
-	sta     ptr1
-	txa
-	adc     #>(_torch_animation_index)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	sta     _param3
-;
-; set_animation_info(torch_animation_index);
-;
+	jsr     pusha
 	lda     #<(_torch_animation_index)
 	ldx     #>(_torch_animation_index)
 	jsr     _set_animation_info
 ;
-; oam_meta_spr(actors.x[param1], actors.y[param1], torch_animation[actors.current_frame[param1] + param2]);
+; oam_meta_spr(actors.x[i], actors.y[i], torch_animation[actors.current_frame[i] + param2]);
 ;
 	jsr     decsp2
-	ldy     _param1
+	ldy     _i
 	lda     _actors,y
 	ldy     #$01
 	sta     (sp),y
-	ldy     _param1
+	ldy     _i
 	lda     _actors+10,y
 	ldy     #$00
 	sta     (sp),y
-	ldy     _param1
+	ldy     _i
 	ldx     #$00
 	lda     _actors+180,y
 	clc
 	adc     _param2
-	bcc     L0016
+	bcc     L0015
 	inx
-L0016:	stx     tmp1
+L0015:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -7017,9 +7172,161 @@ L0016:	stx     tmp1
 	inc     _i
 	jmp     L001D
 ;
+; if (story_step > 2){
+;
+L001E:	lda     _story_step
+	cmp     #$03
+	bcc     L000C
+;
+; oam_meta_spr(120, 72, hero_head_down);
+;
+	jsr     decsp2
+	lda     #$78
+	ldy     #$01
+	sta     (sp),y
+	lda     #$48
+	dey
+	sta     (sp),y
+	lda     #<(_hero_head_down)
+	ldx     #>(_hero_head_down)
+	jsr     _oam_meta_spr
+;
+; set_animation_info(SKULL, skull_animation_index);
+;
+	lda     #$04
+	jsr     pusha
+	lda     #<(_skull_animation_index)
+	ldx     #>(_skull_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(125, 130, skull_animation[actors.current_frame[SKULL] + param2]);
+;
+	jsr     decsp2
+	lda     #$7D
+	ldy     #$01
+	sta     (sp),y
+	lda     #$82
+	dey
+	sta     (sp),y
+	ldx     #$00
+	lda     _actors+184
+	clc
+	adc     _param2
+	bcc     L0016
+	inx
+L0016:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_skull_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_skull_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+;
+; } else {
+;
+	jmp     L0019
+;
+; oam_meta_spr(120, 72, hero_head_up);
+;
+L000C:	jsr     decsp2
+	lda     #$78
+	ldy     #$01
+	sta     (sp),y
+	lda     #$48
+	dey
+	sta     (sp),y
+	lda     #<(_hero_head_up)
+	ldx     #>(_hero_head_up)
+L0019:	jsr     _oam_meta_spr
+;
+; set_animation_info(NECROMANCER, necromancer_animation_index);
+;
+	lda     #$05
+	jsr     pusha
+	lda     #<(_necromancer_animation_index)
+	ldx     #>(_necromancer_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(120, 142, necromancer_animation[actors.current_frame[NECROMANCER] + param2]);
+;
+	jsr     decsp2
+	lda     #$78
+	ldy     #$01
+	sta     (sp),y
+	lda     #$8E
+	dey
+	sta     (sp),y
+	ldx     #$00
+	lda     _actors+185
+	clc
+	adc     _param2
+	bcc     L0017
+	inx
+L0017:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_necromancer_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_necromancer_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jsr     _oam_meta_spr
+;
+; set_animation_info(LIGHTNING, lightning_animation_index);
+;
+	lda     #$06
+	jsr     pusha
+	lda     #<(_lightning_animation_index)
+	ldx     #>(_lightning_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(128, 108, lightning_animation[actors.current_frame[LIGHTNING] + param2]);
+;
+	jsr     decsp2
+	lda     #$80
+	ldy     #$01
+	sta     (sp),y
+	lda     #$6C
+	dey
+	sta     (sp),y
+	ldx     #$00
+	lda     _actors+186
+	clc
+	adc     _param2
+	bcc     L0018
+	inx
+L0018:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_lightning_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_lightning_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jmp     _oam_meta_spr
+;
 ; chr_4_index = 2;
 ;
-L001E:	lda     #$02
+L001F:	lda     #$02
 	sta     _chr_4_index
 ;
 ; chr_5_index = 3;
@@ -7031,9 +7338,9 @@ L001E:	lda     #$02
 ;
 	lda     _actors+14
 	cmp     #$79
-	bcc     L0010
+	bcc     L000F
 	cmp     #$84
-	bcs     L0010
+	bcs     L000F
 ;
 ; oam_meta_spr(215, 122, crow_left_skwak);
 ;
@@ -7049,11 +7356,11 @@ L001E:	lda     #$02
 ;
 ; } else {
 ;
-	jmp     L0019
+	jmp     L001A
 ;
 ; oam_meta_spr(215, 122, crow_left);
 ;
-L0010:	jsr     decsp2
+L000F:	jsr     decsp2
 	lda     #$D7
 	ldy     #$01
 	sta     (sp),y
@@ -7062,7 +7369,7 @@ L0010:	jsr     decsp2
 	sta     (sp),y
 	lda     #<(_crow_left)
 	ldx     #>(_crow_left)
-L0019:	jsr     _oam_meta_spr
+L001A:	jsr     _oam_meta_spr
 ;
 ; animate_skeleton();
 ;
@@ -7319,13 +7626,21 @@ L001D:	lda     _tombstone_count
 	lsr     a
 	sta     _tombstone_count
 ;
-; init_level_specifics();
+; banked_call(0, init_level_specifics);
 ;
-	jsr     _init_level_specifics
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_level_specifics)
+	ldx     #>(_init_level_specifics)
+	jsr     _banked_call
 ;
-; init_skull();
+; banked_call(0, init_skull);
 ;
-	jsr     _init_skull
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_skull)
+	ldx     #>(_init_skull)
+	jsr     _banked_call
 ;
 ; ppu_on_all();
 ;
@@ -10748,46 +11063,10 @@ L0066:	lda     _temp_x
 .segment	"CODE"
 
 ;
-; param1 = SKULL;
+; set_animation_info(SKULL, skull_animation_index);
 ;
 	lda     #$04
-	sta     _param1
-;
-; param2 = skull_animation_index[actors.state[SKULL]][0];  // animation index
-;
-	ldx     #$00
-	lda     _actors+194
-	asl     a
-	bcc     L0004
-	inx
-L0004:	sta     ptr1
-	txa
-	clc
-	adc     #>(_skull_animation_index)
-	sta     ptr1+1
-	ldy     #<(_skull_animation_index)
-	lda     (ptr1),y
-	sta     _param2
-;
-; param3 = skull_animation_index[actors.state[SKULL]][1];  // number of frames
-;
-	ldx     #$00
-	lda     _actors+194
-	asl     a
-	bcc     L0006
-	inx
-	clc
-L0006:	adc     #<(_skull_animation_index)
-	sta     ptr1
-	txa
-	adc     #>(_skull_animation_index)
-	sta     ptr1+1
-	ldy     #$01
-	lda     (ptr1),y
-	sta     _param3
-;
-; set_animation_info(skull_animation_index);
-;
+	jsr     pusha
 	lda     #<(_skull_animation_index)
 	ldx     #>(_skull_animation_index)
 	jsr     _set_animation_info
@@ -10805,9 +11084,9 @@ L0006:	adc     #<(_skull_animation_index)
 	lda     _actors+184
 	clc
 	adc     _param2
-	bcc     L0003
+	bcc     L0002
 	inx
-L0003:	stx     tmp1
+L0002:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -10941,8 +11220,8 @@ L0003:	rts
 ;
 	beq     L0004
 	cmp     #$01
-	beq     L000E
-	rts
+	jeq     L0020
+	jmp     L0024
 ;
 ; oam_clear();
 ;
@@ -10950,24 +11229,187 @@ L0004:	jsr     _oam_clear
 ;
 ; draw_level_specifics();
 ;
-	jmp     _draw_level_specifics
+	jsr     _draw_level_specifics
 ;
 ; switch (story_step) {
 ;
-L000E:	lda     _story_step
+	lda     _story_step
 ;
 ; }
 ;
-	beq     L0008
+	beq     L001A
 	cmp     #$01
-	beq     L000F
+	beq     L001B
 	cmp     #$02
-	beq     L0007
-	jmp     L0011
+	beq     L001C
+	cmp     #$03
+	beq     L001F
+	jmp     L0024
+;
+; if(story_counter == 128){
+;
+L001A:	lda     _story_counter
+	cmp     #$80
+	jne     L0024
+;
+; ++actors.state[NECROMANCER];
+;
+	inc     _actors+195
+;
+; actors.current_frame[NECROMANCER] = 0;
+;
+	lda     #$00
+	sta     _actors+185
+;
+; story_counter = 0;
+;
+	sta     _story_counter
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0024
+;
+; if(story_counter == 64){
+;
+L001B:	lda     _story_counter
+	cmp     #$40
+	jne     L0024
+;
+; ++actors.state[NECROMANCER];
+;
+	inc     _actors+195
+;
+; pal_bright(6);
+;
+	lda     #$06
+	jsr     _pal_bright
+;
+; pal_spr(pal_altar_lightning);
+;
+	lda     #<(_pal_altar_lightning)
+	ldx     #>(_pal_altar_lightning)
+	jsr     _pal_spr
+;
+; ++actors.state[LIGHTNING];
+;
+	inc     _actors+196
+;
+; story_counter = 0;
+;
+	lda     #$00
+	sta     _story_counter
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0024
+;
+; if (story_counter > 2){
+;
+L001C:	lda     _story_counter
+	cmp     #$03
+	bcc     L001D
+;
+; pal_bright(4);
+;
+	lda     #$04
+	jsr     _pal_bright
+;
+; if (actors.state[LIGHTNING] == WALKING){
+;
+L001D:	lda     _actors+196
+	cmp     #$02
+	bne     L001E
+;
+; pal_spr(pal_altar_spr);
+;
+	lda     #<(_pal_altar_spr)
+	ldx     #>(_pal_altar_spr)
+	jsr     _pal_spr
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; story_counter = 0;
+;
+	lda     #$00
+	sta     _story_counter
+;
+; if (actors.current_frame[LIGHTNING] == 8){
+;
+L001E:	lda     _actors+186
+	cmp     #$08
+	jne     L0024
+;
+; pal_bright(6);
+;
+	lda     #$06
+	jsr     _pal_bright
+;
+; break;
+;
+	jmp     L0024
+;
+; pal_bright(4 - story_counter / 32);
+;
+L001F:	lda     #$04
+	jsr     pusha0
+	lda     _story_counter
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	lsr     a
+	jsr     tossuba0
+	jsr     _pal_bright
+;
+; if (story_counter > 120) {
+;
+	lda     _story_counter
+	cmp     #$79
+	bcc     L0024
+;
+; pal_bright(4);
+;
+	lda     #$04
+	jsr     _pal_bright
+;
+; show_map();
+;
+	jsr     _show_map
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0024
+;
+; switch (story_step) {
+;
+L0020:	lda     _story_step
+;
+; }
+;
+	beq     L0014
+	cmp     #$01
+	beq     L0021
+	cmp     #$02
+	beq     L0013
+	jmp     L0023
 ;
 ; load_level();
 ;
-L0008:	jsr     _load_level
+L0014:	jsr     _load_level
 ;
 ; show_map();
 ;
@@ -10989,13 +11431,13 @@ L0008:	jsr     _load_level
 ;
 ; ++actors.y[SKULL];
 ;
-L000F:	inc     _actors+14
+L0021:	inc     _actors+14
 ;
 ; if (actors.x[SKULL] < 162) {
 ;
 	lda     _actors+4
 	cmp     #$A2
-	bcs     L0010
+	bcs     L0022
 ;
 ; ++actors.x[SKULL];
 ;
@@ -11003,9 +11445,9 @@ L000F:	inc     _actors+14
 ;
 ; if (actors.y[SKULL] > 200) {
 ;
-L0010:	lda     _actors+14
+L0022:	lda     _actors+14
 	cmp     #$C9
-	bcc     L0007
+	bcc     L0013
 ;
 ; ++story_step;
 ;
@@ -11013,11 +11455,11 @@ L0010:	lda     _actors+14
 ;
 ; break;
 ;
-	jmp     L0007
+	jmp     L0013
 ;
 ; p1_health = 3;
 ;
-L0011:	lda     #$03
+L0023:	lda     #$03
 	sta     _p1_health
 ;
 ; p1_max_health = 3;
@@ -11031,11 +11473,19 @@ L0011:	lda     #$03
 ;
 ; oam_clear();
 ;
-L0007:	jsr     _oam_clear
+L0013:	jsr     _oam_clear
 ;
 ; draw_skull();
 ;
-	jmp     _draw_skull
+	jsr     _draw_skull
+;
+; ++story_counter;
+;
+L0024:	inc     _story_counter
+;
+; }
+;
+	rts
 
 .endproc
 
@@ -11072,6 +11522,12 @@ L0007:	jsr     _oam_clear
 	sta     (sp),y
 	ldx     #$20
 	jsr     _memfill
+;
+; set_scroll_y(0xff); //shift the bg down 1 pixel
+;
+	ldx     #$00
+	lda     #$FF
+	jsr     _set_scroll_y
 ;
 ; set_vram_buffer();
 ;
@@ -11113,10 +11569,10 @@ L0002:	jsr     _ppu_wait_nmi
 ; if (game_state == TITLE && pad1_new & PAD_START) {
 ;
 	lda     _game_state
-	bne     L001B
+	bne     L001A
 	lda     _pad1_new
 	and     #$10
-	beq     L001B
+	beq     L001A
 ;
 ; game_state = STORY;
 ;
@@ -11139,12 +11595,12 @@ L0002:	jsr     _ppu_wait_nmi
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
-L001B:	lda     _game_state
+L001A:	lda     _game_state
 	cmp     #$03
-	bne     L001E
+	bne     L001D
 	lda     _pad1_new
 	and     #$10
-	beq     L001E
+	beq     L001D
 ;
 ; pal_bg(level_list[current_level * 4 + 2]);
 ;
@@ -11199,9 +11655,9 @@ L000E:	stx     tmp1
 ; } else if (game_state == STORY) {
 ;
 	jmp     L0002
-L001E:	lda     _game_state
+L001D:	lda     _game_state
 	cmp     #$02
-	bne     L001F
+	bne     L001E
 ;
 ; play_story();
 ;
@@ -11221,7 +11677,7 @@ L001E:	lda     _game_state
 ; } else if (game_state == MAIN) {
 ;
 	jmp     L0002
-L001F:	lda     _game_state
+L001E:	lda     _game_state
 	cmp     #$01
 	jne     L0002
 ;
@@ -11243,20 +11699,13 @@ L001F:	lda     _game_state
 ;
 ; } else if (tombstone_count == 0) {
 ;
-	beq     L0020
+	beq     L001F
 	lda     _tombstone_count
 	jsr     booleq
 ;
-; debug(0x30 + tombstone_count);
-;
-L0020:	lda     _tombstone_count
-	clc
-	adc     #$30
-	jsr     _debug
-;
 ; if (game_state == MAP) {
 ;
-	lda     _game_state
+L001F:	lda     _game_state
 	cmp     #$03
 	jne     L0002
 ;
