@@ -15,7 +15,7 @@
 #define TILE_HEART_FULL 0x5B
 #define TILE_HEART_EMPTY 0x5C
 #define COL_TYPE_SOFT 0x06
-#define COL_OFFSET 5
+#define COL_OFFSET 3
 
 #define UP -1
 #define DOWN 1
@@ -31,13 +31,16 @@
 // ACTOR INDEX
 #define SKULL 4
 #define PADDLE 0
+#define CROW 8
 #define NECROMANCER 5
 #define LIGHTNING 6
 
 // Actor STATES!
 // Always putting temporary before the next (ex DYING -> DEAD)
 #define IDLE 0
+#define FLYING 0
 #define TURNING 1
+#define SKWAK 1
 #define WALKING 2
 
 #define ROTATE_H 2
@@ -47,8 +50,19 @@
 
 #define ROTATE_V 4
 
+// Ennemy types
+#define TYPE_CROW 0
+#define TYPE_SKELETON 1
+
+
 void animate_skeleton();
 
 // index = actor index
 // array = animation index
 void set_animation_info(const unsigned char p1, const unsigned char array[][2]);
+
+// param1: actor index
+signed char get_x_speed();
+
+// param1: actor index
+signed char get_y_speed();

@@ -33,12 +33,12 @@ MARCH 2022
     x Altar implementation
     x Angelic character design
     x Story system
-    - Lightning animation 52 height
-    - Altar Story
+    x Lightning animation 52 height
+    x Altar Story
     
 APRIL 2022
 1:
-    - Crow animation
+    x Crow animation
     - Dialog system
     - End of cemetery level / Door animation
     - Ruin Temple Design
@@ -56,7 +56,6 @@ APRIL 2022
     - keys
     - multiple skulls?
     - SELECT BUTTON -> Item selection (fade out background)
-DEMO
 4:
     - Forest level ennemies
     - Forest level design

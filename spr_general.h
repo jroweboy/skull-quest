@@ -41,38 +41,6 @@ const unsigned char tree[] = {
 
 };
 
-const unsigned char crow_left[] = {
-    -8, -7, 0x22, 1 | OAM_FLIP_H,
-    -8, -2, 0x25, 1,
-    0, -2, 0x26, 1,
-    128
-
-};
-
-const unsigned char crow_left_skwak[] = {
-    -10, -6, 0x21, 1,
-    -8, -2, 0x23, 1,
-    0, -2, 0x24, 1,
-    128
-
-};
-
-const unsigned char crow_right[] = {
-    0, -7, 0x22, 1,
-    0, -2, 0x25, 1 | OAM_FLIP_H,
-    -8, -2, 0x26, 1 | OAM_FLIP_H,
-    128
-
-};
-
-const unsigned char crow_right_skwak[] = {
-    2, -6, 0x21, 1 | OAM_FLIP_H,
-    0, -2, 0x23, 1 | OAM_FLIP_H,
-    -8, -2, 0x24, 1 | OAM_FLIP_H,
-    128
-
-};
-
 const unsigned char door1[] = {
     -8, -16, 0x30, 1 | OAM_FLIP_H,
     -8, -8, 0x40, 1 | OAM_FLIP_H,
