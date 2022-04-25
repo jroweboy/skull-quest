@@ -156,9 +156,10 @@
 	.export		_skull_animation
 	.export		_wram_array
 	.export		_faces
-	.export		_level_list
+	.export		_levels
 	.export		_actors
 	.export		_init_skeletons
+	.export		_init_levels
 	.export		_init_level_specifics
 	.export		_init_skull
 	.export		_debug
@@ -206,15 +207,6 @@ _brightness:
 	.byte	$04
 _faces:
 	.addr	_angelic_face
-_level_list:
-	.addr	_altar
-	.addr	_cemetery_col
-	.addr	_pal_altar_bg
-	.addr	_pal_altar_spr
-	.addr	_cemetery
-	.addr	_cemetery_col
-	.addr	_pal_cemetery_bg
-	.addr	_pal_cemetery_spr
 _exp:
 	.byte	$30,$30,$30,$30,$30,$30,$30,$30,$00
 
@@ -5546,6 +5538,8 @@ _wram_array:
 .segment	"BSS"
 _c_map:
 	.res	368,$00
+_levels:
+	.res	16,$00
 _actors:
 	.res	210,$00
 
@@ -6582,6 +6576,79 @@ L001E:	sta     _actors+60,y
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ init_levels (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_init_levels: near
+
+.segment	"BANK0"
+
+;
+; levels.nametable[0] = altar;
+;
+	lda     #>(_altar)
+	sta     _levels+1
+	lda     #<(_altar)
+	sta     _levels
+;
+; levels.collision_map[0] = cemetery_col;
+;
+	lda     #>(_cemetery_col)
+	sta     _levels+4+1
+	lda     #<(_cemetery_col)
+	sta     _levels+4
+;
+; levels.background_palette[0] = pal_altar_bg;
+;
+	lda     #>(_pal_altar_bg)
+	sta     _levels+8+1
+	lda     #<(_pal_altar_bg)
+	sta     _levels+8
+;
+; levels.sprite_palette[0] = pal_altar_spr;
+;
+	lda     #>(_pal_altar_spr)
+	sta     _levels+12+1
+	lda     #<(_pal_altar_spr)
+	sta     _levels+12
+;
+; levels.nametable[1] = cemetery;
+;
+	lda     #>(_cemetery)
+	sta     _levels+2+1
+	lda     #<(_cemetery)
+	sta     _levels+2
+;
+; levels.collision_map[1] = cemetery_col;
+;
+	lda     #>(_cemetery_col)
+	sta     _levels+6+1
+	lda     #<(_cemetery_col)
+	sta     _levels+6
+;
+; levels.background_palette[1] = pal_cemetery_bg;
+;
+	lda     #>(_pal_cemetery_bg)
+	sta     _levels+10+1
+	lda     #<(_pal_cemetery_bg)
+	sta     _levels+10
+;
+; levels.sprite_palette[1] = pal_cemetery_spr;
+;
+	lda     #>(_pal_cemetery_spr)
+	sta     _levels+14+1
+	lda     #<(_pal_cemetery_spr)
+	sta     _levels+14
+;
+; };
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ init_level_specifics (void)
 ; ---------------------------------------------------------------
 
@@ -6811,14 +6878,14 @@ L0049:	lda     #$07
 	ldx     #>(_init_skeletons)
 	jsr     _banked_call
 ;
-; actors.x[CROW] = 120; //207;
+; actors.x[CROW] = 207;
 ;
-	lda     #$78
+	lda     #$CF
 	sta     _actors+8
 ;
-; actors.y[CROW] = 140; //117;
+; actors.y[CROW] = 117;
 ;
-	lda     #$8C
+	lda     #$75
 	sta     _actors+18
 ;
 ; actors.state[CROW] = 2;  // IDLE state of crow is 2... don't ask!
@@ -7571,23 +7638,18 @@ L0003:	rts
 .segment	"CODE"
 
 ;
-; pal_bg(level_list[current_level * 4 + 2]);
+; pal_bg(levels.background_palette[current_level]);
 ;
 	ldx     #$00
 	lda     _current_level
-	jsr     shlax2
-	clc
-	adc     #$02
-	bcc     L0002
-	inx
-L0002:	stx     tmp1
 	asl     a
-	rol     tmp1
+	bcc     L0003
+	inx
 	clc
-	adc     #<(_level_list)
+L0003:	adc     #<(_levels+8)
 	sta     ptr1
-	lda     tmp1
-	adc     #>(_level_list)
+	txa
+	adc     #>(_levels+8)
 	sta     ptr1+1
 	ldy     #$01
 	lda     (ptr1),y
@@ -7648,11 +7710,11 @@ L0002:	stx     tmp1
 ;
 ; }
 ;
-	beq     L0020
+	beq     L001F
 	cmp     #$01
-	jeq     L0025
+	jeq     L0024
 	cmp     #$02
-	bne     L002B
+	bne     L002A
 ;
 ; }
 ;
@@ -7660,21 +7722,21 @@ L0002:	stx     tmp1
 ;
 ; }
 ;
-L002B:	rts
+L002A:	rts
 ;
 ; if (story_step < 5) {
 ;
-L0020:	lda     _story_step
+L001F:	lda     _story_step
 	cmp     #$05
-	jcs     L0023
+	jcs     L0022
 ;
 ; for (i = 0; i < 4; ++i) {
 ;
 	lda     #$00
 	sta     _i
-L0021:	lda     _i
+L0020:	lda     _i
 	cmp     #$04
-	bcs     L0022
+	bcs     L0021
 ;
 ; set_animation_info(i, torch_animation_index);
 ;
@@ -7699,9 +7761,9 @@ L0021:	lda     _i
 	lda     _actors+180,y
 	clc
 	adc     _param2
-	bcc     L001A
+	bcc     L0019
 	inx
-L001A:	stx     tmp1
+L0019:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -7720,11 +7782,11 @@ L001A:	stx     tmp1
 ; for (i = 0; i < 4; ++i) {
 ;
 	inc     _i
-	jmp     L0021
+	jmp     L0020
 ;
 ; set_animation_info(NECROMANCER, necromancer_animation_index);
 ;
-L0022:	lda     #$05
+L0021:	lda     #$05
 	jsr     pusha
 	lda     #<(_necromancer_animation_index)
 	ldx     #>(_necromancer_animation_index)
@@ -7743,9 +7805,9 @@ L0022:	lda     #$05
 	lda     _actors+185
 	clc
 	adc     _param2
-	bcc     L001B
+	bcc     L001A
 	inx
-L001B:	stx     tmp1
+L001A:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -7782,9 +7844,9 @@ L001B:	stx     tmp1
 	lda     _actors+186
 	clc
 	adc     _param2
-	bcc     L001C
+	bcc     L001B
 	inx
-L001C:	stx     tmp1
+L001B:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -7802,14 +7864,14 @@ L001C:	stx     tmp1
 ;
 ; if (story_step > 2) {
 ;
-L0023:	lda     _story_step
+L0022:	lda     _story_step
 	cmp     #$03
 	bcc     L000D
 ;
 ; if (story_step < 5) {
 ;
 	cmp     #$05
-	bcs     L0024
+	bcs     L0023
 ;
 ; oam_meta_spr(120, 72, hero_head_down);
 ;
@@ -7825,7 +7887,7 @@ L0023:	lda     _story_step
 ;
 ; } else {
 ;
-	jmp     L001F
+	jmp     L001E
 ;
 ; oam_meta_spr(120, 72, hero_head_up);
 ;
@@ -7838,11 +7900,11 @@ L000D:	jsr     decsp2
 	sta     (sp),y
 	lda     #<(_hero_head_up)
 	ldx     #>(_hero_head_up)
-L001F:	jsr     _oam_meta_spr
+L001E:	jsr     _oam_meta_spr
 ;
 ; set_animation_info(SKULL, skull_animation_index);
 ;
-L0024:	lda     #$04
+L0023:	lda     #$04
 	jsr     pusha
 	lda     #<(_skull_animation_index)
 	ldx     #>(_skull_animation_index)
@@ -7861,9 +7923,9 @@ L0024:	lda     #$04
 	lda     _actors+184
 	clc
 	adc     _param2
-	bcc     L001D
+	bcc     L001C
 	inx
-L001D:	stx     tmp1
+L001C:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -7881,8 +7943,8 @@ L001D:	stx     tmp1
 ;
 ; if (actors.state[CROW] == FLYING) {
 ;
-L0025:	lda     _actors+198
-	bne     L0026
+L0024:	lda     _actors+198
+	bne     L0025
 ;
 ; param1 = CROW;
 ;
@@ -7909,7 +7971,7 @@ L0025:	lda     _actors+198
 ;
 	lda     _actors+8
 	cmp     #$06
-	bcs     L002A
+	bcs     L0029
 ;
 ; actors.state[CROW] = SKWAK;
 ;
@@ -7923,12 +7985,12 @@ L0025:	lda     _actors+198
 ;
 ; } else if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
 ;
-	jmp     L002A
-L0026:	lda     _actors+14
+	jmp     L0029
+L0025:	lda     _actors+14
 	cmp     #$79
-	bcc     L002A
+	bcc     L0029
 	cmp     #$84
-	bcs     L002A
+	bcs     L0029
 ;
 ; actors.state[CROW] = SKWAK;  // SKWAK!
 ;
@@ -7937,18 +7999,11 @@ L0026:	lda     _actors+14
 ;
 ; set_animation_info(CROW, crow_animation_index);
 ;
-L002A:	lda     #$08
+L0029:	lda     #$08
 	jsr     pusha
 	lda     #<(_crow_animation_index)
 	ldx     #>(_crow_animation_index)
 	jsr     _set_animation_info
-;
-; debug(0x30 + actors.current_frame[CROW]);
-;
-	lda     _actors+188
-	clc
-	adc     #$30
-	jsr     _debug
 ;
 ; oam_meta_spr(actors.x[CROW], actors.y[CROW], crow_animation[actors.current_frame[CROW] + param2]);
 ;
@@ -7963,9 +8018,9 @@ L002A:	lda     #$08
 	lda     _actors+188
 	clc
 	adc     _param2
-	bcc     L001E
+	bcc     L001D
 	inx
-L001E:	stx     tmp1
+L001D:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -8028,31 +8083,24 @@ L001E:	stx     tmp1
 ;
 	jsr     _ppu_off
 ;
-; temp = current_level * 4;
-;
-	lda     _current_level
-	asl     a
-	asl     a
-	sta     _temp
-;
 ; vram_adr(NAMETABLE_A);
 ;
 	ldx     #$20
 	lda     #$00
 	jsr     _vram_adr
 ;
-; vram_unrle(level_list[temp]);
+; vram_unrle(levels.nametable[current_level]);
 ;
 	ldx     #$00
-	lda     _temp
+	lda     _current_level
 	asl     a
 	bcc     L0016
 	inx
 	clc
-L0016:	adc     #<(_level_list)
+L0016:	adc     #<(_levels)
 	sta     ptr1
 	txa
-	adc     #>(_level_list)
+	adc     #>(_levels)
 	sta     ptr1+1
 	ldy     #$01
 	lda     (ptr1),y
@@ -8061,22 +8109,21 @@ L0016:	adc     #<(_level_list)
 	lda     (ptr1),y
 	jsr     _vram_unrle
 ;
-; memcpy(c_map, level_list[++temp], 368);
+; memcpy(c_map, levels.collision_map[current_level], 368);
 ;
 	lda     #<(_c_map)
 	ldx     #>(_c_map)
 	jsr     pushax
 	ldx     #$00
-	inc     _temp
-	lda     _temp
+	lda     _current_level
 	asl     a
 	bcc     L0017
 	inx
 	clc
-L0017:	adc     #<(_level_list)
+L0017:	adc     #<(_levels+4)
 	sta     ptr1
 	txa
-	adc     #>(_level_list)
+	adc     #>(_levels+4)
 	sta     ptr1+1
 	ldy     #$01
 	lda     (ptr1),y
@@ -8088,19 +8135,18 @@ L0017:	adc     #<(_level_list)
 	lda     #$70
 	jsr     _memcpy
 ;
-; pal_bg(level_list[++temp]);
+; pal_bg(levels.background_palette[current_level]);
 ;
 	ldx     #$00
-	inc     _temp
-	lda     _temp
+	lda     _current_level
 	asl     a
 	bcc     L0018
 	inx
 	clc
-L0018:	adc     #<(_level_list)
+L0018:	adc     #<(_levels+8)
 	sta     ptr1
 	txa
-	adc     #>(_level_list)
+	adc     #>(_levels+8)
 	sta     ptr1+1
 	ldy     #$01
 	lda     (ptr1),y
@@ -8109,19 +8155,18 @@ L0018:	adc     #<(_level_list)
 	lda     (ptr1),y
 	jsr     _pal_bg
 ;
-; pal_spr(level_list[++temp]);
+; pal_spr(levels.sprite_palette[current_level]);
 ;
 	ldx     #$00
-	inc     _temp
-	lda     _temp
+	lda     _current_level
 	asl     a
 	bcc     L0019
 	inx
 	clc
-L0019:	adc     #<(_level_list)
+L0019:	adc     #<(_levels+12)
 	sta     ptr1
 	txa
-	adc     #>(_level_list)
+	adc     #>(_levels+12)
 	sta     ptr1+1
 	ldy     #$01
 	lda     (ptr1),y
@@ -11995,6 +12040,14 @@ L0037:	inc     _story_counter
 	ldx     #$20
 	jsr     _memfill
 ;
+; banked_call(0, init_levels);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_levels)
+	ldx     #>(_init_levels)
+	jsr     _banked_call
+;
 ; set_scroll_y(0xff);  // shift the bg down 1 pixel
 ;
 	ldx     #$00
@@ -12046,18 +12099,18 @@ L0002:	jsr     _ppu_wait_nmi
 	and     #$10
 	beq     L0018
 ;
-; game_state = MAIN;
+; game_state = STORY;
 ;
-	lda     #$01
+	lda     #$02
 	sta     _game_state
 ;
-; current_level = 1;
+; current_level = 0;
 ;
+	lda     #$00
 	sta     _current_level
 ;
 ; story_step = 0;
 ;
-	lda     #$00
 	sta     _story_step
 ;
 ; load_level();

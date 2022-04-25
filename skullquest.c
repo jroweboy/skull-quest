@@ -45,21 +45,20 @@ const unsigned char *faces[] = {
     angelic_face,
 };
 
-const unsigned char *level_list[] = {
-    altar, cemetery_col, pal_altar_bg, pal_altar_spr,          // LEVEL 00-ALTAR
-    cemetery, cemetery_col, pal_cemetery_bg, pal_cemetery_spr  // LEVEL 01-Cemetery
-};
 
 static char exp[] = "00000000";
 static unsigned char c_map[368];
 
-// TODO:
-// #define LEVEL_NUMBER 2
+#define LEVEL_NUMBER 2
 
-// typedef struct {
-//     unsigned char* nametable[LEVEL_NUMBER];
-//     char name[LEVEL_NUMBER];
-// };
+typedef struct {
+    unsigned char* nametable[LEVEL_NUMBER];
+    unsigned char* collision_map[LEVEL_NUMBER];
+    unsigned char* background_palette[LEVEL_NUMBER];
+    unsigned char* sprite_palette[LEVEL_NUMBER];
+} Levels;
+
+Levels levels;
 
 #define ACTOR_NUMBER 10
 
@@ -126,6 +125,26 @@ void init_skeletons() {
         actors.type[i] = TYPE_SKELETON;
     }
 }
+
+void init_levels(){
+    // ALTAR 
+    levels.nametable[0] = altar;
+    levels.collision_map[0] = cemetery_col;
+    levels.background_palette[0] = pal_altar_bg;
+    levels.sprite_palette[0] = pal_altar_spr;
+
+    // CEMETERY
+    levels.nametable[1] = cemetery;
+    levels.collision_map[1] = cemetery_col;
+    levels.background_palette[1] = pal_cemetery_bg;
+    levels.sprite_palette[1] = pal_cemetery_spr;
+
+    // TEMPLATE
+    // levels.nametable[] = ;
+    // levels.collision_map[] = ;
+    // levels.background_palette[] = ;
+    // levels.sprite_palette[] = ;
+};
 
 void init_level_specifics() {
     switch (current_level) {
@@ -401,7 +420,7 @@ void show_map() {
 }
 
 void hide_map() {
-    pal_bg(level_list[current_level * 4 + 2]);
+    pal_bg(levels.background_palette[current_level]);
     set_chr_mode_4(chr_4_index);
     set_chr_mode_5(chr_5_index);
     set_scroll_x(0x0000);
@@ -470,15 +489,14 @@ void draw_level_specifics() {
 
 void load_level() {
     ppu_off();
-    temp = current_level * 4;
     vram_adr(NAMETABLE_A);
-    vram_unrle(level_list[temp]);
+    vram_unrle(levels.nametable[current_level]);
 
     // TODO: compress col data! and decompress here:
-    memcpy(c_map, level_list[++temp], 368);
+    memcpy(c_map, levels.collision_map[current_level], 368);
 
-    pal_bg(level_list[++temp]);
-    pal_spr(level_list[++temp]);
+    pal_bg(levels.background_palette[current_level]);
+    pal_spr(levels.sprite_palette[current_level]);
 
     // Check how many tombstones or destructible brick there are
     brick_counter = 0;
@@ -1418,6 +1436,8 @@ void main() {
     // clear the WRAM, not done by the init code
     // memfill(void *dst,unsigned char value,unsigned int len);
     memfill(wram_array, 0, 0x2000);
+
+    banked_call(0, init_levels);
 
     set_scroll_y(0xff);  // shift the bg down 1 pixel
 
