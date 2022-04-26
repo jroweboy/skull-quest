@@ -89,7 +89,7 @@ typedef struct
 
 // index 0-3 paddles
 // index 4 skull
-// index 5 necromancer
+// index 5 necromancer / angelica
 // index 6 ennemies
 Actors actors;
 
@@ -121,7 +121,7 @@ void init_skeletons() {
         actors.counter[i] = 0;
         actors.animation_delay[i] = 16;
         actors.current_frame[i] = 0;
-        actors.state[i] = WALKING;
+        actors.state[i] = DEAD;
         actors.type[i] = TYPE_SKELETON;
     }
 }
@@ -185,9 +185,12 @@ void init_level_specifics() {
             enemy_count = 3;
             chr_4_index = 2;
             chr_5_index = 3;
+            
+            // Paddle
             paddle_count = 1;
-            actors.x[0] = 0x78;
+            actors.x[0] = 0x70;
             actors.y[0] = 0xD0;
+
             banked_call(0, init_skeletons);
 
             actors.x[CROW] = 207;
@@ -477,8 +480,10 @@ void draw_level_specifics() {
             set_animation_info(CROW, crow_animation_index);
             oam_meta_spr(actors.x[CROW], actors.y[CROW], crow_animation[actors.current_frame[CROW] + param2]);
 
-            // OTHER
+            // SKELETONS
             animate_skeleton();
+
+            // OTHER
             oam_meta_spr(128, 64, door1);
             oam_meta_spr(219, 61, tree);
             break;
@@ -489,6 +494,8 @@ void draw_level_specifics() {
 
 void load_level() {
     ppu_off();
+    set_scroll_x(0x0000);
+
     vram_adr(NAMETABLE_A);
     vram_unrle(levels.nametable[current_level]);
 
@@ -655,7 +662,7 @@ void set_animation_info(const unsigned char index, const unsigned char array[][2
     param2 = array[actors.state[index]][0];  // animation index
     param3 = array[actors.state[index]][1];  // number of frames
     if (actors.counter[index] == actors.animation_delay[index]) {
-        if ((actors.state[index] == TURNING || actors.state[index] == DYING) && actors.current_frame[index] == param3 - 1) {
+        if ((actors.state[index] % 2 != 0) && actors.current_frame[index] == param3 - 1) {
             ++actors.state[index];                   // NEXT STATE
             param2 = array[actors.state[index]][0];  // animation index
             param3 = array[actors.state[index]][1];  // number of frames
@@ -675,7 +682,7 @@ void set_animation_info(const unsigned char index, const unsigned char array[][2
 void animate_skeleton() {
     for (i = 6; i < 8; ++i) {
         param1 = i;  // actor index
-        if (actors.state[i] != DEAD && actors.state[i] != DYING) {
+        if (actors.state[i] != DEAD && !(actors.state[i] == DYING || actors.state[i] == RISING)) {
             temp_x = actors.x[i] + get_x_speed();
             // Collision detection at the feet of the skeleton:
             temp_y_col = actors.y[i] + actors.height[i];
@@ -1298,6 +1305,36 @@ void move_skull_map() {
     }
 }
 
+// Will fade out brightness and increment story_step
+void fadeout(){
+    if (story_counter % FADE_SPEED == 0) {
+        pal_bright(--brightness);
+    }
+    if (brightness == 0) {
+        ++story_step;
+        story_counter = 0;
+    }
+}
+
+// Will fade in and increment story_step
+void fadein(){
+    if (story_counter % FADE_SPEED == 0) {
+        pal_bright(++brightness);
+    }
+    if (brightness == 4) {
+        ++story_step;
+        story_counter = 0;
+    }
+}
+
+void show_dialog(char dialog_index){
+    switch(dialog_index){
+        case 0:
+            // TODO
+            break;
+    }
+}
+
 void play_story() {
     switch (current_level) {
         case 0:
@@ -1352,30 +1389,20 @@ void play_story() {
                     break;
                 case 4:
                     // Black out
-                    if (story_counter % 32 == 0) {
-                        pal_bright(--brightness);
-                    }
-
-                    if (story_counter > 150) {
-                        show_map();
-                        ++story_step;
-                        story_counter = 0;
-                        actors.x[SKULL] = 128;
-                        actors.y[SKULL] = 56;
-                    }
+                    fadeout();
                     break;
                 case 5:
-                    // Fade in to reveal MAP
-                    if (story_counter % 32 == 0) {
-                        pal_bright(++brightness);
-                    }
-                    // Wait
-                    if (story_counter > 150) {
-                        ++story_step;
-                        story_counter = 56;
-                    }
-                    break;
+                    show_map();
+                    actors.x[SKULL] = 128;
+                    actors.y[SKULL] = 56;
+                    ++story_step;
                 case 6:
+                    fadein();
+                    break;
+                case 7:
+                    story_counter = 56;
+                    ++story_step;
+                case 8:
                     // Skull moving to cemetery on map 128.56 to 156.156
                     actors.y[SKULL] = story_counter;
                     if (story_counter > 156) {
@@ -1383,20 +1410,20 @@ void play_story() {
                         story_counter = 128;
                     }
                     break;
-                case 7:
+                case 9:
                     actors.x[SKULL] = story_counter;
                     if (story_counter > 156) {
                         ++story_step;
                         story_counter = 0;
                     }
-                    break;
-                case 8:
                     // Write cemetery
-                    // Wait
-                    // Load first level
+                    break;
+                case 10:
+                    fadeout();
+                    break;
+                case 11:
                     current_level = 1;
                     story_step = 0;
-                    actors.y[SKULL] = 255;
                     break;
             }
             break;
@@ -1404,22 +1431,37 @@ void play_story() {
             // Cemetery
             switch (story_step) {
                 case 0:
-                    game_state = MAIN;
                     load_level();
                     hide_map();
+                    actors.x[SKULL] = 0x7C;
+                    actors.y[SKULL] = 0xCA;
+                    // 
+                    actors.x[ANGELICA] = 120;
+                    actors.y[ANGELICA] = 92;
+                    actors.current_frame[ANGELICA] = 0;
+                    actors.animation_delay[ANGELICA] = 16;
+                    actors.state[ANGELICA] = IDLE;
                     ++story_step;
                     break;
                 case 1:
-                    // TODO Angelica appears ...
-                    game_state = MAIN;
+                    fadein();
                     break;
                 case 2:
-                    // TODO
+                    // ANGELICA
+                    draw_sprites();
+                    set_animation_info(ANGELICA, angelic_animation_index);
+                    oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
+                    show_dialog(0);
+                    break;
+                case 4:
+                    actors.state[6] = RISING;
+                    actors.state[7] = RISING;
+                    ++story_step;
+                    break;
+                case 5:
+                    game_state = MAIN;
                     break;
             }
-            // oam_clear();
-            // draw_skull();
-            // delay???
             break;
     }
     ++story_counter;

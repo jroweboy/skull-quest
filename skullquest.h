@@ -17,6 +17,9 @@
 #define COL_TYPE_SOFT 0x06
 #define COL_OFFSET 3
 
+// Fade speed
+#define FADE_SPEED 24
+
 #define UP -1
 #define DOWN 1
 #define LEFT -1
@@ -33,6 +36,7 @@
 #define PADDLE 0
 #define CROW 8
 #define NECROMANCER 5
+#define ANGELICA 5
 #define LIGHTNING 6
 
 // Actor STATES!
@@ -42,6 +46,7 @@
 #define TURNING 1
 #define SKWAK 1
 #define WALKING 2
+#define RISING 5
 
 #define ROTATE_H 2
 

@@ -198,6 +198,9 @@
 	.export		_draw_paddles
 	.export		_draw_sprites
 	.export		_move_skull_map
+	.export		_fadeout
+	.export		_fadein
+	.export		_show_dialog
 	.export		_play_story
 	.export		_main
 
@@ -5335,6 +5338,10 @@ _skeleton_animation_index:
 	.byte	$07
 	.byte	$1A
 	.byte	$01
+	.byte	$1C
+	.byte	$07
+	.byte	$04
+	.byte	$04
 _skeleton_animation:
 	.addr	_skeleton_left_still
 	.addr	_skeleton_right_still
@@ -5364,6 +5371,20 @@ _skeleton_animation:
 	.addr	_skeleton_dying_right7
 	.addr	_skeleton_dying_left7
 	.addr	_skeleton_dying_right7
+	.addr	_skeleton_dying_left7
+	.addr	_skeleton_dying_left6
+	.addr	_skeleton_dying_left5
+	.addr	_skeleton_dying_left4
+	.addr	_skeleton_dying_left3
+	.addr	_skeleton_dying_left2
+	.addr	_skeleton_dying_left1
+	.addr	_skeleton_dying_right7
+	.addr	_skeleton_dying_right6
+	.addr	_skeleton_dying_right5
+	.addr	_skeleton_dying_right4
+	.addr	_skeleton_dying_right3
+	.addr	_skeleton_dying_right2
+	.addr	_skeleton_dying_right1
 _skull_rotate_left1:
 	.byte	$00
 	.byte	$00
@@ -5558,9 +5579,9 @@ _actors:
 ;
 	lda     #$06
 	sta     _i
-L0020:	lda     _i
+L0023:	lda     _i
 	cmp     #$08
-	bcc     L0025
+	bcc     L0028
 ;
 ; }
 ;
@@ -5568,18 +5589,27 @@ L0020:	lda     _i
 ;
 ; param1 = i;  // actor index
 ;
-L0025:	sta     _param1
+L0028:	sta     _param1
 ;
-; if (actors.state[i] != DEAD && actors.state[i] != DYING) {
+; if (actors.state[i] != DEAD && !(actors.state[i] == DYING || actors.state[i] == RISING)) {
 ;
 	ldy     _i
 	lda     _actors+190,y
 	cmp     #$04
-	jeq     L0024
+	jeq     L0027
 	ldy     _i
 	lda     _actors+190,y
 	cmp     #$03
-	jeq     L0024
+	beq     L0024
+	ldy     _i
+	lda     _actors+190,y
+	cmp     #$05
+	beq     L0024
+	lda     #$00
+	jmp     L000C
+L0024:	lda     #$01
+L000C:	jsr     bnega
+	jeq     L0027
 ;
 ; temp_x = actors.x[i] + get_x_speed();
 ;
@@ -5610,12 +5640,12 @@ L0025:	sta     _param1
 	ldx     #>(_actors+60)
 	clc
 	adc     _i
-	bcc     L0010
+	bcc     L0013
 	inx
-L0010:	ldy     #$00
+L0013:	ldy     #$00
 	jsr     ldaidx
 	cmp     #$01
-	bne     L000F
+	bne     L0012
 ;
 ; temp_x_col += actors.width[i];
 ;
@@ -5627,9 +5657,9 @@ L0010:	ldy     #$00
 ;
 ; if (get_collision_type()) {
 ;
-L000F:	jsr     _get_collision_type
+L0012:	jsr     _get_collision_type
 	tax
-	beq     L0012
+	beq     L0015
 ;
 ; actors.current_frame[i] = 0;
 ;
@@ -5654,17 +5684,17 @@ L000F:	jsr     _get_collision_type
 	ldx     #>(_actors+60)
 	clc
 	adc     _param1
-	bcc     L0016
+	bcc     L0019
 	inx
-L0016:	sta     sreg
+L0019:	sta     sreg
 	stx     sreg+1
 	lda     #<(_actors+60)
 	ldx     #>(_actors+60)
 	clc
 	adc     _param1
-	bcc     L0017
+	bcc     L001A
 	inx
-L0017:	ldy     #$00
+L001A:	ldy     #$00
 	jsr     ldaidx
 	eor     #$FF
 	clc
@@ -5674,17 +5704,17 @@ L0017:	ldy     #$00
 ;
 ; } else {
 ;
-	jmp     L0024
+	jmp     L0027
 ;
 ; actors.x[i] = temp_x;
 ;
-L0012:	ldy     _i
+L0015:	ldy     _i
 	lda     _temp_x
 	sta     _actors,y
 ;
 ; set_animation_info(i, skeleton_animation_index);
 ;
-L0024:	lda     _i
+L0027:	lda     _i
 	jsr     pusha
 	lda     #<(_skeleton_animation_index)
 	ldx     #>(_skeleton_animation_index)
@@ -5706,9 +5736,9 @@ L0024:	lda     _i
 	lda     _actors+180,y
 	clc
 	adc     _param2
-	bcc     L001E
+	bcc     L0021
 	inx
-L001E:	stx     tmp1
+L0021:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -5727,7 +5757,7 @@ L001E:	stx     tmp1
 ; for (i = 6; i < 8; ++i) {
 ;
 	inc     _i
-	jmp     L0020
+	jmp     L0023
 
 .endproc
 
@@ -5745,6 +5775,101 @@ L001E:	stx     tmp1
 ; void set_animation_info(const unsigned char index, const unsigned char array[][2]) {
 ;
 	jsr     pushax
+;
+; param2 = array[actors.state[index]][0];  // animation index
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0020
+	inx
+	clc
+L0020:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	dey
+	lda     (ptr1),y
+	sta     _param2
+;
+; param3 = array[actors.state[index]][1];  // number of frames
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	ldx     #$00
+	lda     _actors+190,y
+	asl     a
+	bcc     L0021
+	inx
+	clc
+L0021:	ldy     #$00
+	adc     (sp),y
+	sta     ptr1
+	txa
+	iny
+	adc     (sp),y
+	sta     ptr1+1
+	lda     (ptr1),y
+	sta     _param3
+;
+; if (actors.counter[index] == actors.animation_delay[index]) {
+;
+	iny
+	lda     (sp),y
+	tay
+	lda     _actors+160,y
+	sta     ptr1
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+170,y
+	cmp     ptr1
+	jne     L0005
+;
+; if ((actors.state[index] % 2 != 0) && actors.current_frame[index] == param3 - 1) {
+;
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+190,y
+	and     #$01
+	jeq     L0008
+	ldy     #$02
+	lda     (sp),y
+	tay
+	lda     _actors+180,y
+	jsr     pusha0
+	lda     _param3
+	sec
+	sbc     #$01
+	bcs     L000D
+	ldx     #$FF
+L000D:	jsr     tosicmp
+	bne     L0008
+;
+; ++actors.state[index];                   // NEXT STATE
+;
+	lda     #<(_actors+190)
+	ldx     #>(_actors+190)
+	ldy     #$02
+	clc
+	adc     (sp),y
+	bcc     L0010
+	inx
+L0010:	sta     ptr1
+	stx     ptr1+1
+	ldy     #$00
+	lda     #$01
+	clc
+	adc     (ptr1),y
+	sta     (ptr1),y
 ;
 ; param2 = array[actors.state[index]][0];  // animation index
 ;
@@ -5789,107 +5914,6 @@ L0023:	ldy     #$00
 	lda     (ptr1),y
 	sta     _param3
 ;
-; if (actors.counter[index] == actors.animation_delay[index]) {
-;
-	iny
-	lda     (sp),y
-	tay
-	lda     _actors+160,y
-	sta     ptr1
-	ldy     #$02
-	lda     (sp),y
-	tay
-	lda     _actors+170,y
-	cmp     ptr1
-	jne     L0005
-;
-; if ((actors.state[index] == TURNING || actors.state[index] == DYING) && actors.current_frame[index] == param3 - 1) {
-;
-	ldy     #$02
-	lda     (sp),y
-	tay
-	lda     _actors+190,y
-	cmp     #$01
-	beq     L0027
-	ldy     #$02
-	lda     (sp),y
-	tay
-	lda     _actors+190,y
-	cmp     #$03
-	jne     L0008
-L0027:	ldy     #$02
-	lda     (sp),y
-	tay
-	lda     _actors+180,y
-	jsr     pusha0
-	lda     _param3
-	sec
-	sbc     #$01
-	bcs     L000F
-	ldx     #$FF
-L000F:	jsr     tosicmp
-	bne     L0008
-;
-; ++actors.state[index];                   // NEXT STATE
-;
-	lda     #<(_actors+190)
-	ldx     #>(_actors+190)
-	ldy     #$02
-	clc
-	adc     (sp),y
-	bcc     L0012
-	inx
-L0012:	sta     ptr1
-	stx     ptr1+1
-	ldy     #$00
-	lda     #$01
-	clc
-	adc     (ptr1),y
-	sta     (ptr1),y
-;
-; param2 = array[actors.state[index]][0];  // animation index
-;
-	ldy     #$02
-	lda     (sp),y
-	tay
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L0024
-	inx
-	clc
-L0024:	ldy     #$00
-	adc     (sp),y
-	sta     ptr1
-	txa
-	iny
-	adc     (sp),y
-	sta     ptr1+1
-	dey
-	lda     (ptr1),y
-	sta     _param2
-;
-; param3 = array[actors.state[index]][1];  // number of frames
-;
-	ldy     #$02
-	lda     (sp),y
-	tay
-	ldx     #$00
-	lda     _actors+190,y
-	asl     a
-	bcc     L0025
-	inx
-	clc
-L0025:	ldy     #$00
-	adc     (sp),y
-	sta     ptr1
-	txa
-	iny
-	adc     (sp),y
-	sta     ptr1+1
-	lda     (ptr1),y
-	sta     _param3
-;
 ; actors.current_frame[index] = 0;
 ;
 	iny
@@ -5900,7 +5924,7 @@ L0025:	ldy     #$00
 ;
 ; } else {
 ;
-	jmp     L0017
+	jmp     L0015
 ;
 ; actors.current_frame[index] = ++actors.current_frame[index] % param3;
 ;
@@ -5909,17 +5933,17 @@ L0008:	lda     #<(_actors+180)
 	ldy     #$02
 	clc
 	adc     (sp),y
-	bcc     L0018
+	bcc     L0016
 	inx
-L0018:	jsr     pushax
+L0016:	jsr     pushax
 	lda     #<(_actors+180)
 	ldx     #>(_actors+180)
 	ldy     #$04
 	clc
 	adc     (sp),y
-	bcc     L0019
+	bcc     L0017
 	inx
-L0019:	sta     ptr1
+L0017:	sta     ptr1
 	stx     ptr1+1
 	ldy     #$00
 	lda     #$01
@@ -5934,7 +5958,7 @@ L0019:	sta     ptr1
 ;
 ; actors.counter[index] = 0;
 ;
-L0017:	ldy     #$02
+L0015:	ldy     #$02
 	lda     (sp),y
 	tay
 	lda     #$00
@@ -5947,9 +5971,9 @@ L0005:	lda     #<(_actors+160)
 	ldy     #$02
 	clc
 	adc     (sp),y
-	bcc     L001B
+	bcc     L0019
 	inx
-L001B:	sta     ptr1
+L0019:	sta     ptr1
 	stx     ptr1+1
 	ldy     #$00
 	lda     #$01
@@ -5964,12 +5988,12 @@ L001B:	sta     ptr1
 	ldy     #$02
 	clc
 	adc     (sp),y
-	bcc     L001D
+	bcc     L001B
 	inx
-L001D:	ldy     #$00
+L001B:	ldy     #$00
 	jsr     ldaidx
 	cmp     #$01
-	bne     L001C
+	bne     L001A
 ;
 ; param2 += param3;
 ;
@@ -5980,7 +6004,7 @@ L001D:	ldy     #$00
 ;
 ; }
 ;
-L001C:	jmp     incsp3
+L001A:	jmp     incsp3
 
 .endproc
 
@@ -6556,10 +6580,10 @@ L001E:	sta     _actors+60,y
 	lda     #$00
 	sta     _actors+180,y
 ;
-; actors.state[i] = WALKING;
+; actors.state[i] = DEAD;
 ;
 	ldy     _i
-	lda     #$02
+	lda     #$04
 	sta     _actors+190,y
 ;
 ; actors.type[i] = TYPE_SKELETON;
@@ -6860,9 +6884,9 @@ L0049:	lda     #$07
 	lda     #$01
 	sta     _paddle_count
 ;
-; actors.x[0] = 0x78;
+; actors.x[0] = 0x70;
 ;
-	lda     #$78
+	lda     #$70
 	sta     _actors
 ;
 ; actors.y[0] = 0xD0;
@@ -8082,6 +8106,12 @@ L001D:	stx     tmp1
 ; ppu_off();
 ;
 	jsr     _ppu_off
+;
+; set_scroll_x(0x0000);
+;
+	ldx     #$00
+	txa
+	jsr     _set_scroll_x
 ;
 ; vram_adr(NAMETABLE_A);
 ;
@@ -11614,6 +11644,123 @@ L000D:	sta     _temp_y
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ fadeout (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_fadeout: near
+
+.segment	"CODE"
+
+;
+; if (story_counter % FADE_SPEED == 0) {
+;
+	lda     _story_counter
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumoda0
+	cpx     #$00
+	bne     L0002
+	cmp     #$00
+	bne     L0002
+;
+; pal_bright(--brightness);
+;
+	dec     _brightness
+	lda     _brightness
+	jsr     _pal_bright
+;
+; if (brightness == 0) {
+;
+L0002:	lda     _brightness
+	bne     L0004
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; story_counter = 0;
+;
+	sta     _story_counter
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ fadein (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_fadein: near
+
+.segment	"CODE"
+
+;
+; if (story_counter % FADE_SPEED == 0) {
+;
+	lda     _story_counter
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumoda0
+	cpx     #$00
+	bne     L0002
+	cmp     #$00
+	bne     L0002
+;
+; pal_bright(++brightness);
+;
+	inc     _brightness
+	lda     _brightness
+	jsr     _pal_bright
+;
+; if (brightness == 4) {
+;
+L0002:	lda     _brightness
+	cmp     #$04
+	bne     L0004
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; story_counter = 0;
+;
+	lda     #$00
+	sta     _story_counter
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ show_dialog (char dialog_index)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_show_dialog: near
+
+.segment	"CODE"
+
+;
+; void show_dialog(char dialog_index){
+;
+	jsr     pusha
+;
+; }
+;
+	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ play_story (void)
 ; ---------------------------------------------------------------
 
@@ -11632,8 +11779,8 @@ L000D:	sta     _temp_y
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0033
-	jmp     L0037
+	jeq     L0030
+	jmp     L0033
 ;
 ; oam_clear();
 ;
@@ -11653,26 +11800,32 @@ L0004:	jsr     _oam_clear
 	cmp     #$01
 	beq     L0026
 	cmp     #$02
-	beq     L0028
+	jeq     L0028
 	cmp     #$03
 	jeq     L002B
 	cmp     #$04
-	jeq     L002C
+	jeq     L0012
 	cmp     #$05
-	jeq     L002E
+	jeq     L0013
 	cmp     #$06
-	jeq     L0030
+	jeq     L0014
 	cmp     #$07
-	jeq     L0031
+	jeq     L002C
 	cmp     #$08
-	jeq     L0032
-	jmp     L0037
+	jeq     L002D
+	cmp     #$09
+	jeq     L002E
+	cmp     #$0A
+	jeq     L001A
+	cmp     #$0B
+	jeq     L002F
+	jmp     L0033
 ;
 ; if (story_counter == 128) {
 ;
 L0025:	lda     _story_counter
 	cmp     #$80
-	jne     L0037
+	jne     L0033
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -11693,7 +11846,7 @@ L0025:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
 ; if (story_counter == 64) {
 ;
@@ -11709,7 +11862,7 @@ L0026:	lda     _story_counter
 ;
 L0027:	lda     _story_counter
 	cmp     #$45
-	jcc     L0037
+	jcc     L0033
 ;
 ; pal_bright(6);
 ;
@@ -11737,7 +11890,7 @@ L0027:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
 ; if (story_counter > 2) {
 ;
@@ -11775,7 +11928,7 @@ L0029:	lda     _actors+196
 ;
 L002A:	lda     _actors+186
 	cmp     #$08
-	jne     L0037
+	jne     L0033
 ;
 ; pal_bright(6);
 ;
@@ -11794,13 +11947,13 @@ L002A:	lda     _actors+186
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
 ; if (story_counter > 180) {
 ;
 L002B:	lda     _story_counter
 	cmp     #$B5
-	jcc     L0037
+	jcc     L0033
 ;
 ; ++story_step;
 ;
@@ -11813,38 +11966,19 @@ L002B:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
-; if (story_counter % 32 == 0) {
+; fadeout();
 ;
-L002C:	lda     _story_counter
-	and     #$1F
-	bne     L002D
+L0012:	jsr     _fadeout
 ;
-; pal_bright(--brightness);
+; break;
 ;
-	dec     _brightness
-	lda     _brightness
-	jsr     _pal_bright
-;
-; if (story_counter > 150) {
-;
-L002D:	lda     _story_counter
-	cmp     #$97
-	jcc     L0037
+	jmp     L0033
 ;
 ; show_map();
 ;
-	jsr     _show_map
-;
-; ++story_step;
-;
-	inc     _story_step
-;
-; story_counter = 0;
-;
-	lda     #$00
-	sta     _story_counter
+L0013:	jsr     _show_map
 ;
 ; actors.x[SKULL] = 128;
 ;
@@ -11856,51 +11990,37 @@ L002D:	lda     _story_counter
 	lda     #$38
 	sta     _actors+14
 ;
+; ++story_step;
+;
+	inc     _story_step
+;
+; fadein();
+;
+L0014:	jsr     _fadein
+;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
-; if (story_counter % 32 == 0) {
+; story_counter = 56;
 ;
-L002E:	lda     _story_counter
-	and     #$1F
-	bne     L002F
-;
-; pal_bright(++brightness);
-;
-	inc     _brightness
-	lda     _brightness
-	jsr     _pal_bright
-;
-; if (story_counter > 150) {
-;
-L002F:	lda     _story_counter
-	cmp     #$97
-	bcc     L0037
+L002C:	lda     #$38
+	sta     _story_counter
 ;
 ; ++story_step;
 ;
 	inc     _story_step
 ;
-; story_counter = 56;
-;
-	lda     #$38
-	sta     _story_counter
-;
-; break;
-;
-	jmp     L0037
-;
 ; actors.y[SKULL] = story_counter;
 ;
-L0030:	lda     _story_counter
+L002D:	lda     _story_counter
 	sta     _actors+14
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	bcc     L0037
+	jcc     L0033
 ;
 ; ++story_step;
 ;
@@ -11913,18 +12033,18 @@ L0030:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
 ; actors.x[SKULL] = story_counter;
 ;
-L0031:	lda     _story_counter
+L002E:	lda     _story_counter
 	sta     _actors+4
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	bcc     L0037
+	jcc     L0033
 ;
 ; ++story_step;
 ;
@@ -11937,11 +12057,19 @@ L0031:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
+;
+; fadeout();
+;
+L001A:	jsr     _fadeout
+;
+; break;
+;
+	jmp     L0033
 ;
 ; current_level = 1;
 ;
-L0032:	lda     #$01
+L002F:	lda     #$01
 	sta     _current_level
 ;
 ; story_step = 0;
@@ -11949,40 +12077,69 @@ L0032:	lda     #$01
 	lda     #$00
 	sta     _story_step
 ;
-; actors.y[SKULL] = 255;
-;
-	lda     #$FF
-	sta     _actors+14
-;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
 ;
 ; switch (story_step) {
 ;
-L0033:	lda     _story_step
+L0030:	lda     _story_step
 ;
 ; }
 ;
-	beq     L0034
+	beq     L001F
 	cmp     #$01
-	beq     L0036
+	beq     L0020
 	cmp     #$02
-	beq     L0037
-	jmp     L0037
-;
-; game_state = MAIN;
-;
-L0034:	lda     #$01
-	sta     _game_state
+	beq     L0021
+	cmp     #$04
+	jeq     L0031
+	cmp     #$05
+	jeq     L0032
+	jmp     L0033
 ;
 ; load_level();
 ;
-	jsr     _load_level
+L001F:	jsr     _load_level
 ;
 ; hide_map();
 ;
 	jsr     _hide_map
+;
+; actors.x[SKULL] = 0x7C;
+;
+	lda     #$7C
+	sta     _actors+4
+;
+; actors.y[SKULL] = 0xCA;
+;
+	lda     #$CA
+	sta     _actors+14
+;
+; actors.x[ANGELICA] = 120;
+;
+	lda     #$78
+	sta     _actors+5
+;
+; actors.y[ANGELICA] = 92;
+;
+	lda     #$5C
+	sta     _actors+15
+;
+; actors.current_frame[ANGELICA] = 0;
+;
+	lda     #$00
+	sta     _actors+185
+;
+; actors.animation_delay[ANGELICA] = 16;
+;
+	lda     #$10
+	sta     _actors+175
+;
+; actors.state[ANGELICA] = IDLE;
+;
+	lda     #$00
+	sta     _actors+195
 ;
 ; ++story_step;
 ;
@@ -11990,15 +12147,93 @@ L0034:	lda     #$01
 ;
 ; break;
 ;
-	jmp     L0037
+	jmp     L0033
+;
+; fadein();
+;
+L0020:	jsr     _fadein
+;
+; break;
+;
+	jmp     L0033
+;
+; draw_sprites();
+;
+L0021:	jsr     _draw_sprites
+;
+; set_animation_info(ANGELICA, angelic_animation_index);
+;
+	lda     #$05
+	jsr     pusha
+	lda     #<(_angelic_animation_index)
+	ldx     #>(_angelic_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
+;
+	jsr     decsp2
+	lda     _actors+5
+	ldy     #$01
+	sta     (sp),y
+	lda     _actors+15
+	dey
+	sta     (sp),y
+	ldx     #$00
+	lda     _actors+185
+	clc
+	adc     _param2
+	bcc     L0024
+	inx
+L0024:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_angelic_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_angelic_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
+	jsr     _oam_meta_spr
+;
+; show_dialog(0);
+;
+	lda     #$00
+	jsr     _show_dialog
+;
+; break;
+;
+	jmp     L0033
+;
+; actors.state[6] = RISING;
+;
+L0031:	lda     #$05
+	sta     _actors+196
+;
+; actors.state[7] = RISING;
+;
+	sta     _actors+197
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0033
 ;
 ; game_state = MAIN;
 ;
-L0036:	sta     _game_state
+L0032:	lda     #$01
+	sta     _game_state
 ;
 ; ++story_counter;
 ;
-L0037:	inc     _story_counter
+L0033:	inc     _story_counter
 ;
 ; }
 ;

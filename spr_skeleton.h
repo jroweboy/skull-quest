@@ -209,7 +209,9 @@ const unsigned char skeleton_animation_index[][2] = {
     {2, 1},   // TURNING
     {4, 4},   // WALKING
     {12, 7},  // DYING
-    {26, 1}   // DEAD
+    {26, 1},  // DEAD
+    {28, 7},  // RISING
+    {4, 4}    // WALKING
 };
 
 const unsigned char* const skeleton_animation[] = {
@@ -244,4 +246,19 @@ const unsigned char* const skeleton_animation[] = {
     skeleton_dying_right7,
 
     skeleton_dying_left7,
-    skeleton_dying_right7};
+    skeleton_dying_right7,
+
+    skeleton_dying_left7,
+    skeleton_dying_left6,
+    skeleton_dying_left5,
+    skeleton_dying_left4,
+    skeleton_dying_left3,
+    skeleton_dying_left2,
+    skeleton_dying_left1,
+    skeleton_dying_right7,
+    skeleton_dying_right6,
+    skeleton_dying_right5,
+    skeleton_dying_right4,
+    skeleton_dying_right3,
+    skeleton_dying_right2,
+    skeleton_dying_right1};
