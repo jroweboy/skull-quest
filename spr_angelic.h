@@ -46,7 +46,7 @@ const unsigned char angelic_face[]={
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
 const unsigned char angelic_animation_index[][2] = {
-    { 0, 5 } // IDLE
+    { 0, 6 } // IDLE
 };
 
 const unsigned char* const angelic_animation[] = {
@@ -54,5 +54,7 @@ const unsigned char* const angelic_animation[] = {
     angelic_idle2,
     angelic_idle3,
     angelic_idle3,
-    angelic_idle2
+    angelic_idle2,
+    angelic_idle1,
+
 };

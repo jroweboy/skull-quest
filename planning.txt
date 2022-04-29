@@ -39,7 +39,8 @@ MARCH 2022
 APRIL 2022
 1:
     x Crow animation
-    - Dialog system
+    x Dialog system
+    x Altar dialog
     - End of cemetery level / Door animation
     - Ruin Temple Design
     - Ruin Town Design

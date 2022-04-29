@@ -1,3 +1,4 @@
+#include "dialog.h"
 #include "skullquest.h"
 
 #include "LIB/nesdoug.h"
@@ -11,6 +12,7 @@
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/map.pngE/map.h"
 #include "Nametable/title_screen.h"
+#include "Nametable/black_level.h"
 #include "palettes.h"
 
 // SPRITES METATILES IN BANK 1
@@ -22,6 +24,7 @@
 #include "spr_necromancer.h"
 #include "spr_skeleton.h"
 #include "spr_skull.h"
+#include "spr_star.h"
 
 #pragma bss-name(push, "ZEROPAGE")
 static unsigned char pad1;
@@ -29,7 +32,7 @@ static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, param1, param2, param3, param4, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count;
+static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count, wait_timer;
 static unsigned char game_state, current_level, paddle_count, enemy_count, story_step, story_counter;
 static unsigned char brightness = 4;
 
@@ -40,11 +43,6 @@ static int collision_index, backup_col_index, backup_nt_index;
 // extra RAM at $6000-$7fff
 unsigned char wram_array[0x2000];
 #pragma bss-name(pop)
-
-const unsigned char *faces[] = {
-    angelic_face,
-};
-
 
 static char exp[] = "00000000";
 static unsigned char c_map[368];
@@ -60,7 +58,7 @@ typedef struct {
 
 Levels levels;
 
-#define ACTOR_NUMBER 10
+#define ACTOR_NUMBER 12
 
 typedef struct
 {
@@ -90,7 +88,8 @@ typedef struct
 // index 0-3 paddles
 // index 4 skull
 // index 5 necromancer / angelica
-// index 6 ennemies
+// index 6-7-8-9 ennemies
+// index 10 STARS animation for item reveal
 Actors actors;
 
 #pragma rodata-name("BANK0")
@@ -144,6 +143,17 @@ void init_levels(){
     // levels.collision_map[] = ;
     // levels.background_palette[] = ;
     // levels.sprite_palette[] = ;
+
+    // SINGLE STATIC ANIMATIONS
+    // Lightning
+    actors.state[LIGHTNING] = IDLE;
+    actors.animation_delay[LIGHTNING] = 8;
+
+    // STARS
+    actors.x[STARS] = 127;
+    actors.y[STARS] = 136;
+    actors.state[STARS] = IDLE;
+    actors.animation_delay[STARS] = 8;
 };
 
 void init_level_specifics() {
@@ -165,10 +175,6 @@ void init_level_specifics() {
                 actors.state[i] = IDLE;
                 actors.xDir[i] = LEFT;
             }
-            // Lightning
-            actors.state[LIGHTNING] = IDLE;
-            actors.animation_delay[LIGHTNING] = 8;
-
             // Necromancer:
             actors.animation_delay[NECROMANCER] = 20;
             actors.current_frame[NECROMANCER] = 0;
@@ -176,9 +182,11 @@ void init_level_specifics() {
             actors.xDir[NECROMANCER] = LEFT;
             break;
         case 1:
-            // Cemetery
+            // CEMETERY
             // Achievement 1 : Scarecrow
             // Achievement 2 : Skeleton buster
+
+            // STAR
 
             // Prepare Angelic sprites
             set_chr_mode_1(0x07);
@@ -201,7 +209,7 @@ void init_level_specifics() {
             actors.xDir[CROW] = LEFT;
             actors.yDir[CROW] = UP;
             actors.xSpeed[CROW] = 128;
-            actors.ySpeed[CROW] = 64;
+            actors.ySpeed[CROW] = 32;
             actors.type[CROW] = TYPE_CROW;
             actors.bbox_x[CROW] = 0;
             actors.bbox_y[CROW] = 4;
@@ -374,15 +382,17 @@ void add_xp(unsigned char value, unsigned char pos) {
     exp[pos] = 0x30 + result;
     update_xp();
 }
-void clear_HUD() {
-    for (i = 0; i < 64; ++i) {
-        one_vram_buffer(0x00, NAMETABLE_A);
-    }
-}
 
 void show_HUD() {
-    // vram_adr(0x23C0);
-    // vram_fill(0x00, 8);
+    // vram_adr(NAMETABLE_A);
+    // vram_fill(0xFF, 32);
+    // ppu_wait_nmi();
+    // vram_fill(0xFF, 32);
+    // ppu_wait_nmi();
+    // vram_fill(0xFF, 32);
+    // ppu_wait_nmi();
+    // vram_fill(0xFF, 32);
+    // ppu_wait_nmi();
 
     // HEALTH
     update_health();
@@ -411,11 +421,11 @@ void show_map() {
     // TODO DRAW NAME OF LEVEL
     // TODO DRAW SKULL AT CORRECT POSITION
     oam_clear();
-    oam_spr(1, 1, 0x00, 0x00);  // Show skull TODO Change x,y to actual map position
+    // oam_spr(1, 1, 0x00, 0x00);  // Show skull TODO Change x,y to actual map position
     set_chr_mode_4(8);
     set_chr_mode_5(9);
     pal_col(0x00, 0x0f);
-    pal_col(0x01, 0x28);
+    pal_col(0x01, 0x38); // MAP BACK COLOR
     pal_col(0x02, 0x18);
     set_scroll_x(0x0100);
     ppu_wait_nmi();
@@ -492,6 +502,15 @@ void draw_level_specifics() {
     }
 }
 
+void load_black_level() {
+    ppu_off();
+    set_scroll_x(0x0000);
+
+    vram_adr(NAMETABLE_A);
+    vram_unrle(black_level);
+    ppu_on_all();
+}
+
 void load_level() {
     ppu_off();
     set_scroll_x(0x0000);
@@ -534,7 +553,6 @@ void load_level() {
     banked_call(0, init_skull);
 
     if (game_state == MAIN) {
-        // clear_HUD();
         show_HUD();
         skull_launched = FALSE;
     }
@@ -1278,7 +1296,6 @@ void draw_paddles() {
 }
 
 void draw_sprites(void) {
-    // clear all sprites from sprite buffer
     oam_clear();
 
     draw_paddles();
@@ -1293,6 +1310,7 @@ void draw_sprites(void) {
 // param1 param2: from x y
 // param3 param4: to x y
 void move_skull_map() {
+    // TODO:
     if (param1 > param3) {
         temp_x = param1 - param3;
     } else {
@@ -1327,11 +1345,33 @@ void fadein(){
     }
 }
 
-void show_dialog(char dialog_index){
-    switch(dialog_index){
-        case 0:
-            // TODO
-            break;
+void wait_input(){
+    // Show waiting cursor
+    if (wait_timer > 64 ) {
+        one_vram_buffer (0x00, NTADR_A(30, 3));
+        
+    } else {
+        one_vram_buffer (0x29, NTADR_A(30, 3));
+    }
+    // Erasing previous dialogs
+    if (pad1_new) {
+        ++story_step;
+        story_counter = 0;
+        wait_timer = 0;
+        multi_vram_buffer_horz(empty_line, sizeof(empty_line), NTADR_A(7, 1));
+        ppu_wait_nmi();
+        multi_vram_buffer_horz(empty_line, sizeof(empty_line), NTADR_A(7, 2));
+        ppu_wait_nmi();
+        multi_vram_buffer_horz(empty_line, sizeof(empty_line), NTADR_A(7, 3));
+        ppu_wait_nmi();
+    };
+    ++wait_timer;
+}
+
+void wait(unsigned char delay){
+    if (story_counter > delay){
+        ++story_step;
+        story_counter = 0;
     }
 }
 
@@ -1422,49 +1462,146 @@ void play_story() {
                     fadeout();
                     break;
                 case 11:
+                    oam_clear();
                     current_level = 1;
                     story_step = 0;
+                    actors.y[SKULL] = 240;
                     break;
             }
             break;
         case 1:
             // Cemetery
+            // Show story sprites
+            if (story_step > 6) {
+                draw_sprites();
+                oam_meta_spr(16, 8, angelic_face);
+                set_animation_info(ANGELICA, angelic_animation_index);
+                oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
+                if (story_step > 16){
+                    oam_spr(124, 132, 0x09, 0x00); // Show magnet item
+                }
+            }
             switch (story_step) {
                 case 0:
+                    load_black_level();
+                    pal_bg(levels.background_palette[1]);
+                    pal_bright(4);
+                    ++story_step;
+                    break;
+                case 1:
+                    wait(128);
+                    break;
+                case 2:
+                    // Where?
+                    multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
+                    ++story_step;
+                    break;
+                case 3:
+                    wait(72);
+                    break;
+                case 4:
+                    // Where am I?
+                    multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
+                    ++story_step;
+                    break;
+                case 5:
+                    wait(128);
+                    break;
+                case 6:
+                    pal_bright(0);
+                    brightness = 0;
                     load_level();
                     hide_map();
-                    actors.x[SKULL] = 0x7C;
-                    actors.y[SKULL] = 0xCA;
-                    // 
                     actors.x[ANGELICA] = 120;
                     actors.y[ANGELICA] = 92;
                     actors.current_frame[ANGELICA] = 0;
                     actors.animation_delay[ANGELICA] = 16;
                     actors.state[ANGELICA] = IDLE;
+
+                    actors.x[SKULL] = 0x7C;
+                    actors.y[SKULL] = 0xCA;
                     ++story_step;
                     break;
-                case 1:
+                case 7:
                     fadein();
                     break;
-                case 2:
-                    // ANGELICA
-                    draw_sprites();
-                    set_animation_info(ANGELICA, angelic_animation_index);
-                    oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
-                    show_dialog(0);
+                case 8:
+                    wait(128);
                     break;
-                case 4:
-                    actors.state[6] = RISING;
-                    actors.state[7] = RISING;
+                case 9:
+                    // do not be affraid
+                    multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[3], DIALOG_LENGTH, NTADR_A(7, 2));
                     ++story_step;
                     break;
-                case 5:
+                case 10:
+                    wait_input();
+                    break;
+                case 11:
+                    // This is the start
+                    multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[5], DIALOG_LENGTH, NTADR_A(7, 2));
+                    ++story_step;
+                    break;
+                case 12:
+                    wait_input();
+                    break;
+                case 13:
+                    // You must go back
+                    multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[7], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[8], DIALOG_LENGTH, NTADR_A(7, 3));
+                    ++story_step;
+                    break;
+                case 14:
+                    wait_input();
+                    break;
+                case 15:
+                    // Take this
+                    multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
+                    // Show magnet item
+                    ++actors.state[STARS];
+                    ++story_step;
+                case 16:
+                    set_animation_info(STARS, stars_animation_index);
+                    oam_meta_spr(actors.x[STARS], actors.y[STARS], stars_animation[actors.current_frame[STARS] + param2]);
+                    if (actors.state[STARS] == WALKING){
+                        ++story_step;
+                    }
+                    break;
+                case 17:
+                    // Use it if you get stuck
+                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
+                    ++story_step;
+                    break;
+                case 18:
+                    wait_input();
+                    break;
+                case 19:
+                    // Hit all tombstones...
+                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 3));
+                    ++story_step;
+                    break;
+                case 20:
+                    wait_input();
+                    break;
+                case 21:
+                    show_HUD();
+                    actors.state[6] = RISING;
+                    actors.state[7] = RISING;
                     game_state = MAIN;
                     break;
             }
             break;
     }
     ++story_counter;
+    if (wait_timer == 127){
+            wait_timer = 0;
+    }
+    ++wait_timer;
 }
 
 void main() {
@@ -1506,7 +1643,7 @@ void main() {
             current_level = 0;
 
             // game_state = MAIN;
-            // current_level = 1;
+            //  current_level = 1;
 
             story_step = 0;
             load_level();

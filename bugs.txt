@@ -1,6 +1,7 @@
 - Skull choose direction to launch??
-- Skull glitch on corner Collision DOWN LEFT??
+- Skull glitch on corner Collision
 
+WARNING: every sprite above draw_sprite() doesn't show because of clear_oam();
 
 Done:
 x Skull collision with top paddle

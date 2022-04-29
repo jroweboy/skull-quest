@@ -34,10 +34,11 @@
 // ACTOR INDEX
 #define SKULL 4
 #define PADDLE 0
-#define CROW 8
 #define NECROMANCER 5
 #define ANGELICA 5
 #define LIGHTNING 6
+#define CROW 8
+#define STARS 10
 
 // Actor STATES!
 // Always putting temporary before the next (ex DYING -> DEAD)
@@ -58,7 +59,6 @@
 // Ennemy types
 #define TYPE_CROW 0
 #define TYPE_SKELETON 1
-
 
 void animate_skeleton();
 

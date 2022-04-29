@@ -23,3 +23,12 @@ const unsigned char hero_head_down[]={
 	128
 
 };
+
+const unsigned char skull_face[]={
+	  8,  8,0xc4,0,
+	 16,  8,0xc5,0,
+	  8, 16,0xd4,0,
+	 16, 16,0xd5,0,
+	128
+};
+
