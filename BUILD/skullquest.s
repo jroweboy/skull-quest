@@ -216,6 +216,7 @@
 	.export		_move_skull_map
 	.export		_fadeout
 	.export		_fadein
+	.export		_brightout
 	.export		_wait_input
 	.export		_wait
 	.export		_play_story
@@ -5900,9 +5901,9 @@ _actors:
 ;
 	lda     #$06
 	sta     _i
-L0023:	lda     _i
+L002C:	lda     _i
 	cmp     #$08
-	bcc     L0028
+	bcc     L0033
 ;
 ; }
 ;
@@ -5910,27 +5911,60 @@ L0023:	lda     _i
 ;
 ; param1 = i;  // actor index
 ;
-L0028:	sta     _param1
+L0033:	sta     _param1
 ;
-; if (actors.state[i] != DEAD && !(actors.state[i] == DYING || actors.state[i] == RISING)) {
+; if (actors.state[i] == DEAD){
 ;
 	ldy     _i
 	lda     _actors+228,y
 	cmp     #$04
-	jeq     L0027
+	bne     L0006
+;
+; actors.animation_delay[i] = 255;
+;
 	ldy     _i
+	lda     #$FF
+	sta     _actors+204,y
+;
+; if (game_state != STORY && actors.counter[i] == 254) {
+;
+	lda     _game_state
+	cmp     #$02
+	jeq     L0032
+	ldy     _i
+	lda     _actors+192,y
+	cmp     #$FE
+	jne     L0032
+;
+; actors.state[i] = RISING;
+;
+	ldy     _i
+	lda     #$05
+	sta     _actors+228,y
+;
+; actors.counter[i] == 0;
+;
+	ldy     _i
+	lda     _actors+192,y
+	jsr     booleq
+;
+; actors.animation_delay[i] = 16;
+;
+	ldy     _i
+	lda     #$10
+	sta     _actors+204,y
+;
+; } else if (actors.state[i] != DYING && actors.state[i] != RISING) {
+;
+	jmp     L0032
+L0006:	ldy     _i
 	lda     _actors+228,y
 	cmp     #$03
-	beq     L0024
+	jeq     L0032
 	ldy     _i
 	lda     _actors+228,y
 	cmp     #$05
-	beq     L0024
-	lda     #$00
-	jmp     L000C
-L0024:	lda     #$01
-L000C:	jsr     bnega
-	jeq     L0027
+	jeq     L0032
 ;
 ; temp_x = actors.x[i] + get_x_speed();
 ;
@@ -5961,12 +5995,12 @@ L000C:	jsr     bnega
 	ldx     #>(_actors+72)
 	clc
 	adc     _i
-	bcc     L0013
+	bcc     L001C
 	inx
-L0013:	ldy     #$00
+L001C:	ldy     #$00
 	jsr     ldaidx
 	cmp     #$01
-	bne     L0012
+	bne     L001B
 ;
 ; temp_x_col += actors.width[i];
 ;
@@ -5978,9 +6012,9 @@ L0013:	ldy     #$00
 ;
 ; if (get_collision_type()) {
 ;
-L0012:	jsr     _get_collision_type
+L001B:	jsr     _get_collision_type
 	tax
-	beq     L0015
+	beq     L001E
 ;
 ; actors.current_frame[i] = 0;
 ;
@@ -6005,17 +6039,17 @@ L0012:	jsr     _get_collision_type
 	ldx     #>(_actors+72)
 	clc
 	adc     _param1
-	bcc     L0019
+	bcc     L0022
 	inx
-L0019:	sta     sreg
+L0022:	sta     sreg
 	stx     sreg+1
 	lda     #<(_actors+72)
 	ldx     #>(_actors+72)
 	clc
 	adc     _param1
-	bcc     L001A
+	bcc     L0023
 	inx
-L001A:	ldy     #$00
+L0023:	ldy     #$00
 	jsr     ldaidx
 	eor     #$FF
 	clc
@@ -6025,17 +6059,17 @@ L001A:	ldy     #$00
 ;
 ; } else {
 ;
-	jmp     L0027
+	jmp     L0032
 ;
 ; actors.x[i] = temp_x;
 ;
-L0015:	ldy     _i
+L001E:	ldy     _i
 	lda     _temp_x
 	sta     _actors,y
 ;
 ; set_animation_info(i, skeleton_animation_index);
 ;
-L0027:	lda     _i
+L0032:	lda     _i
 	jsr     pusha
 	lda     #<(_skeleton_animation_index)
 	ldx     #>(_skeleton_animation_index)
@@ -6057,9 +6091,9 @@ L0027:	lda     _i
 	lda     _actors+216,y
 	clc
 	adc     _param2
-	bcc     L0021
+	bcc     L002A
 	inx
-L0021:	stx     tmp1
+L002A:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -6078,7 +6112,7 @@ L0021:	stx     tmp1
 ; for (i = 6; i < 8; ++i) {
 ;
 	inc     _i
-	jmp     L0023
+	jmp     L002C
 
 .endproc
 
@@ -7912,11 +7946,11 @@ L0008:	sta     ptr1
 	lda     #$0F
 	jsr     _pal_col
 ;
-; pal_col(0x01, 0x38); // MAP BACK COLOR
+; pal_col(0x01, 0x28); // MAP BACK COLOR
 ;
 	lda     #$01
 	jsr     pusha
-	lda     #$38
+	lda     #$28
 	jsr     _pal_col
 ;
 ; pal_col(0x02, 0x18);
@@ -10973,29 +11007,15 @@ L001B:	lda     #$01
 ; if (pad1 & PAD_B) {
 ;
 L001C:	lda     _pad1
+	ldx     #$00
 	and     #$40
-	beq     L001D
-;
-; actors.counter[6] = 0;
-;
-	lda     #$00
-	sta     _actors+198
-;
-; actors.current_frame[6] = 0;
-;
-	sta     _actors+222
-;
-; actors.state[6] = DYING;
-;
-	lda     #$03
-	sta     _actors+234
+	stx     tmp1
+	ora     tmp1
 ;
 ; if (pad1 & PAD_SELECT) {
 ;
-L001D:	lda     _pad1
-	ldx     #$00
+	lda     _pad1
 	and     #$20
-	stx     tmp1
 	ora     tmp1
 ;
 ; if (pad1_new & PAD_START) {
@@ -12070,6 +12090,55 @@ L0004:	rts
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ brightout (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_brightout: near
+
+.segment	"CODE"
+
+;
+; if (story_counter % FADE_SPEED == 0) {
+;
+	lda     _story_counter
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumoda0
+	cpx     #$00
+	bne     L0002
+	cmp     #$00
+	bne     L0002
+;
+; pal_bright(++brightness);
+;
+	inc     _brightness
+	lda     _brightness
+	jsr     _pal_bright
+;
+; if (brightness == 8) {
+;
+L0002:	lda     _brightness
+	cmp     #$08
+	bne     L0004
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; story_counter = 0;
+;
+	lda     #$00
+	sta     _story_counter
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ wait_input (void)
 ; ---------------------------------------------------------------
 
@@ -12246,8 +12315,8 @@ L0002:	jmp     incsp1
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0045
-	jmp     L004D
+	jeq     L0046
+	jmp     L004F
 ;
 ; oam_clear();
 ;
@@ -12263,13 +12332,13 @@ L0004:	jsr     _oam_clear
 ;
 ; }
 ;
-	beq     L003B
-	cmp     #$01
 	beq     L003C
+	cmp     #$01
+	beq     L003D
 	cmp     #$02
-	jeq     L003E
+	jeq     L003F
 	cmp     #$03
-	jeq     L0041
+	jeq     L0042
 	cmp     #$04
 	jeq     L0012
 	cmp     #$05
@@ -12277,22 +12346,22 @@ L0004:	jsr     _oam_clear
 	cmp     #$06
 	jeq     L0014
 	cmp     #$07
-	jeq     L0042
-	cmp     #$08
 	jeq     L0043
-	cmp     #$09
+	cmp     #$08
 	jeq     L0044
+	cmp     #$09
+	jeq     L0045
 	cmp     #$0A
 	jeq     L001A
 	cmp     #$0B
 	jeq     L001B
-	jmp     L004D
+	jmp     L004F
 ;
 ; if (story_counter == 128) {
 ;
-L003B:	lda     _story_counter
+L003C:	lda     _story_counter
 	cmp     #$80
-	jne     L004D
+	jne     L004F
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -12313,13 +12382,13 @@ L003B:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; if (story_counter == 64) {
 ;
-L003C:	lda     _story_counter
+L003D:	lda     _story_counter
 	cmp     #$40
-	bne     L003D
+	bne     L003E
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -12327,9 +12396,9 @@ L003C:	lda     _story_counter
 ;
 ; if (story_counter > 68) {
 ;
-L003D:	lda     _story_counter
+L003E:	lda     _story_counter
 	cmp     #$45
-	jcc     L004D
+	jcc     L004F
 ;
 ; pal_bright(6);
 ;
@@ -12357,13 +12426,13 @@ L003D:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; if (story_counter > 2) {
 ;
-L003E:	lda     _story_counter
+L003F:	lda     _story_counter
 	cmp     #$03
-	bcc     L003F
+	bcc     L0040
 ;
 ; pal_bright(4);
 ;
@@ -12372,9 +12441,9 @@ L003E:	lda     _story_counter
 ;
 ; if (actors.state[LIGHTNING] == WALKING) {
 ;
-L003F:	lda     _actors+234
+L0040:	lda     _actors+234
 	cmp     #$02
-	bne     L0040
+	bne     L0041
 ;
 ; pal_spr(pal_altar_spr);
 ;
@@ -12393,9 +12462,9 @@ L003F:	lda     _actors+234
 ;
 ; if (actors.current_frame[LIGHTNING] == 8) {
 ;
-L0040:	lda     _actors+222
+L0041:	lda     _actors+222
 	cmp     #$08
-	jne     L004D
+	jne     L004F
 ;
 ; pal_bright(6);
 ;
@@ -12414,13 +12483,13 @@ L0040:	lda     _actors+222
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; if (story_counter > 180) {
 ;
-L0041:	lda     _story_counter
+L0042:	lda     _story_counter
 	cmp     #$B5
-	jcc     L004D
+	jcc     L004F
 ;
 ; ++story_step;
 ;
@@ -12433,7 +12502,7 @@ L0041:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; fadeout();
 ;
@@ -12441,7 +12510,7 @@ L0012:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; show_map();
 ;
@@ -12467,11 +12536,11 @@ L0014:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; story_counter = 56;
 ;
-L0042:	lda     #$38
+L0043:	lda     #$38
 	sta     _story_counter
 ;
 ; ++story_step;
@@ -12480,14 +12549,14 @@ L0042:	lda     #$38
 ;
 ; actors.y[SKULL] = story_counter;
 ;
-L0043:	lda     _story_counter
+L0044:	lda     _story_counter
 	sta     _actors+16
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L004D
+	jcc     L004F
 ;
 ; ++story_step;
 ;
@@ -12500,18 +12569,18 @@ L0043:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; actors.x[SKULL] = story_counter;
 ;
-L0044:	lda     _story_counter
+L0045:	lda     _story_counter
 	sta     _actors+4
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L004D
+	jcc     L004F
 ;
 ; ++story_step;
 ;
@@ -12524,7 +12593,7 @@ L0044:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; fadeout();
 ;
@@ -12532,7 +12601,7 @@ L001A:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; oam_clear();
 ;
@@ -12555,13 +12624,13 @@ L001B:	jsr     _oam_clear
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; if (story_step > 6) {
 ;
-L0045:	lda     _story_step
+L0046:	lda     _story_step
 	cmp     #$07
-	bcc     L0046
+	bcc     L0047
 ;
 ; draw_sprites();
 ;
@@ -12601,9 +12670,9 @@ L0045:	lda     _story_step
 	lda     _actors+221
 	clc
 	adc     _param2
-	bcc     L0039
+	bcc     L003A
 	inx
-L0039:	stx     tmp1
+L003A:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -12623,7 +12692,7 @@ L0039:	stx     tmp1
 ;
 	lda     _story_step
 	cmp     #$11
-	bcc     L0046
+	bcc     L0047
 ;
 ; oam_spr(124, 132, 0x09, 0x00); // Show magnet item
 ;
@@ -12642,27 +12711,27 @@ L0039:	stx     tmp1
 ;
 ; switch (story_step) {
 ;
-L0046:	lda     _story_step
+L0047:	lda     _story_step
 ;
 ; }
 ;
 	jeq     L0021
 	cmp     #$01
-	jeq     L0047
+	jeq     L0048
 	cmp     #$02
 	jeq     L0023
 	cmp     #$03
-	jeq     L0048
+	jeq     L0049
 	cmp     #$04
 	jeq     L0025
 	cmp     #$05
-	jeq     L0049
-	cmp     #$06
 	jeq     L004A
+	cmp     #$06
+	jeq     L004B
 	cmp     #$07
 	jeq     L0028
 	cmp     #$08
-	jeq     L004B
+	jeq     L004C
 	cmp     #$09
 	jeq     L002A
 	cmp     #$0A
@@ -12678,7 +12747,7 @@ L0046:	lda     _story_step
 	cmp     #$0F
 	jeq     L0030
 	cmp     #$10
-	jeq     L004C
+	jeq     L004D
 	cmp     #$11
 	jeq     L0033
 	cmp     #$12
@@ -12689,7 +12758,9 @@ L0046:	lda     _story_step
 	jeq     L0036
 	cmp     #$15
 	jeq     L0037
-	jmp     L004D
+	cmp     #$16
+	jeq     L004E
+	jmp     L004F
 ;
 ; load_black_level();
 ;
@@ -12712,16 +12783,16 @@ L0021:	jsr     _load_black_level
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait(128);
 ;
-L0047:	lda     #$80
+L0048:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
 ;
@@ -12745,16 +12816,16 @@ L0023:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait(72);
 ;
-L0048:	lda     #$48
+L0049:	lda     #$48
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
 ;
@@ -12778,20 +12849,20 @@ L0025:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait(128);
 ;
-L0049:	lda     #$80
+L004A:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; pal_bright(0);
 ;
-L004A:	lda     #$00
+L004B:	lda     #$00
 	jsr     _pal_bright
 ;
 ; brightness = 0;
@@ -12848,7 +12919,7 @@ L004A:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; fadein();
 ;
@@ -12856,16 +12927,16 @@ L0028:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait(128);
 ;
-L004B:	lda     #$80
+L004C:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -12905,7 +12976,7 @@ L002A:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait_input();
 ;
@@ -12913,7 +12984,7 @@ L002B:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -12953,7 +13024,7 @@ L002C:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait_input();
 ;
@@ -12961,7 +13032,7 @@ L002D:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13017,7 +13088,7 @@ L002E:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait_input();
 ;
@@ -13025,7 +13096,7 @@ L002F:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13053,7 +13124,7 @@ L0030:	jsr     decsp3
 ;
 ; set_animation_info(STARS, stars_animation_index);
 ;
-L004C:	lda     #$0A
+L004D:	lda     #$0A
 	jsr     pusha
 	lda     #<(_stars_animation_index)
 	ldx     #>(_stars_animation_index)
@@ -13072,9 +13143,9 @@ L004C:	lda     #$0A
 	lda     _actors+226
 	clc
 	adc     _param2
-	bcc     L003A
+	bcc     L003B
 	inx
-L003A:	stx     tmp1
+L003B:	stx     tmp1
 	asl     a
 	rol     tmp1
 	clc
@@ -13094,7 +13165,7 @@ L003A:	stx     tmp1
 ;
 	lda     _actors+238
 	cmp     #$02
-	jne     L004D
+	jne     L004F
 ;
 ; ++story_step;
 ;
@@ -13102,7 +13173,7 @@ L003A:	stx     tmp1
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13142,7 +13213,7 @@ L0033:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait_input();
 ;
@@ -13150,7 +13221,7 @@ L0034:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13206,7 +13277,7 @@ L0035:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
 ;
 ; wait_input();
 ;
@@ -13214,20 +13285,33 @@ L0036:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004D
+	jmp     L004F
+;
+; brightout();
+;
+L0037:	jsr     _brightout
+;
+; break;
+;
+	jmp     L004F
+;
+; pal_bright(4);
+;
+L004E:	lda     #$04
+	jsr     _pal_bright
 ;
 ; show_HUD();
 ;
-L0037:	jsr     _show_HUD
+	jsr     _show_HUD
 ;
-; actors.state[6] = RISING;
+; actors.counter[6] = 250;
 ;
-	lda     #$05
-	sta     _actors+234
+	lda     #$FA
+	sta     _actors+198
 ;
-; actors.state[7] = RISING;
+; actors.counter[7] = 250;
 ;
-	sta     _actors+235
+	sta     _actors+199
 ;
 ; game_state = MAIN;
 ;
@@ -13236,13 +13320,13 @@ L0037:	jsr     _show_HUD
 ;
 ; ++story_counter;
 ;
-L004D:	inc     _story_counter
+L004F:	inc     _story_counter
 ;
 ; if (wait_timer == 127){
 ;
 	lda     _wait_timer
 	cmp     #$7F
-	bne     L004E
+	bne     L0050
 ;
 ; wait_timer = 0;
 ;
@@ -13251,7 +13335,7 @@ L004D:	inc     _story_counter
 ;
 ; ++wait_timer;
 ;
-L004E:	inc     _wait_timer
+L0050:	inc     _wait_timer
 ;
 ; }
 ;
@@ -13362,8 +13446,14 @@ L0002:	jsr     _ppu_wait_nmi
 	lda     #$00
 	sta     _current_level
 ;
+; current_level = 1;
+;
+	lda     #$01
+	sta     _current_level
+;
 ; story_step = 0;
 ;
+	lda     #$00
 	sta     _story_step
 ;
 ; load_level();
@@ -13433,7 +13523,7 @@ L001C:	lda     _game_state
 ;
 L001D:	lda     _game_state
 	cmp     #$03
-	bne     L0002
+	jne     L0002
 ;
 ; show_map();
 ;

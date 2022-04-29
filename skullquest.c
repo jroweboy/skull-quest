@@ -425,7 +425,7 @@ void show_map() {
     set_chr_mode_4(8);
     set_chr_mode_5(9);
     pal_col(0x00, 0x0f);
-    pal_col(0x01, 0x38); // MAP BACK COLOR
+    pal_col(0x01, 0x28); // MAP BACK COLOR
     pal_col(0x02, 0x18);
     set_scroll_x(0x0100);
     ppu_wait_nmi();
@@ -700,7 +700,14 @@ void set_animation_info(const unsigned char index, const unsigned char array[][2
 void animate_skeleton() {
     for (i = 6; i < 8; ++i) {
         param1 = i;  // actor index
-        if (actors.state[i] != DEAD && !(actors.state[i] == DYING || actors.state[i] == RISING)) {
+        if (actors.state[i] == DEAD){
+            actors.animation_delay[i] = 255;
+            if (game_state != STORY && actors.counter[i] == 254) {
+                actors.state[i] = RISING;
+                actors.counter[i] == 0;
+                actors.animation_delay[i] = 16;
+            }
+        } else if (actors.state[i] != DYING && actors.state[i] != RISING) {
             temp_x = actors.x[i] + get_x_speed();
             // Collision detection at the feet of the skeleton:
             temp_y_col = actors.y[i] + actors.height[i];
@@ -1065,9 +1072,6 @@ void check_main_input() {
 
     if (pad1 & PAD_B) {
         // TODO ITEM USE
-        actors.counter[6] = 0;
-        actors.current_frame[6] = 0;
-        actors.state[6] = DYING;
     }
 
     if (pad1 & PAD_SELECT) {
@@ -1345,6 +1349,17 @@ void fadein(){
     }
 }
 
+// Will brighten to white and increment story_step
+void brightout(){
+    if (story_counter % FADE_SPEED == 0) {
+        pal_bright(++brightness);
+    }
+    if (brightness == 8) {
+        ++story_step;
+        story_counter = 0;
+    }
+}
+
 void wait_input(){
     // Show waiting cursor
     if (wait_timer > 64 ) {
@@ -1589,9 +1604,13 @@ void play_story() {
                     wait_input();
                     break;
                 case 21:
+                    brightout();
+                    break;
+                case 22:
+                    pal_bright(4);
                     show_HUD();
-                    actors.state[6] = RISING;
-                    actors.state[7] = RISING;
+                    actors.counter[6] = 250;
+                    actors.counter[7] = 250;
                     game_state = MAIN;
                     break;
             }
@@ -1643,7 +1662,7 @@ void main() {
             current_level = 0;
 
             // game_state = MAIN;
-            //  current_level = 1;
+            current_level = 1;
 
             story_step = 0;
             load_level();
