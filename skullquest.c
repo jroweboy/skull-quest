@@ -145,10 +145,6 @@ void init_levels(){
     // levels.sprite_palette[] = ;
 
     // SINGLE STATIC ANIMATIONS
-    // Lightning
-    actors.state[LIGHTNING] = IDLE;
-    actors.animation_delay[LIGHTNING] = 8;
-
     // STARS
     actors.x[STARS] = 127;
     actors.y[STARS] = 136;
@@ -180,13 +176,21 @@ void init_level_specifics() {
             actors.current_frame[NECROMANCER] = 0;
             actors.state[NECROMANCER] = IDLE;
             actors.xDir[NECROMANCER] = LEFT;
+
+            // Lightning
+            actors.state[LIGHTNING] = IDLE;
+            actors.animation_delay[LIGHTNING] = 8;
             break;
         case 1:
             // CEMETERY
             // Achievement 1 : Scarecrow
             // Achievement 2 : Skeleton buster
 
-            // STAR
+            // DOOR
+            actors.x[DOOR] = 120;
+            actors.y[DOOR] = 48;
+            actors.state[DOOR] = IDLE;
+            actors.animation_delay[DOOR] = 16;
 
             // Prepare Angelic sprites
             set_chr_mode_1(0x07);
@@ -493,8 +497,10 @@ void draw_level_specifics() {
             // SKELETONS
             animate_skeleton();
 
-            // OTHER
-            oam_meta_spr(128, 64, door1);
+            // DOOR
+            set_animation_info(DOOR, door_animation_index);
+            oam_meta_spr(actors.x[DOOR], actors.y[DOOR], door_animation[actors.current_frame[DOOR] + param2]);
+            // TREE
             oam_meta_spr(219, 61, tree);
             break;
         case 2:
@@ -546,8 +552,13 @@ void load_level() {
             }
         }
     }
-    tombstone_count = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
 
+    if (tombstone_count){
+        brick_counter = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
+    }   
+        
+
+    
     banked_call(0, init_level_specifics);
 
     banked_call(0, init_skull);
@@ -787,7 +798,7 @@ void do_skull_tile_collision() {
             c_map[backup_col_index] = 0x11;
 
             one_vram_buffer(temp, (backup_nt_index & 0x2C00) | 0x3C0 | ((backup_nt_index >> 4) & 0x38) | ((backup_nt_index >> 2) & 0x07));
-            --tombstone_count;
+            --brick_counter;
             break;
         case 0x08:
             break;
@@ -1357,6 +1368,7 @@ void brightout(){
     if (brightness == 8) {
         ++story_step;
         story_counter = 0;
+        brightness = 4;
     }
 }
 
@@ -1489,11 +1501,10 @@ void play_story() {
             // Show story sprites
             if (story_step > 6) {
                 draw_sprites();
-                oam_meta_spr(16, 8, angelic_face);
-                set_animation_info(ANGELICA, angelic_animation_index);
-                oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
-                if (story_step > 16){
-                    oam_spr(124, 132, 0x09, 0x00); // Show magnet item
+                if (story_step < 18){
+                    oam_meta_spr(16, 8, angelic_face);
+                    set_animation_info(ANGELICA, angelic_animation_index);
+                    oam_meta_spr(actors.x[ANGELICA], actors.y[ANGELICA], angelic_animation[actors.current_frame[ANGELICA] + param2]);
                 }
             }
             switch (story_step) {
@@ -1572,47 +1583,68 @@ void play_story() {
                     wait_input();
                     break;
                 case 15:
-                    // Take this
+                //     // Take this
+                //     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
+                //     // Show magnet item
+                //     ++actors.state[STARS];
+                //     ++story_step;
+                // case 16:
+                //     set_animation_info(STARS, stars_animation_index);
+                //     oam_meta_spr(actors.x[STARS], actors.y[STARS], stars_animation[actors.current_frame[STARS] + param2]);
+                //     if (actors.state[STARS] == WALKING){
+                //         ++story_step;
+                //     }
+                //     break;
+                // case 17:
+                //     // Use it if you get stuck
+                //     multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
+                //     multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
+                //     ++story_step;
+                //     break;
+                // case 18:
+                //     wait_input();
+                //     break;
+                // case 19:
+                    // Hit all tombstones...
                     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
-                    // Show magnet item
-                    ++actors.state[STARS];
+                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 3));
                     ++story_step;
+                    break;
                 case 16:
-                    set_animation_info(STARS, stars_animation_index);
-                    oam_meta_spr(actors.x[STARS], actors.y[STARS], stars_animation[actors.current_frame[STARS] + param2]);
-                    if (actors.state[STARS] == WALKING){
-                        ++story_step;
-                    }
+                    wait_input();
                     break;
                 case 17:
-                    // Use it if you get stuck
-                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
-                    ++story_step;
-                    break;
-                case 18:
-                    wait_input();
-                    break;
-                case 19:
-                    // Hit all tombstones...
-                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 3));
-                    ++story_step;
-                    break;
-                case 20:
-                    wait_input();
-                    break;
-                case 21:
                     brightout();
                     break;
-                case 22:
+                case 18:
                     pal_bright(4);
                     show_HUD();
                     actors.counter[6] = 250;
                     actors.counter[7] = 250;
+                    ++story_step;
+                    // MAIN
                     game_state = MAIN;
                     break;
+                case 19:
+                    wait(64);
+                    break;
+                case 20:
+                    // END OF LEVEL
+                    if (actors.state[CROW] != FLYING){
+                        one_vram_buffer(0x11, NTADR_A(15,9));
+                        one_vram_buffer(0x11, NTADR_A(16,9));
+                        actors.state[DOOR] = TURNING;
+                        ++story_step;
+                    }
+                    break;
+                case 21:
+                    wait(64);
+                    break;
+                case 22:
+                    fadeout();
+                    break;
+                    
             }
             break;
     }
@@ -1662,7 +1694,7 @@ void main() {
             current_level = 0;
 
             // game_state = MAIN;
-            current_level = 1;
+            // current_level = 1;
 
             story_step = 0;
             load_level();
@@ -1680,9 +1712,7 @@ void main() {
             draw_sprites();
 
             if (brick_counter == 0) {
-                // Next Level!
-            } else if (tombstone_count == 0) {
-                //
+                game_state = STORY;
             }
 
             if (game_state == MAP) {

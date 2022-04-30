@@ -31,7 +31,6 @@
 	.import		_ppu_off
 	.import		_ppu_on_all
 	.import		_oam_clear
-	.import		_oam_spr
 	.import		_oam_meta_spr
 	.import		_pad_poll
 	.import		_bank_spr
@@ -82,6 +81,7 @@
 	.export		_HorizontalPaddleSpr
 	.export		_VerticalPaddleSpr
 	.export		_tree
+	.export		_door0
 	.export		_door1
 	.export		_door2
 	.export		_door3
@@ -92,6 +92,8 @@
 	.export		_torch_flicker4
 	.export		_torch_animation_index
 	.export		_torch_animation
+	.export		_door_animation_index
+	.export		_door_animation
 	.export		_hero_head_up
 	.export		_hero_head_down
 	.export		_skull_face
@@ -260,12 +262,6 @@ _dialogs:
 	.byte	$74,$68,$69,$73,$20,$65,$76,$69,$6C,$20,$6E,$65,$63,$72,$6F,$6D
 	.byte	$61,$6E,$74,$00
 	.res	4,$00
-	.byte	$54,$61,$6B,$65,$20,$74,$68,$69,$73,$21,$00
-	.res	13,$00
-	.byte	$55,$73,$65,$20,$69,$74,$20,$69,$66,$20,$79,$6F,$75,$20,$67,$65
-	.byte	$74,$20,$73,$74,$75,$63,$6B,$00
-	.byte	$4A,$75,$73,$74,$20,$70,$72,$65,$73,$73,$20,$74,$68,$65,$20,$42
-	.byte	$20,$62,$75,$74,$74,$6F,$6E,$00
 	.byte	$48,$69,$74,$20,$61,$6C,$6C,$20,$74,$68,$65,$20,$74,$6F,$6D,$62
 	.byte	$73,$74,$6F,$6E,$65,$73,$00
 	.res	1,$00
@@ -275,6 +271,12 @@ _dialogs:
 	.byte	$57,$65,$27,$6C,$6C,$20,$6D,$65,$65,$74,$20,$61,$67,$61,$69,$6E
 	.byte	$20,$73,$6F,$6F,$6E,$21,$00
 	.res	1,$00
+	.byte	$54,$61,$6B,$65,$20,$74,$68,$69,$73,$21,$00
+	.res	13,$00
+	.byte	$55,$73,$65,$20,$69,$74,$20,$69,$66,$20,$79,$6F,$75,$20,$67,$65
+	.byte	$74,$20,$73,$74,$75,$63,$6B,$00
+	.byte	$4A,$75,$73,$74,$20,$70,$72,$65,$73,$73,$20,$74,$68,$65,$20,$42
+	.byte	$20,$62,$75,$74,$74,$6F,$6E,$00
 .segment	"STARTUP"
 _forest_col_01:
 	.byte	$11
@@ -3464,131 +3466,165 @@ _tree:
 	.byte	$6E
 	.byte	$02
 	.byte	$80
-_door1:
-	.byte	$F8
-	.byte	$F0
+_door0:
+	.byte	$00
+	.byte	$00
 	.byte	$30
 	.byte	$41
-	.byte	$F8
-	.byte	$F8
+	.byte	$00
+	.byte	$08
 	.byte	$40
 	.byte	$41
-	.byte	$F8
 	.byte	$00
+	.byte	$10
 	.byte	$50
 	.byte	$41
+	.byte	$08
 	.byte	$00
-	.byte	$F0
 	.byte	$30
 	.byte	$01
-	.byte	$00
-	.byte	$F8
+	.byte	$08
+	.byte	$08
 	.byte	$40
 	.byte	$01
-	.byte	$00
-	.byte	$00
+	.byte	$08
+	.byte	$10
 	.byte	$50
 	.byte	$01
 	.byte	$80
+_door1:
+	.byte	$00
+	.byte	$00
+	.byte	$30
+	.byte	$41
+	.byte	$00
+	.byte	$08
+	.byte	$40
+	.byte	$41
+	.byte	$00
+	.byte	$10
+	.byte	$50
+	.byte	$41
+	.byte	$08
+	.byte	$00
+	.byte	$30
+	.byte	$01
+	.byte	$08
+	.byte	$08
+	.byte	$40
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$50
+	.byte	$01
+	.byte	$08
+	.byte	$18
+	.byte	$46
+	.byte	$01
+	.byte	$00
+	.byte	$18
+	.byte	$46
+	.byte	$41
+	.byte	$80
 _door2:
-	.byte	$F8
-	.byte	$F0
+	.byte	$00
+	.byte	$00
 	.byte	$31
 	.byte	$41
-	.byte	$F8
-	.byte	$F8
-	.byte	$41
-	.byte	$41
-	.byte	$F8
 	.byte	$00
+	.byte	$08
+	.byte	$41
+	.byte	$41
+	.byte	$00
+	.byte	$10
 	.byte	$51
 	.byte	$41
-	.byte	$F8
-	.byte	$08
+	.byte	$00
+	.byte	$18
 	.byte	$61
 	.byte	$41
+	.byte	$08
 	.byte	$00
-	.byte	$F0
 	.byte	$31
 	.byte	$01
-	.byte	$00
-	.byte	$F8
+	.byte	$08
+	.byte	$08
 	.byte	$41
 	.byte	$01
-	.byte	$00
-	.byte	$00
+	.byte	$08
+	.byte	$10
 	.byte	$51
 	.byte	$01
-	.byte	$00
 	.byte	$08
+	.byte	$18
 	.byte	$61
 	.byte	$01
 	.byte	$80
 _door3:
-	.byte	$F8
-	.byte	$F0
+	.byte	$00
+	.byte	$00
 	.byte	$32
 	.byte	$41
-	.byte	$F8
-	.byte	$F8
+	.byte	$00
+	.byte	$08
 	.byte	$42
 	.byte	$41
-	.byte	$F8
 	.byte	$00
+	.byte	$10
 	.byte	$52
 	.byte	$41
-	.byte	$F8
-	.byte	$08
+	.byte	$00
+	.byte	$18
 	.byte	$62
 	.byte	$41
+	.byte	$08
 	.byte	$00
-	.byte	$F0
 	.byte	$32
 	.byte	$01
-	.byte	$00
-	.byte	$F8
+	.byte	$08
+	.byte	$08
 	.byte	$42
 	.byte	$01
-	.byte	$00
-	.byte	$00
+	.byte	$08
+	.byte	$10
 	.byte	$52
 	.byte	$01
-	.byte	$00
 	.byte	$08
+	.byte	$18
 	.byte	$62
 	.byte	$01
 	.byte	$80
 _door4:
-	.byte	$F8
-	.byte	$F0
+	.byte	$00
+	.byte	$00
 	.byte	$33
 	.byte	$41
-	.byte	$F8
-	.byte	$F8
-	.byte	$43
-	.byte	$41
-	.byte	$F8
 	.byte	$00
+	.byte	$08
 	.byte	$43
 	.byte	$41
-	.byte	$F8
-	.byte	$08
+	.byte	$00
+	.byte	$10
+	.byte	$43
+	.byte	$41
+	.byte	$00
+	.byte	$18
 	.byte	$53
 	.byte	$41
+	.byte	$08
 	.byte	$00
-	.byte	$F0
 	.byte	$33
 	.byte	$01
-	.byte	$00
-	.byte	$F8
-	.byte	$43
-	.byte	$01
-	.byte	$00
-	.byte	$00
-	.byte	$43
-	.byte	$01
-	.byte	$00
 	.byte	$08
+	.byte	$08
+	.byte	$43
+	.byte	$01
+	.byte	$08
+	.byte	$10
+	.byte	$43
+	.byte	$01
+	.byte	$08
+	.byte	$18
 	.byte	$53
 	.byte	$01
 	.byte	$80
@@ -3640,6 +3676,19 @@ _torch_animation:
 	.addr	_torch_flicker2
 	.addr	_torch_flicker3
 	.addr	_torch_flicker4
+_door_animation_index:
+	.byte	$00
+	.byte	$01
+	.byte	$01
+	.byte	$03
+	.byte	$04
+	.byte	$01
+_door_animation:
+	.addr	_door0
+	.addr	_door1
+	.addr	_door2
+	.addr	_door3
+	.addr	_door4
 _hero_head_up:
 	.byte	$05
 	.byte	$03
@@ -7021,16 +7070,6 @@ L001E:	sta     _actors+72,y
 	lda     #<(_pal_cemetery_spr)
 	sta     _levels+14
 ;
-; actors.state[LIGHTNING] = IDLE;
-;
-	lda     #$00
-	sta     _actors+234
-;
-; actors.animation_delay[LIGHTNING] = 8;
-;
-	lda     #$08
-	sta     _actors+210
-;
 ; actors.x[STARS] = 127;
 ;
 	lda     #$7F
@@ -7230,13 +7269,43 @@ L0048:	lda     #$14
 	lda     #$FF
 	sta     _actors+77
 ;
+; actors.state[LIGHTNING] = IDLE;
+;
+	lda     #$00
+	sta     _actors+234
+;
+; actors.animation_delay[LIGHTNING] = 8;
+;
+	lda     #$08
+	sta     _actors+210
+;
 ; break;
 ;
 	jmp     L004B
 ;
+; actors.x[DOOR] = 120;
+;
+L0049:	lda     #$78
+	sta     _actors+9
+;
+; actors.y[DOOR] = 48;
+;
+	lda     #$30
+	sta     _actors+21
+;
+; actors.state[DOOR] = IDLE;
+;
+	lda     #$00
+	sta     _actors+237
+;
+; actors.animation_delay[DOOR] = 16;
+;
+	lda     #$10
+	sta     _actors+213
+;
 ; set_chr_mode_1(0x07);
 ;
-L0049:	lda     #$07
+	lda     #$07
 	jsr     _set_chr_mode_1
 ;
 ; enemy_count = 3;
@@ -8059,11 +8128,11 @@ L0003:	adc     #<(_levels+8)
 ;
 ; }
 ;
-	beq     L001F
+	beq     L0020
 	cmp     #$01
-	jeq     L0024
+	jeq     L0025
 	cmp     #$02
-	bne     L002A
+	bne     L002B
 ;
 ; }
 ;
@@ -8071,21 +8140,21 @@ L0003:	adc     #<(_levels+8)
 ;
 ; }
 ;
-L002A:	rts
+L002B:	rts
 ;
 ; if (story_step < 5) {
 ;
-L001F:	lda     _story_step
+L0020:	lda     _story_step
 	cmp     #$05
-	jcs     L0022
+	jcs     L0023
 ;
 ; for (i = 0; i < 4; ++i) {
 ;
 	lda     #$00
 	sta     _i
-L0020:	lda     _i
+L0021:	lda     _i
 	cmp     #$04
-	bcs     L0021
+	bcs     L0022
 ;
 ; set_animation_info(i, torch_animation_index);
 ;
@@ -8131,11 +8200,11 @@ L0019:	stx     tmp1
 ; for (i = 0; i < 4; ++i) {
 ;
 	inc     _i
-	jmp     L0020
+	jmp     L0021
 ;
 ; set_animation_info(NECROMANCER, necromancer_animation_index);
 ;
-L0021:	lda     #$05
+L0022:	lda     #$05
 	jsr     pusha
 	lda     #<(_necromancer_animation_index)
 	ldx     #>(_necromancer_animation_index)
@@ -8213,14 +8282,14 @@ L001B:	stx     tmp1
 ;
 ; if (story_step > 2) {
 ;
-L0022:	lda     _story_step
+L0023:	lda     _story_step
 	cmp     #$03
 	bcc     L000D
 ;
 ; if (story_step < 5) {
 ;
 	cmp     #$05
-	bcs     L0023
+	bcs     L0024
 ;
 ; oam_meta_spr(120, 72, hero_head_down);
 ;
@@ -8236,7 +8305,7 @@ L0022:	lda     _story_step
 ;
 ; } else {
 ;
-	jmp     L001E
+	jmp     L001F
 ;
 ; oam_meta_spr(120, 72, hero_head_up);
 ;
@@ -8249,11 +8318,11 @@ L000D:	jsr     decsp2
 	sta     (sp),y
 	lda     #<(_hero_head_up)
 	ldx     #>(_hero_head_up)
-L001E:	jsr     _oam_meta_spr
+L001F:	jsr     _oam_meta_spr
 ;
 ; set_animation_info(SKULL, skull_animation_index);
 ;
-L0023:	lda     #$04
+L0024:	lda     #$04
 	jsr     pusha
 	lda     #<(_skull_animation_index)
 	ldx     #>(_skull_animation_index)
@@ -8292,8 +8361,8 @@ L001C:	stx     tmp1
 ;
 ; if (actors.state[CROW] == FLYING) {
 ;
-L0024:	lda     _actors+236
-	bne     L0025
+L0025:	lda     _actors+236
+	bne     L0026
 ;
 ; param1 = CROW;
 ;
@@ -8320,7 +8389,7 @@ L0024:	lda     _actors+236
 ;
 	lda     _actors+8
 	cmp     #$06
-	bcs     L0029
+	bcs     L002A
 ;
 ; actors.state[CROW] = SKWAK;
 ;
@@ -8334,12 +8403,12 @@ L0024:	lda     _actors+236
 ;
 ; } else if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
 ;
-	jmp     L0029
-L0025:	lda     _actors+16
+	jmp     L002A
+L0026:	lda     _actors+16
 	cmp     #$79
-	bcc     L0029
+	bcc     L002A
 	cmp     #$84
-	bcs     L0029
+	bcs     L002A
 ;
 ; actors.state[CROW] = SKWAK;  // SKWAK!
 ;
@@ -8348,7 +8417,7 @@ L0025:	lda     _actors+16
 ;
 ; set_animation_info(CROW, crow_animation_index);
 ;
-L0029:	lda     #$08
+L002A:	lda     #$08
 	jsr     pusha
 	lda     #<(_crow_animation_index)
 	ldx     #>(_crow_animation_index)
@@ -8389,17 +8458,43 @@ L001D:	stx     tmp1
 ;
 	jsr     _animate_skeleton
 ;
-; oam_meta_spr(128, 64, door1);
+; set_animation_info(DOOR, door_animation_index);
+;
+	lda     #$09
+	jsr     pusha
+	lda     #<(_door_animation_index)
+	ldx     #>(_door_animation_index)
+	jsr     _set_animation_info
+;
+; oam_meta_spr(actors.x[DOOR], actors.y[DOOR], door_animation[actors.current_frame[DOOR] + param2]);
 ;
 	jsr     decsp2
-	lda     #$80
+	lda     _actors+9
 	ldy     #$01
 	sta     (sp),y
-	lda     #$40
+	lda     _actors+21
 	dey
 	sta     (sp),y
-	lda     #<(_door1)
-	ldx     #>(_door1)
+	ldx     #$00
+	lda     _actors+225
+	clc
+	adc     _param2
+	bcc     L001E
+	inx
+L001E:	stx     tmp1
+	asl     a
+	rol     tmp1
+	clc
+	adc     #<(_door_animation)
+	sta     ptr1
+	lda     tmp1
+	adc     #>(_door_animation)
+	sta     ptr1+1
+	iny
+	lda     (ptr1),y
+	tax
+	dey
+	lda     (ptr1),y
 	jsr     _oam_meta_spr
 ;
 ; oam_meta_spr(219, 61, tree);
@@ -8488,10 +8583,10 @@ L001D:	stx     tmp1
 	ldx     #$00
 	lda     _current_level
 	asl     a
-	bcc     L0016
+	bcc     L0017
 	inx
 	clc
-L0016:	adc     #<(_levels)
+L0017:	adc     #<(_levels)
 	sta     ptr1
 	txa
 	adc     #>(_levels)
@@ -8511,10 +8606,10 @@ L0016:	adc     #<(_levels)
 	ldx     #$00
 	lda     _current_level
 	asl     a
-	bcc     L0017
+	bcc     L0018
 	inx
 	clc
-L0017:	adc     #<(_levels+4)
+L0018:	adc     #<(_levels+4)
 	sta     ptr1
 	txa
 	adc     #>(_levels+4)
@@ -8534,10 +8629,10 @@ L0017:	adc     #<(_levels+4)
 	ldx     #$00
 	lda     _current_level
 	asl     a
-	bcc     L0018
+	bcc     L0019
 	inx
 	clc
-L0018:	adc     #<(_levels+8)
+L0019:	adc     #<(_levels+8)
 	sta     ptr1
 	txa
 	adc     #>(_levels+8)
@@ -8554,10 +8649,10 @@ L0018:	adc     #<(_levels+8)
 	ldx     #$00
 	lda     _current_level
 	asl     a
-	bcc     L0019
+	bcc     L001A
 	inx
 	clc
-L0019:	adc     #<(_levels+12)
+L001A:	adc     #<(_levels+12)
 	sta     ptr1
 	txa
 	adc     #>(_levels+12)
@@ -8588,7 +8683,7 @@ L0002:	lda     _collision_index
 	sbc     #$01
 	bvc     L0006
 	eor     #$80
-L0006:	bpl     L001D
+L0006:	bpl     L0003
 ;
 ; temp = c_map[collision_index] >> 4;
 ;
@@ -8609,7 +8704,7 @@ L0006:	bpl     L001D
 ; if (temp == 7) {
 ;
 	cmp     #$07
-	bne     L001A
+	bne     L001B
 ;
 ; ++tombstone_count;
 ;
@@ -8621,12 +8716,12 @@ L0006:	bpl     L001D
 ;
 ; if (temp == 3) {
 ;
-L001A:	lda     _temp
+L001B:	lda     _temp
 	cmp     #$03
 ;
 ; } else {
 ;
-	beq     L001C
+	beq     L001D
 ;
 ; if (temp == 5) {
 ;
@@ -8653,14 +8748,14 @@ L000C:	lda     _collision_index
 ; if (temp == 4 || temp == 5) {
 ;
 	cmp     #$04
-	beq     L001C
+	beq     L001D
 	lda     _temp
 	cmp     #$05
 	bne     L0004
 ;
 ; ++brick_counter;
 ;
-L001C:	inc     _brick_counter
+L001D:	inc     _brick_counter
 ;
 ; for (collision_index = 0; collision_index < 368; ++collision_index) {
 ;
@@ -8669,16 +8764,20 @@ L0004:	inc     _collision_index
 	inc     _collision_index+1
 	jmp     L0002
 ;
-; tombstone_count = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
+; if (tombstone_count){
 ;
-L001D:	lda     _tombstone_count
+L0003:	lda     _tombstone_count
+	beq     L001F
+;
+; brick_counter = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
+;
 	lsr     a
-	sta     _tombstone_count
+	sta     _brick_counter
 ;
 ; banked_call(0, init_level_specifics);
 ;
 	lda     #$00
-	jsr     pusha
+L001F:	jsr     pusha
 	lda     #<(_init_level_specifics)
 	ldx     #>(_init_level_specifics)
 	jsr     _banked_call
@@ -8695,7 +8794,7 @@ L001D:	lda     _tombstone_count
 ;
 	lda     _game_state
 	cmp     #$01
-	bne     L0010
+	bne     L0011
 ;
 ; show_HUD();
 ;
@@ -8708,7 +8807,7 @@ L001D:	lda     _tombstone_count
 ;
 ; ppu_on_all();
 ;
-L0010:	jmp     _ppu_on_all
+L0011:	jmp     _ppu_on_all
 
 .endproc
 
@@ -9637,9 +9736,9 @@ L001E:	lda     _backup_col_index
 	ldx     ptr1+1
 	jsr     _one_vram_buffer
 ;
-; --tombstone_count;
+; --brick_counter;
 ;
-	dec     _tombstone_count
+	dec     _brick_counter
 ;
 ; break;
 ;
@@ -12132,6 +12231,11 @@ L0002:	lda     _brightness
 	lda     #$00
 	sta     _story_counter
 ;
+; brightness = 4;
+;
+	lda     #$04
+	sta     _brightness
+;
 ; }
 ;
 L0004:	rts
@@ -12315,8 +12419,8 @@ L0002:	jmp     incsp1
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0046
-	jmp     L004F
+	jeq     L0045
+	jmp     L0050
 ;
 ; oam_clear();
 ;
@@ -12332,36 +12436,36 @@ L0004:	jsr     _oam_clear
 ;
 ; }
 ;
-	beq     L003C
+	beq     L003B
 	cmp     #$01
-	beq     L003D
+	beq     L003C
 	cmp     #$02
-	jeq     L003F
+	jeq     L003E
 	cmp     #$03
-	jeq     L0042
+	jeq     L0041
 	cmp     #$04
-	jeq     L0012
+	jeq     L0038
 	cmp     #$05
 	jeq     L0013
 	cmp     #$06
 	jeq     L0014
 	cmp     #$07
-	jeq     L0043
+	jeq     L0042
 	cmp     #$08
-	jeq     L0044
+	jeq     L0043
 	cmp     #$09
-	jeq     L0045
+	jeq     L0044
 	cmp     #$0A
-	jeq     L001A
+	jeq     L0038
 	cmp     #$0B
 	jeq     L001B
-	jmp     L004F
+	jmp     L0050
 ;
 ; if (story_counter == 128) {
 ;
-L003C:	lda     _story_counter
+L003B:	lda     _story_counter
 	cmp     #$80
-	jne     L004F
+	jne     L0050
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -12382,13 +12486,13 @@ L003C:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; if (story_counter == 64) {
 ;
-L003D:	lda     _story_counter
+L003C:	lda     _story_counter
 	cmp     #$40
-	bne     L003E
+	bne     L003D
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -12396,9 +12500,9 @@ L003D:	lda     _story_counter
 ;
 ; if (story_counter > 68) {
 ;
-L003E:	lda     _story_counter
+L003D:	lda     _story_counter
 	cmp     #$45
-	jcc     L004F
+	jcc     L0050
 ;
 ; pal_bright(6);
 ;
@@ -12426,13 +12530,13 @@ L003E:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; if (story_counter > 2) {
 ;
-L003F:	lda     _story_counter
+L003E:	lda     _story_counter
 	cmp     #$03
-	bcc     L0040
+	bcc     L003F
 ;
 ; pal_bright(4);
 ;
@@ -12441,9 +12545,9 @@ L003F:	lda     _story_counter
 ;
 ; if (actors.state[LIGHTNING] == WALKING) {
 ;
-L0040:	lda     _actors+234
+L003F:	lda     _actors+234
 	cmp     #$02
-	bne     L0041
+	bne     L0040
 ;
 ; pal_spr(pal_altar_spr);
 ;
@@ -12462,9 +12566,9 @@ L0040:	lda     _actors+234
 ;
 ; if (actors.current_frame[LIGHTNING] == 8) {
 ;
-L0041:	lda     _actors+222
+L0040:	lda     _actors+222
 	cmp     #$08
-	jne     L004F
+	jne     L0050
 ;
 ; pal_bright(6);
 ;
@@ -12483,13 +12587,13 @@ L0041:	lda     _actors+222
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; if (story_counter > 180) {
 ;
-L0042:	lda     _story_counter
+L0041:	lda     _story_counter
 	cmp     #$B5
-	jcc     L004F
+	jcc     L0050
 ;
 ; ++story_step;
 ;
@@ -12502,15 +12606,7 @@ L0042:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004F
-;
-; fadeout();
-;
-L0012:	jsr     _fadeout
-;
-; break;
-;
-	jmp     L004F
+	jmp     L0050
 ;
 ; show_map();
 ;
@@ -12536,11 +12632,11 @@ L0014:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; story_counter = 56;
 ;
-L0043:	lda     #$38
+L0042:	lda     #$38
 	sta     _story_counter
 ;
 ; ++story_step;
@@ -12549,14 +12645,14 @@ L0043:	lda     #$38
 ;
 ; actors.y[SKULL] = story_counter;
 ;
-L0044:	lda     _story_counter
+L0043:	lda     _story_counter
 	sta     _actors+16
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L004F
+	jcc     L0050
 ;
 ; ++story_step;
 ;
@@ -12569,18 +12665,18 @@ L0044:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; actors.x[SKULL] = story_counter;
 ;
-L0045:	lda     _story_counter
+L0044:	lda     _story_counter
 	sta     _actors+4
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L004F
+	jcc     L0050
 ;
 ; ++story_step;
 ;
@@ -12593,15 +12689,7 @@ L0045:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L004F
-;
-; fadeout();
-;
-L001A:	jsr     _fadeout
-;
-; break;
-;
-	jmp     L004F
+	jmp     L0050
 ;
 ; oam_clear();
 ;
@@ -12624,17 +12712,23 @@ L001B:	jsr     _oam_clear
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; if (story_step > 6) {
 ;
-L0046:	lda     _story_step
+L0045:	lda     _story_step
 	cmp     #$07
-	bcc     L0047
+	bcc     L0046
 ;
 ; draw_sprites();
 ;
 	jsr     _draw_sprites
+;
+; if (story_step < 18){
+;
+	lda     _story_step
+	cmp     #$12
+	bcs     L0046
 ;
 ; oam_meta_spr(16, 8, angelic_face);
 ;
@@ -12688,50 +12782,29 @@ L003A:	stx     tmp1
 	lda     (ptr1),y
 	jsr     _oam_meta_spr
 ;
-; if (story_step > 16){
-;
-	lda     _story_step
-	cmp     #$11
-	bcc     L0047
-;
-; oam_spr(124, 132, 0x09, 0x00); // Show magnet item
-;
-	jsr     decsp3
-	lda     #$7C
-	ldy     #$02
-	sta     (sp),y
-	lda     #$84
-	dey
-	sta     (sp),y
-	lda     #$09
-	dey
-	sta     (sp),y
-	tya
-	jsr     _oam_spr
-;
 ; switch (story_step) {
 ;
-L0047:	lda     _story_step
+L0046:	lda     _story_step
 ;
 ; }
 ;
 	jeq     L0021
 	cmp     #$01
-	jeq     L0048
+	jeq     L0047
 	cmp     #$02
 	jeq     L0023
 	cmp     #$03
-	jeq     L0049
+	jeq     L0048
 	cmp     #$04
 	jeq     L0025
 	cmp     #$05
-	jeq     L004A
+	jeq     L0049
 	cmp     #$06
-	jeq     L004B
+	jeq     L004A
 	cmp     #$07
 	jeq     L0028
 	cmp     #$08
-	jeq     L004C
+	jeq     L004B
 	cmp     #$09
 	jeq     L002A
 	cmp     #$0A
@@ -12747,20 +12820,20 @@ L0047:	lda     _story_step
 	cmp     #$0F
 	jeq     L0030
 	cmp     #$10
-	jeq     L004D
+	jeq     L0031
 	cmp     #$11
-	jeq     L0033
+	jeq     L0032
 	cmp     #$12
-	jeq     L0034
+	jeq     L004C
 	cmp     #$13
-	jeq     L0035
+	jeq     L004D
 	cmp     #$14
-	jeq     L0036
-	cmp     #$15
-	jeq     L0037
-	cmp     #$16
 	jeq     L004E
-	jmp     L004F
+	cmp     #$15
+	jeq     L004F
+	cmp     #$16
+	jeq     L0038
+	jmp     L0050
 ;
 ; load_black_level();
 ;
@@ -12783,16 +12856,16 @@ L0021:	jsr     _load_black_level
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait(128);
 ;
-L0048:	lda     #$80
+L0047:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
 ;
@@ -12816,16 +12889,16 @@ L0023:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait(72);
 ;
-L0049:	lda     #$48
+L0048:	lda     #$48
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
 ;
@@ -12849,20 +12922,20 @@ L0025:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait(128);
 ;
-L004A:	lda     #$80
+L0049:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; pal_bright(0);
 ;
-L004B:	lda     #$00
+L004A:	lda     #$00
 	jsr     _pal_bright
 ;
 ; brightness = 0;
@@ -12919,7 +12992,7 @@ L004B:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; fadein();
 ;
@@ -12927,16 +13000,16 @@ L0028:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait(128);
 ;
-L004C:	lda     #$80
+L004B:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -12976,7 +13049,7 @@ L002A:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait_input();
 ;
@@ -12984,7 +13057,7 @@ L002B:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13024,7 +13097,7 @@ L002C:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait_input();
 ;
@@ -13032,7 +13105,7 @@ L002D:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13088,7 +13161,7 @@ L002E:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait_input();
 ;
@@ -13096,7 +13169,7 @@ L002F:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -13114,70 +13187,9 @@ L0030:	jsr     decsp3
 	lda     #$27
 	jsr     _multi_vram_buffer_horz
 ;
-; ++actors.state[STARS];
+; multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 2));
 ;
-	inc     _actors+238
-;
-; ++story_step;
-;
-	inc     _story_step
-;
-; set_animation_info(STARS, stars_animation_index);
-;
-L004D:	lda     #$0A
-	jsr     pusha
-	lda     #<(_stars_animation_index)
-	ldx     #>(_stars_animation_index)
-	jsr     _set_animation_info
-;
-; oam_meta_spr(actors.x[STARS], actors.y[STARS], stars_animation[actors.current_frame[STARS] + param2]);
-;
-	jsr     decsp2
-	lda     _actors+10
-	ldy     #$01
-	sta     (sp),y
-	lda     _actors+22
-	dey
-	sta     (sp),y
-	ldx     #$00
-	lda     _actors+226
-	clc
-	adc     _param2
-	bcc     L003B
-	inx
-L003B:	stx     tmp1
-	asl     a
-	rol     tmp1
-	clc
-	adc     #<(_stars_animation)
-	sta     ptr1
-	lda     tmp1
-	adc     #>(_stars_animation)
-	sta     ptr1+1
-	iny
-	lda     (ptr1),y
-	tax
-	dey
-	lda     (ptr1),y
-	jsr     _oam_meta_spr
-;
-; if (actors.state[STARS] == WALKING){
-;
-	lda     _actors+238
-	cmp     #$02
-	jne     L004F
-;
-; ++story_step;
-;
-	inc     _story_step
-;
-; break;
-;
-	jmp     L004F
-;
-; multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
-;
-L0033:	jsr     decsp3
+	jsr     decsp3
 	lda     #<(_dialogs+240)
 	ldy     #$01
 	sta     (sp),y
@@ -13188,10 +13200,10 @@ L0033:	jsr     decsp3
 	ldy     #$00
 	sta     (sp),y
 	ldx     #$20
-	lda     #$27
+	lda     #$47
 	jsr     _multi_vram_buffer_horz
 ;
-; multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
+; multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 3));
 ;
 	jsr     decsp3
 	lda     #<(_dialogs+264)
@@ -13199,70 +13211,6 @@ L0033:	jsr     decsp3
 	sta     (sp),y
 	iny
 	lda     #>(_dialogs+264)
-	sta     (sp),y
-	lda     #$18
-	ldy     #$00
-	sta     (sp),y
-	ldx     #$20
-	lda     #$47
-	jsr     _multi_vram_buffer_horz
-;
-; ++story_step;
-;
-	inc     _story_step
-;
-; break;
-;
-	jmp     L004F
-;
-; wait_input();
-;
-L0034:	jsr     _wait_input
-;
-; break;
-;
-	jmp     L004F
-;
-; multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
-;
-L0035:	jsr     decsp3
-	lda     #<(_dialogs+288)
-	ldy     #$01
-	sta     (sp),y
-	iny
-	lda     #>(_dialogs+288)
-	sta     (sp),y
-	lda     #$18
-	ldy     #$00
-	sta     (sp),y
-	ldx     #$20
-	lda     #$27
-	jsr     _multi_vram_buffer_horz
-;
-; multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 2));
-;
-	jsr     decsp3
-	lda     #<(_dialogs+312)
-	ldy     #$01
-	sta     (sp),y
-	iny
-	lda     #>(_dialogs+312)
-	sta     (sp),y
-	lda     #$18
-	ldy     #$00
-	sta     (sp),y
-	ldx     #$20
-	lda     #$47
-	jsr     _multi_vram_buffer_horz
-;
-; multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 3));
-;
-	jsr     decsp3
-	lda     #<(_dialogs+336)
-	ldy     #$01
-	sta     (sp),y
-	iny
-	lda     #>(_dialogs+336)
 	sta     (sp),y
 	lda     #$18
 	ldy     #$00
@@ -13277,27 +13225,27 @@ L0035:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; wait_input();
 ;
-L0036:	jsr     _wait_input
+L0031:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; brightout();
 ;
-L0037:	jsr     _brightout
+L0032:	jsr     _brightout
 ;
 ; break;
 ;
-	jmp     L004F
+	jmp     L0050
 ;
 ; pal_bright(4);
 ;
-L004E:	lda     #$04
+L004C:	lda     #$04
 	jsr     _pal_bright
 ;
 ; show_HUD();
@@ -13313,20 +13261,84 @@ L004E:	lda     #$04
 ;
 	sta     _actors+199
 ;
+; ++story_step;
+;
+	inc     _story_step
+;
 ; game_state = MAIN;
 ;
 	lda     #$01
 	sta     _game_state
 ;
+; break;
+;
+	jmp     L0050
+;
+; wait(64);
+;
+L004D:	lda     #$40
+	jsr     _wait
+;
+; break;
+;
+	jmp     L0050
+;
+; if (actors.state[CROW] != FLYING){
+;
+L004E:	lda     _actors+236
+	beq     L0050
+;
+; one_vram_buffer(0x11, NTADR_A(15,9));
+;
+	lda     #$11
+	jsr     pusha
+	ldx     #$21
+	lda     #$2F
+	jsr     _one_vram_buffer
+;
+; one_vram_buffer(0x11, NTADR_A(16,9));
+;
+	lda     #$11
+	jsr     pusha
+	ldx     #$21
+	lda     #$30
+	jsr     _one_vram_buffer
+;
+; actors.state[DOOR] = TURNING;
+;
+	lda     #$01
+	sta     _actors+237
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0050
+;
+; wait(64);
+;
+L004F:	lda     #$40
+	jsr     _wait
+;
+; break;
+;
+	jmp     L0050
+;
+; fadeout();
+;
+L0038:	jsr     _fadeout
+;
 ; ++story_counter;
 ;
-L004F:	inc     _story_counter
+L0050:	inc     _story_counter
 ;
 ; if (wait_timer == 127){
 ;
 	lda     _wait_timer
 	cmp     #$7F
-	bne     L0050
+	bne     L0051
 ;
 ; wait_timer = 0;
 ;
@@ -13335,7 +13347,7 @@ L004F:	inc     _story_counter
 ;
 ; ++wait_timer;
 ;
-L0050:	inc     _wait_timer
+L0051:	inc     _wait_timer
 ;
 ; }
 ;
@@ -13431,10 +13443,10 @@ L0002:	jsr     _ppu_wait_nmi
 ; if (game_state == TITLE && pad1_new & PAD_START) {
 ;
 	lda     _game_state
-	bne     L0018
+	bne     L0016
 	lda     _pad1_new
 	and     #$10
-	beq     L0018
+	beq     L0016
 ;
 ; game_state = STORY;
 ;
@@ -13446,14 +13458,8 @@ L0002:	jsr     _ppu_wait_nmi
 	lda     #$00
 	sta     _current_level
 ;
-; current_level = 1;
-;
-	lda     #$01
-	sta     _current_level
-;
 ; story_step = 0;
 ;
-	lda     #$00
 	sta     _story_step
 ;
 ; load_level();
@@ -13463,12 +13469,12 @@ L0002:	jsr     _ppu_wait_nmi
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
-L0018:	lda     _game_state
+L0016:	lda     _game_state
 	cmp     #$03
-	bne     L001B
+	bne     L0019
 	lda     _pad1_new
 	and     #$10
-	beq     L001B
+	beq     L0019
 ;
 ; hide_map();
 ;
@@ -13482,9 +13488,9 @@ L0018:	lda     _game_state
 ; } else if (game_state == STORY) {
 ;
 	jmp     L0002
-L001B:	lda     _game_state
+L0019:	lda     _game_state
 	cmp     #$02
-	bne     L001C
+	bne     L001A
 ;
 ; play_story();
 ;
@@ -13493,7 +13499,7 @@ L001B:	lda     _game_state
 ; } else if (game_state == MAIN) {
 ;
 	jmp     L0002
-L001C:	lda     _game_state
+L001A:	lda     _game_state
 	cmp     #$01
 	bne     L0002
 ;
@@ -13512,18 +13518,18 @@ L001C:	lda     _game_state
 ; if (brick_counter == 0) {
 ;
 	lda     _brick_counter
+	bne     L001B
 ;
-; } else if (tombstone_count == 0) {
+; game_state = STORY;
 ;
-	beq     L001D
-	lda     _tombstone_count
-	jsr     booleq
+	lda     #$02
+	sta     _game_state
 ;
 ; if (game_state == MAP) {
 ;
-L001D:	lda     _game_state
+L001B:	lda     _game_state
 	cmp     #$03
-	jne     L0002
+	bne     L0002
 ;
 ; show_map();
 ;

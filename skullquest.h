@@ -37,7 +37,9 @@
 #define NECROMANCER 5
 #define ANGELICA 5
 #define LIGHTNING 6
+// 6 - 7 SKELETON !!!
 #define CROW 8
+#define DOOR 9
 #define STARS 10
 
 // Actor STATES!

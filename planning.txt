@@ -37,11 +37,17 @@ MARCH 2022
     x Altar Story
     
 APRIL 2022
-1:
+1-3: 
+    x Toadz last Patreon music
+
+4:
     x Crow animation
     x Dialog system
     x Altar dialog
-    - End of cemetery level / Door animation
+    x End of cemetery level / Door animation
+
+MAY 2022
+1:
     - Ruin Temple Design
     - Ruin Town Design
     - Bridge Design
@@ -62,7 +68,7 @@ APRIL 2022
     - Forest level design
     - Forest boss design & AI 
 
-MAY
+JUNE
 1:
     - Necromant tower Entrance Design
     - Necromant lower tower Design
@@ -74,28 +80,16 @@ MAY
 3:
     - Title Screen
     - Gameover Screen
-    - Trails & Particles
-4: 
-    - Story system
-    - Story Design - Intro
-    - Story Design - Ending
-    - Dialog system
-     
+    - Trails & Particles     
 
-JUNE
-1:
-    - Story music
-2:
+4:  - Story music
     - Ruin music
-3:
-    - Forest music
-4:
-    - Tower music
-5:
 
 JULY
 1:
     - Title screen music
+    - Forest music
+    - Tower music
 2:
     - Boss music 2
 3:

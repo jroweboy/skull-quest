@@ -5,3 +5,7 @@ WARNING: every sprite above draw_sprite() doesn't show because of clear_oam();
 
 Done:
 x Skull collision with top paddle
+
+
+À TESTER:
+- Terminer le niveau cemetery avec le corbeau qui vole, il est supposé disparaitre avant qu'on voit la porte qui ouvre

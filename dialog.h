@@ -18,12 +18,12 @@ const unsigned char dialogs[][DIALOG_LENGTH] = {
     "the castle, and defeat",
     "this evil necromant",
 
+    "Hit all the tombstones",
+    "to get out of here",
+    "We'll meet again soon!",
+
     "Take this!",
 
     "Use it if you get stuck",
     "Just press the B button",
-
-    "Hit all the tombstones",
-    "to get out of here",
-    "We'll meet again soon!",
 };
