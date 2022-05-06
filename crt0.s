@@ -387,6 +387,7 @@ sounds_data:
 	.incbin "I-CHR/alpha-top.pngE/chrblock.chr" ; 2kb Alpha and common tiles  0  -  1
 	.incbin "I-CHR/altar.pngE/chrblock.chr"		; 1kb Altar    2
 	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    3
-	.incbin "I-CHR/sprites01.pngE/chrblock.chr"	; 4kb Main sprites   4  -  5   -  6  -  7
+	.incbin "I-CHR/sprites01.pngE/chrblock-top1.chr"; 2kb Main TOP sprites   4  -  5
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces - Lightning   -  6  -  7
 	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
-	.incbin "I-CHR/sprites01.pngE/lightning.chr"; 1kb Lightning A
+	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple A

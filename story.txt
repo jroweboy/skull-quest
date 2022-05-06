@@ -37,3 +37,5 @@ Shop:
 
 Multiple balls ??
 
+Boss ideas:
+    Giant spider, throws web on paddle so it get stuck.

@@ -11,6 +11,7 @@
 #include "I-CHR/altar.pngE/altar.h"
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/map.pngE/map.h"
+#include "I-CHR/church-interior.pngE/temple.h"
 #include "Nametable/title_screen.h"
 #include "Nametable/black_level.h"
 #include "palettes.h"
@@ -31,7 +32,7 @@ static unsigned char pad1;
 static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
-static unsigned char i, param1, param2, param3, param4, temp, temp2, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
+static unsigned char i, j, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count, wait_timer;
 static unsigned char game_state, current_level, paddle_count, enemy_count, story_step, story_counter;
 static unsigned char brightness = 4;
@@ -47,7 +48,7 @@ unsigned char wram_array[0x2000];
 static char exp[] = "00000000";
 static unsigned char c_map[368];
 
-#define LEVEL_NUMBER 2
+#define LEVEL_NUMBER 25
 
 typedef struct {
     unsigned char* nametable[LEVEL_NUMBER];
@@ -125,7 +126,7 @@ void init_skeletons() {
     }
 }
 
-void init_levels(){
+void init_levels_data(){
     // ALTAR 
     levels.nametable[0] = altar;
     levels.collision_map[0] = cemetery_col;
@@ -138,11 +139,19 @@ void init_levels(){
     levels.background_palette[1] = pal_cemetery_bg;
     levels.sprite_palette[1] = pal_cemetery_spr;
 
+    // TEMPLE
+    levels.nametable[2] = temple;
+    levels.collision_map[2] = temple_col;
+    levels.background_palette[2] = pal_temple_bg;
+    levels.sprite_palette[2] = pal_temple_spr;
+
     // TEMPLATE
     // levels.nametable[] = ;
     // levels.collision_map[] = ;
     // levels.background_palette[] = ;
     // levels.sprite_palette[] = ;
+
+    // ***  CURRENT LEVEL NUMBER = 25 PLEASE KEEP IT UP TO DATE ***
 
     // SINGLE STATIC ANIMATIONS
     // STARS
@@ -156,9 +165,6 @@ void init_level_specifics() {
     switch (current_level) {
         case 0:
             // Altar
-            // paddle_count = 0;
-            // Prepare the lightning graphics
-            set_chr_mode_1(0x0A);
             // Torches:
             actors.x[0] = 64;
             actors.x[1] = 88;
@@ -192,8 +198,6 @@ void init_level_specifics() {
             actors.state[DOOR] = IDLE;
             actors.animation_delay[DOOR] = 16;
 
-            // Prepare Angelic sprites
-            set_chr_mode_1(0x07);
             enemy_count = 3;
             chr_4_index = 2;
             chr_5_index = 3;
@@ -221,7 +225,13 @@ void init_level_specifics() {
             actors.height[CROW] = 16;
             break;
         case 2:
-            // TEMP
+            // TEMPLE
+            chr_4_index = 0x0A;
+            paddle_count = 1;
+            actors.x[0] = 0x70;  // 14
+            actors.y[0] = 0xD0;  // 26
+            break;
+        case 3:
             // chr_4_index = ?
             // chr_5_index = ?
             paddle_count = 4;
@@ -233,8 +243,6 @@ void init_level_specifics() {
             actors.y[2] = 0x70;  // 14
             actors.x[3] = 0xE0;  // 28
             actors.y[3] = 0x70;  // 14
-            break;
-        case 3:
             break;
         case 4:
             break;
@@ -504,6 +512,11 @@ void draw_level_specifics() {
             oam_meta_spr(219, 61, tree);
             break;
         case 2:
+            // Temple
+            oam_meta_spr(96, 32, vitrail);
+            oam_meta_spr(120, 32, vitrail);
+            oam_meta_spr(144, 32, vitrail);
+            oam_meta_spr(184, 80, skull_pile);
             break;
     }
 }
@@ -517,6 +530,33 @@ void load_black_level() {
     ppu_on_all();
 }
 
+// We assume there will never be a col type value greater than 15;
+void load_collision() {
+    collision_index = 0;
+    is_first = TRUE;
+    i = 0;
+    temp = levels.collision_map[current_level][i];
+    // Array terminated by 255;
+    while(temp < 255) {
+        ++i;
+        // of which type
+        temp2 = levels.collision_map[current_level][i];
+        for (j = 0; j < temp; ++j){
+            if (is_first) {
+                temp3 = temp2 << 4;
+                is_first = FALSE;
+            } else {
+                c_map[collision_index] = temp3 | temp2;
+                ++collision_index;
+                is_first = TRUE;
+            }
+        }
+        ++i;
+        // how many
+        temp = levels.collision_map[current_level][i];
+    }
+}
+
 void load_level() {
     ppu_off();
     set_scroll_x(0x0000);
@@ -524,11 +564,11 @@ void load_level() {
     vram_adr(NAMETABLE_A);
     vram_unrle(levels.nametable[current_level]);
 
-    // TODO: compress col data! and decompress here:
-    memcpy(c_map, levels.collision_map[current_level], 368);
 
     pal_bg(levels.background_palette[current_level]);
     pal_spr(levels.sprite_palette[current_level]);
+
+    load_collision();
 
     // Check how many tombstones or destructible brick there are
     brick_counter = 0;
@@ -556,16 +596,17 @@ void load_level() {
     if (tombstone_count){
         brick_counter = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
     }   
-        
 
-    
     banked_call(0, init_level_specifics);
+
+    set_chr_mode_4(chr_4_index);
+    set_chr_mode_5(chr_5_index);
 
     banked_call(0, init_skull);
 
+    skull_launched = FALSE;
     if (game_state == MAIN) {
         show_HUD();
-        skull_launched = FALSE;
     }
 
     ppu_on_all();
@@ -1644,7 +1685,42 @@ void play_story() {
                 case 22:
                     fadeout();
                     break;
-                    
+                case 23:
+                    ++current_level;
+                    load_level();
+                    story_step = 0;
+                    break;
+            }
+            break;
+        case 2:
+            switch (story_step) {
+                case 0:
+                    fadein();
+                    break;
+                case 1:
+                    game_state = MAIN;
+                    ++story_step;
+                    break;
+                case 2:
+                    wait(64);
+                    break;
+                case 3:
+                    fadeout();
+                    break;
+                case 4:
+                    ++current_level;
+                    // load_level(); // DO NOT EXIST YET !!!
+                    story_step = 0;
+                    break;
+            }
+            break;
+        case 3:
+            switch (story_step) {
+                case 0:
+                    fadein();
+                    break;
+                case 1:
+                    break;
             }
             break;
     }
@@ -1667,7 +1743,7 @@ void main() {
     // memfill(void *dst,unsigned char value,unsigned int len);
     memfill(wram_array, 0, 0x2000);
 
-    banked_call(0, init_levels);
+    banked_call(0, init_levels_data);
 
     set_scroll_y(0xff);  // shift the bg down 1 pixel
 
@@ -1692,9 +1768,10 @@ void main() {
 
             game_state = STORY;
             current_level = 0;
-
-            // game_state = MAIN;
-            // current_level = 1;
+            
+            // DEBUG
+            game_state = MAIN;
+            current_level = 2;
 
             story_step = 0;
             load_level();

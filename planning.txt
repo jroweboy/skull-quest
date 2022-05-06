@@ -48,13 +48,13 @@ APRIL 2022
 
 MAY 2022
 1:
-    - Ruin Temple Design
+    x Ruin Temple Design
+    x Bridge Design
+    x Compress collision tables
     - Ruin Town Design
-    - Bridge Design
     
 2:
-    - Ruin & Bridge level design
-    - Bridge boss design
+    - Bridge boss animation
     - Boss fight coding
 3:
     - ITEMS Design
@@ -99,13 +99,14 @@ JULY
 
 AUGUST
 1:
-    - Compress collision tables
     - Map update name location
 2:
     - 2 Player Pong Game
 3:
     - Achievements...
+    - Experience & level up system
 4:
+
 
 5:
 

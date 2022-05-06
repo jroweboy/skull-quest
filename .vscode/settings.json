@@ -5,7 +5,8 @@
         "title_screen.h": "c",
         "level01.h": "c",
         "master_collision.h": "c",
-        "spr_lightning.h": "c"
+        "spr_lightning.h": "c",
+        "temple.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
