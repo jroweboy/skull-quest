@@ -61,6 +61,7 @@
 // Ennemy types
 #define TYPE_CROW 0
 #define TYPE_SKELETON 1
+#define TYPE_GLASS 2
 
 void animate_skeleton();
 

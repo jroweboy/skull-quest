@@ -143,20 +143,6 @@ const unsigned char* const door_animation[] = {
 
 };
 
-const unsigned char vitrail[]={
-	  0,  0,0x49,1,
-	  0,  8,0x59,1,
-	  0, 16,0x69,1,
-	  0, 32,0x79,1,
-	  7,  0,0x49,1|OAM_FLIP_H,
-	  8,  8,0x59,1|OAM_FLIP_H,
-	  8, 16,0x69,1|OAM_FLIP_H,
-	  8, 32,0x79,1|OAM_FLIP_H,
-	  0, 24,0x59,1,
-	  8, 24,0x59,1|OAM_FLIP_H,
-	128
-};
-
 const unsigned char skull_pile[]={
 	  0,  0,0x39,3,
 	  8,  0,0x3a,3,

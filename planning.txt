@@ -51,7 +51,7 @@ MAY 2022
     x Ruin Temple Design
     x Bridge Design
     x Compress collision tables
-    - Ruin Town Design
+    x Ruin Town Design
     
 2:
     - Bridge boss animation

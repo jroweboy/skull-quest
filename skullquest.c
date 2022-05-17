@@ -26,6 +26,7 @@
 #include "spr_skeleton.h"
 #include "spr_skull.h"
 #include "spr_star.h"
+#include "spr_stainedglass"
 
 #pragma bss-name(push, "ZEROPAGE")
 static unsigned char pad1;
@@ -88,7 +89,7 @@ typedef struct
 
 // index 0-3 paddles
 // index 4 skull
-// index 5 necromancer / angelica
+// index 5 necromancer / angelica / extra skull?
 // index 6-7-8-9 ennemies
 // index 10 STARS animation for item reveal
 Actors actors;
@@ -226,10 +227,30 @@ void init_level_specifics() {
             break;
         case 2:
             // TEMPLE
+            // Achievement 1: Glass Hash
+            // Achievement 2: ?
             chr_4_index = 0x0A;
+            enemy_count = 3; // Glasses ... TODO add skull pile ??? Or other ennemy ?
             paddle_count = 1;
             actors.x[0] = 0x70;  // 14
             actors.y[0] = 0xD0;  // 26
+            // Stained glasses
+            actors.x[6] = 96;
+            actors.y[6] = 32;
+            actors.x[7] = 120;
+            actors.y[7] = 32;
+            actors.x[8] = 144;
+            actors.y[8] = 32;
+            for (i = 6; i < 9; ++i) {
+                actors.state[i] = 0;
+                actors.animation_delay[i] = 12;
+                actors.current_frame[i] = 0;
+                actors.type[i] = TYPE_GLASS;
+                actors.bbox_x[i] = 0;
+                actors.bbox_y[i] = 0;
+                actors.width[i] = 16;
+                actors.height[i] = 50;
+            }
             break;
         case 3:
             // chr_4_index = ?
@@ -513,9 +534,10 @@ void draw_level_specifics() {
             break;
         case 2:
             // Temple
-            oam_meta_spr(96, 32, vitrail);
-            oam_meta_spr(120, 32, vitrail);
-            oam_meta_spr(144, 32, vitrail);
+            for (i = 6; i < 9; ++i){
+                set_animation_info(i , glass_animation_index);
+                oam_meta_spr(actors.x[i], actors.y[i], glass_animation[actors.current_frame[i] + param2]);
+            }
             oam_meta_spr(184, 80, skull_pile);
             break;
     }
@@ -898,12 +920,19 @@ void check_enemy_collision() {
                         actors.animation_delay[i] = 8;
                         break;
                     case TYPE_SKELETON:
+                        // TODO Verify if skeleton already dead...
                         actors.counter[i] = 0;
                         actors.current_frame[i] = 0;
                         actors.state[i] = DYING;
                         actors.xDir[SKULL] = -actors.xDir[SKULL];
                         actors.yDir[SKULL] = -actors.yDir[SKULL];
                         break;
+                    case TYPE_GLASS:
+                        if (actors.state[i] == IDLE) {
+                            ++actors.state[i];
+                        }
+                        break;
+                        
                 }
             }
         }
