@@ -384,10 +384,21 @@ sounds_data:
 
 .segment "CHARS"
 
+     ;mode 0 changes $1000-$17FF
+     ;mode 1 changes $1800-$1FFF
+     
+     ;mode 2 changes $0000-$03FF
+     ;mode 3 changes $0400-$07FF
+     ;mode 4 changes $0800-$0BFF
+     ;mode 5 changes $0C00-$0FFF
+
 	.incbin "I-CHR/alpha-top.pngE/chrblock.chr" ; 2kb Alpha and common tiles  0  -  1
 	.incbin "I-CHR/altar.pngE/chrblock.chr"		; 1kb Altar    2
 	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    3
+
 	.incbin "I-CHR/sprites01.pngE/chrblock-top1.chr"; 2kb Main TOP sprites   4  -  5
 	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces - Lightning   -  6  -  7
+	
 	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
-	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple A
+	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple - Town1 A
+	.incbin "I-CHR/town-ruins.pngE/chrblock.chr" ; 1kb Town2 B

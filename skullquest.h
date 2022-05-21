@@ -37,10 +37,17 @@
 #define NECROMANCER 5
 #define ANGELICA 5
 #define LIGHTNING 6
+#define DEVIL 6
 // 6 - 7 SKELETON !!!
+#define DOOR1 7
+#define DOOR2 8
 #define CROW 8
-#define DOOR 9
+#define DOOR3 9
+#define GATE 9
 #define STARS 10
+#define CRATE1 11
+#define CRATE2 12
+#define CRATE3 13
 
 // Actor STATES!
 // Always putting temporary before the next (ex DYING -> DEAD)
@@ -48,6 +55,8 @@
 #define FLYING 0
 #define TURNING 1
 #define SKWAK 1
+#define OPENING 1
+#define ATTACKING 1
 #define WALKING 2
 #define RISING 5
 
@@ -62,6 +71,10 @@
 #define TYPE_CROW 0
 #define TYPE_SKELETON 1
 #define TYPE_GLASS 2
+#define TYPE_CRATE 3
+#define TYPE_BREAKABLE 4
+
+#define TYPE_DEVIL 6
 
 void animate_skeleton();
 

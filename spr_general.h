@@ -41,7 +41,7 @@ const unsigned char tree[] = {
 
 };
 
-const unsigned char door0[] = {
+const unsigned char gate0[] = {
     0, 0, 0x30, 1 | OAM_FLIP_H,
     0, 8, 0x40, 1 | OAM_FLIP_H,
     0, 16, 0x50, 1 | OAM_FLIP_H,
@@ -50,7 +50,7 @@ const unsigned char door0[] = {
     8, 16, 0x50, 1,
     128};
 
-const unsigned char door1[] = {
+const unsigned char gate1[] = {
     0, 0, 0x30, 1 | OAM_FLIP_H,
     0, 8, 0x40, 1 | OAM_FLIP_H,
     0, 16, 0x50, 1 | OAM_FLIP_H,
@@ -61,7 +61,7 @@ const unsigned char door1[] = {
     0, 24, 0x46, 1 | OAM_FLIP_H,
     128};
 
-const unsigned char door2[] = {
+const unsigned char gate2[] = {
     0, 0, 0x31, 1 | OAM_FLIP_H,
     0, 8, 0x41, 1 | OAM_FLIP_H,
     0, 16, 0x51, 1 | OAM_FLIP_H,
@@ -72,7 +72,7 @@ const unsigned char door2[] = {
     8, 24, 0x61, 1,
     128};
 
-const unsigned char door3[] = {
+const unsigned char gate3[] = {
     0, 0, 0x32, 1 | OAM_FLIP_H,
     0, 8, 0x42, 1 | OAM_FLIP_H,
     0, 16, 0x52, 1 | OAM_FLIP_H,
@@ -83,7 +83,7 @@ const unsigned char door3[] = {
     8, 24, 0x62, 1,
     128};
 
-const unsigned char door4[] = {
+const unsigned char gate4[] = {
     0, 0, 0x33, 1 | OAM_FLIP_H,
     0, 8, 0x43, 1 | OAM_FLIP_H,
     0, 16, 0x43, 1 | OAM_FLIP_H,
@@ -126,20 +126,20 @@ const unsigned char* const torch_animation[] = {
     torch_flicker3,
     torch_flicker4};
 
-const unsigned char door_animation_index[][2] = {
+const unsigned char gate_animation_index[][2] = {
     {0, 1},  // IDLE
     {1, 3},  // OPENING
     {4, 1}   // OPEN
 };
 
-const unsigned char* const door_animation[] = {
-    door0,
+const unsigned char* const gate_animation[] = {
+    gate0,
 
-    door1,
-    door2,
-    door3,
+    gate1,
+    gate2,
+    gate3,
 
-    door4
+    gate4
 
 };
 
@@ -152,6 +152,14 @@ const unsigned char skull_pile[]={
 	128
 };
 
+const unsigned char crate_data[] = {
 
+    0, 0, 0x0d, 1,
+    8, 0, 0x0e, 1,
+    8, 8, 0x0f, 1,
+    0, 8, 0x1e, 1,
+    128
+
+};
 
 

@@ -57,6 +57,8 @@ MAY 2022
     - Bridge boss animation
     - Boss fight coding
 3:
+    - Ruin town implementation
+    - Ruin town with temple palette??
     - ITEMS Design
     - bomb
     - magnet
@@ -64,6 +66,8 @@ MAY 2022
     - multiple skulls?
     - SELECT BUTTON -> Item selection (fade out background)
 4:
+    - Temple ennemy (ghost appear when hit the skull pile and throw paralyzing wave toward paddle)
+    - Temple alternate route (middle stained glass broke reveal passageway to crypte);
     - Forest level ennemies
     - Forest level design
     - Forest boss design & AI 
