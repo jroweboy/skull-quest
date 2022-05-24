@@ -270,14 +270,14 @@ void init_level_specifics() {
             current_sprite_palette = pal_town_spr;
 
             // Doors
-            actors.x[DOOR1] = 32;
-            actors.y[DOOR1] = 88;
+            actors.x[DOOR1] = 30;
+            actors.y[DOOR1] = 87;
             actors.type[DOOR1] = TYPE_BREAKABLE;
-            actors.x[DOOR2] = 112;
-            actors.y[DOOR2] = 80;
+            actors.x[DOOR2] = 110;
+            actors.y[DOOR2] = 71;
             actors.type[DOOR2] = TYPE_BREAKABLE;
-            actors.x[DOOR3] = 184;
-            actors.y[DOOR3] = 88;
+            actors.x[DOOR3] = 182;
+            actors.y[DOOR3] = 87;
             actors.type[DOOR3] = TYPE_BREAKABLE;
             // Crates
             actors.x[CRATE1] = 16;
@@ -1817,6 +1817,8 @@ void main() {
     memfill(wram_array, 0, 0x2000);
 
     set_scroll_y(0xff);  // shift the bg down 1 pixel
+    
+    color_emphasis(COL_EMP_NORMAL);
 
     set_vram_buffer();
 

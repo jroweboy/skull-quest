@@ -11,7 +11,7 @@ const unsigned char house_door_open1[] = {
 
     6, 5, 0x5b, 1,
     6, 13, 0x7b, 1,
-    6, 15, 0x7b, 1 | OAM_FLIP_V,
+    4, 16, 0x7b, 1 | OAM_FLIP_H | OAM_FLIP_V,
     128
 
 };
@@ -20,11 +20,10 @@ const unsigned char house_door_open2[] = {
 
     0, 6, 0x53, 1,
     0, 12, 0x53, 1,
-    0, 16, 0x53, 1,
+    6, 16, 0x53, 1 | OAM_FLIP_H | OAM_FLIP_V,
     128
 
 };
-
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
