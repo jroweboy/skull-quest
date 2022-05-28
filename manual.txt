@@ -10,3 +10,16 @@ Press B
 SELECT
     - Show map
     - Pause
+
+
+----- CREDITS -----
+Dedicated to the loving memory of:
+CECILE PINARD
+
+Special thanks to:
+CHARLES LEMAY
+LOUIS MARCHAND
+ELIJAH HURST
+
+Some artwork by
+LUIS ZUNO

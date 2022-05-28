@@ -82,12 +82,12 @@ const unsigned char necromancer_hit[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char necromancer_animation_index[][2] = {
-    {0, 1},  // IDLE
-    {1, 2},  // RAISING
-    {2, 1},  // IDLE2
-    {3, 1},  // IDLE3 - because this is a transitioning state
-    {3, 1}   // IDLE3
+const unsigned char necromancer_animation_index[] = {
+    0, 1,  // IDLE
+    1, 2,  // RAISING
+    2, 1,  // IDLE2
+    3, 1,  // IDLE3 - because this is a transitioning state
+    3, 1   // IDLE3
 };
 
 const unsigned char* const necromancer_animation[] = {

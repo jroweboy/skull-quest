@@ -71,10 +71,10 @@ const unsigned char crow_right_fly2[]={
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char crow_animation_index[][2] = {
-    {0, 2},   // FLYING
-    {4, 1},   // SKWAK
-    {6, 1},   // IDLE
+const unsigned char crow_animation_index[] = {
+    0, 2,   // FLYING
+    4, 1,   // SKWAK
+    6, 1,   // IDLE
 };
 
 const unsigned char* const crow_animation[] = {

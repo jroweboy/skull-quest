@@ -100,10 +100,10 @@ const unsigned char skull_rotate_right6[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char skull_animation_index[][2] = {
-    {0, 1},  // IDLE
-    {0, 0},  // *TURNING NOT USED
-    {2, 6},  // ROTATE_H
+const unsigned char skull_animation_index[] = {
+    0, 1,  // IDLE
+    0, 0,  // *TURNING NOT USED
+    2, 6  // ROTATE_H
 };
 
 const unsigned char* const skull_animation[] = {

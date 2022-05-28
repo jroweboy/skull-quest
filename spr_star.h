@@ -110,10 +110,10 @@ const unsigned char star_9_data[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char stars_animation_index[][2] = {
-    {0, 1},   // NOTHING
-    {1, 10},  // ANIMATION
-    {0, 1}    // NOTHING
+const unsigned char stars_animation_index[] = {
+    0, 1,   // NOTHING
+    1, 10,  // ANIMATION
+    0, 1    // NOTHING
 
 };
 

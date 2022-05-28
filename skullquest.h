@@ -33,21 +33,9 @@
 
 // ACTOR INDEX
 #define SKULL 4
+#define SKULL2 5
 #define PADDLE 0
-#define NECROMANCER 5
-#define ANGELICA 5
-#define LIGHTNING 6
-#define DEVIL 6
-// 6 - 7 SKELETON !!!
-#define DOOR1 7
-#define DOOR2 8
-#define CROW 8
-#define DOOR3 9
-#define GATE 9
-#define STARS 10
-#define CRATE1 11
-#define CRATE2 12
-#define CRATE3 13
+
 
 // Actor STATES!
 // Always putting temporary before the next (ex DYING -> DEAD)
@@ -59,28 +47,38 @@
 #define ATTACKING 1
 #define WALKING 2
 #define RISING 5
+#define INACTIVE 128
 
 #define ROTATE_H 2
 
 #define DYING 3
 #define DEAD 4
 
-#define ROTATE_V 4
-
-// Ennemy types
-#define TYPE_CROW 0
+// Actor types
 #define TYPE_SKELETON 1
 #define TYPE_GLASS 2
 #define TYPE_CRATE 3
-#define TYPE_BREAKABLE 4
-
+#define TYPE_HOUSE_DOOR 4
+#define TYPE_CROW 5
 #define TYPE_DEVIL 6
+#define TYPE_SKULL 7
+#define TYPE_GATE 8
+#define TYPE_TREE 9
+#define TYPE_ANGELIC 10
+#define TYPE_SKULL_PILE 11
+#define TYPE_LIGHTNING 12
+#define TYPE_NECROMANCER 13
+#define TYPE_STARS 14
+#define TYPE_VILLAGER1 15
+#define TYPE_TORCHES 16
+#define TYPE_HERO 17
 
-void animate_skeleton();
+
+void move_skeleton();
 
 // index = actor index
 // array = animation index
-void set_animation_info(const unsigned char p1, const unsigned char array[][2]);
+void set_animation_info();
 
 // param1: actor index
 signed char get_x_speed();

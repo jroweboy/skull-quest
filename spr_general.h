@@ -41,6 +41,11 @@ const unsigned char tree[] = {
 
 };
 
+const unsigned char* const tree_animation[] = {
+    tree
+
+};
+
 const unsigned char gate0[] = {
     0, 0, 0x30, 1 | OAM_FLIP_H,
     0, 8, 0x40, 1 | OAM_FLIP_H,
@@ -48,7 +53,9 @@ const unsigned char gate0[] = {
     8, 0, 0x30, 1,
     8, 8, 0x40, 1,
     8, 16, 0x50, 1,
-    128};
+    128
+    
+};
 
 const unsigned char gate1[] = {
     0, 0, 0x30, 1 | OAM_FLIP_H,
@@ -116,8 +123,8 @@ const unsigned char torch_flicker4[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char torch_animation_index[][2] = {
-    {0, 4}  // IDLE
+const unsigned char torch_animation_index[] = {
+    0, 4  // IDLE
 };
 
 const unsigned char* const torch_animation[] = {
@@ -126,10 +133,10 @@ const unsigned char* const torch_animation[] = {
     torch_flicker3,
     torch_flicker4};
 
-const unsigned char gate_animation_index[][2] = {
-    {0, 1},  // IDLE
-    {1, 3},  // OPENING
-    {4, 1}   // OPEN
+const unsigned char gate_animation_index[] = {
+    0, 1,  // IDLE
+    1, 3,  // OPENING
+    4, 1   // OPEN
 };
 
 const unsigned char* const gate_animation[] = {
@@ -143,14 +150,16 @@ const unsigned char* const gate_animation[] = {
 
 };
 
-const unsigned char skull_pile[]={
-	  0,  0,0x39,3,
-	  8,  0,0x3a,3,
-	 16,  0,0x3b,3,
-	  8,  8,0x4a,3,
-	 16,  8,0x4b,3,
-	128
-};
+const unsigned char skull_pile[] = {
+    0, 0, 0x39, 3,
+    8, 0, 0x3a, 3,
+    16, 0, 0x3b, 3,
+    8, 8, 0x4a, 3,
+    16, 8, 0x4b, 3,
+    128};
+
+const unsigned char* const skull_pile_animation[] = {
+    skull_pile};
 
 const unsigned char crate_data[] = {
 
@@ -158,8 +167,7 @@ const unsigned char crate_data[] = {
     8, 0, 0x0e, 1,
     8, 8, 0x0f, 1,
     0, 8, 0x1e, 1,
-    128
+    128};
 
-};
-
-
+const unsigned char* const crate_animation[] = {
+    crate_data};

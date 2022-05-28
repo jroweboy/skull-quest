@@ -45,10 +45,10 @@ const unsigned char devil_attack[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char devil_animation_index[][2] = {
-    {0, 5},  // IDLE
-    {5, 1},  // ATTACKING
-    {0, 5}   // IDLE
+const unsigned char devil_animation_index[] = {
+    0, 5,  // IDLE
+    5, 1,  // ATTACKING
+    0, 5   // IDLE
 
 };
 

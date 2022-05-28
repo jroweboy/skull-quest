@@ -311,10 +311,10 @@ const unsigned char lightning_11_data[]={
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char lightning_animation_index[][2] = {
-    {0, 1},     // NOTHING
-    {1, 13},    // ANIMATION
-    {0, 1}      // NOTHING
+const unsigned char lightning_animation_index[] = {
+    0, 1,     // NOTHING
+    1, 13,    // ANIMATION
+    0, 1      // NOTHING
 };
 
 const unsigned char* const lightning_animation[]={

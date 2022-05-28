@@ -204,14 +204,14 @@ const unsigned char skeleton_dying_left7[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char skeleton_animation_index[][2] = {
-    {0, 1},   // IDLE
-    {2, 1},   // TURNING
-    {4, 4},   // WALKING
-    {12, 7},  // DYING
-    {26, 1},  // DEAD
-    {28, 7},  // RISING
-    {4, 4}    // WALKING
+const unsigned char skeleton_animation_index[] = {
+    0, 1,   // IDLE
+    2, 1,   // TURNING
+    4, 4,   // WALKING
+    12, 7,  // DYING
+    26, 1,  // DEAD
+    28, 7,  // RISING
+    4, 4    // WALKING
 };
 
 const unsigned char* const skeleton_animation[] = {

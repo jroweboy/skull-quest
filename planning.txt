@@ -54,17 +54,17 @@ MAY 2022
     x Ruin Town Design
     
 2:
-    - Bridge boss animation
-    - Boss fight coding
-3:
     - Ruin town implementation
-    - Ruin town with temple palette??
+    - Town ghost NPC
+3:
     - ITEMS Design
     - bomb
     - magnet
     - keys
     - multiple skulls?
     - SELECT BUTTON -> Item selection (fade out background)
+    - Bridge boss animation
+    - Boss fight coding
 4:
     - Temple ennemy (ghost appear when hit the skull pile and throw paralyzing wave toward paddle)
     - Temple alternate route (middle stained glass broke reveal passageway to crypte);

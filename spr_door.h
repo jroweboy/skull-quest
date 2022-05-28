@@ -27,10 +27,10 @@ const unsigned char house_door_open2[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char house_door_animation_index[][2] = {
-    {0, 1},  // IDLE
-    {1, 2},  // OPENING
-    {2, 1},  // OPENED
+const unsigned char house_door_animation_index[] = {
+    0, 1,  // IDLE
+    1, 2,  // OPENING
+    2, 1  // OPENED
 
 };
 

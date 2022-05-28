@@ -39,8 +39,8 @@ const unsigned char villager_beard_face[] = {
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
-const unsigned char villager_animation_index[][2] = {
-    {0, 6},  // IDLE
+const unsigned char villager_animation_index[] = {
+    0, 6,  // IDLE
 
 };
 
