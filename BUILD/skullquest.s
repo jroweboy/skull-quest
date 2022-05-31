@@ -13,7 +13,6 @@
 	.forceimport	__STARTUP__
 	.export		_empty_line
 	.export		_dialogs
-	.export		_move_skeleton
 	.export		_set_animation_info
 	.export		_get_x_speed
 	.export		_get_y_speed
@@ -24,7 +23,6 @@
 	.import		_set_scroll_x
 	.import		_set_scroll_y
 	.import		_color_emphasis
-	.import		_gray_line
 	.import		_pal_bg
 	.import		_pal_spr
 	.import		_pal_col
@@ -230,7 +228,6 @@
 	.export		_show_map
 	.export		_hide_map
 	.export		_show_game_over
-	.export		_draw_level_specifics
 	.export		_load_black_level
 	.export		_load_collision
 	.export		_load_level
@@ -245,6 +242,7 @@
 	.export		_get_collision_type
 	.export		_set_collision_data
 	.export		_animate
+	.export		_move
 	.export		_animate_actors
 	.export		_do_skull_tile_collision
 	.export		_skull_was_beside
@@ -7087,194 +7085,6 @@ _actors:
 	.res	294,$00
 
 ; ---------------------------------------------------------------
-; void __near__ move_skeleton (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_move_skeleton: near
-
-.segment	"CODE"
-
-;
-; for (i = 6; i < 8; ++i) {
-;
-	lda     #$06
-	sta     _i
-L0028:	lda     _i
-	cmp     #$08
-	bcc     L002F
-;
-; }
-;
-	rts
-;
-; param1 = i;  // actor index
-;
-L002F:	sta     _param1
-;
-; if (actors.state[i] == DEAD){
-;
-	ldy     _i
-	lda     _actors+266,y
-	cmp     #$04
-	bne     L0006
-;
-; actors.animation_delay[i] = 255;
-;
-	ldy     _i
-	lda     #$FF
-	sta     _actors+238,y
-;
-; if (game_state != STORY && actors.counter[i] == 254) {
-;
-	lda     _game_state
-	cmp     #$02
-	jeq     L002E
-	ldy     _i
-	lda     _actors+224,y
-	cmp     #$FE
-	jne     L002E
-;
-; actors.state[i] = RISING;
-;
-	ldy     _i
-	lda     #$05
-	sta     _actors+266,y
-;
-; actors.counter[i] == 0;
-;
-	ldy     _i
-	lda     _actors+224,y
-	jsr     booleq
-;
-; actors.animation_delay[i] = 16;
-;
-	ldy     _i
-	lda     #$10
-	sta     _actors+238,y
-;
-; } else if (actors.state[i] != DYING && actors.state[i] != RISING) {
-;
-	jmp     L002E
-L0006:	ldy     _i
-	lda     _actors+266,y
-	cmp     #$03
-	jeq     L002E
-	ldy     _i
-	lda     _actors+266,y
-	cmp     #$05
-	jeq     L002E
-;
-; temp_x = actors.x[i] + get_x_speed();
-;
-	ldy     _i
-	lda     _actors,y
-	jsr     pusha0
-	jsr     _get_x_speed
-	jsr     tosaddax
-	sta     _temp_x
-;
-; temp_y_col = actors.y[i] + actors.height[i];
-;
-	ldy     _i
-	lda     _actors+42,y
-	clc
-	ldy     _i
-	adc     _actors+14,y
-	sta     _temp_y_col
-;
-; temp_x_col = temp_x;
-;
-	lda     _temp_x
-	sta     _temp_x_col
-;
-; if (actors.xDir[i] == RIGHT) {
-;
-	lda     #<(_actors+84)
-	ldx     #>(_actors+84)
-	clc
-	adc     _i
-	bcc     L001C
-	inx
-L001C:	ldy     #$00
-	jsr     ldaidx
-	cmp     #$01
-	bne     L001B
-;
-; temp_x_col += actors.width[i];
-;
-	ldy     _i
-	lda     _actors+28,y
-	clc
-	adc     _temp_x_col
-	sta     _temp_x_col
-;
-; if (get_collision_type()) {
-;
-L001B:	jsr     _get_collision_type
-	tax
-	beq     L001E
-;
-; actors.current_frame[i] = 0;
-;
-	ldy     _i
-	lda     #$00
-	sta     _actors+252,y
-;
-; actors.counter[i] = 0;
-;
-	ldy     _i
-	sta     _actors+224,y
-;
-; actors.state[i] = TURNING;
-;
-	ldy     _i
-	lda     #$01
-	sta     _actors+266,y
-;
-; actors.xDir[param1] = -actors.xDir[param1];
-;
-	lda     #<(_actors+84)
-	ldx     #>(_actors+84)
-	clc
-	adc     _param1
-	bcc     L0022
-	inx
-L0022:	sta     sreg
-	stx     sreg+1
-	lda     #<(_actors+84)
-	ldx     #>(_actors+84)
-	clc
-	adc     _param1
-	bcc     L0023
-	inx
-L0023:	ldy     #$00
-	jsr     ldaidx
-	eor     #$FF
-	clc
-	adc     #$01
-	cmp     #$80
-	sta     (sreg),y
-;
-; } else {
-;
-	jmp     L002E
-;
-; actors.x[i] = temp_x;
-;
-L001E:	ldy     _i
-	lda     _temp_x
-	sta     _actors,y
-;
-; for (i = 6; i < 8; ++i) {
-;
-L002E:	inc     _i
-	jmp     L0028
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ set_animation_info (void)
 ; ---------------------------------------------------------------
 
@@ -7605,11 +7415,11 @@ L0036:	lda     #$00
 	lda     #$01
 	sta     _frame_count
 ;
-; animation_array = skull_pile;
+; animation_array = skull_pile_animation;
 ;
-	lda     #>(_skull_pile)
+	lda     #>(_skull_pile_animation)
 	sta     _animation_array+1
-	lda     #<(_skull_pile)
+	lda     #<(_skull_pile_animation)
 ;
 ; break;
 ;
@@ -8209,9 +8019,9 @@ L0002:	rts
 .segment	"BANK0"
 
 ;
-; for (i = SKULL; i < ACTOR_NUMBER; ++i) {
+; for (i = 5; i < ACTOR_NUMBER; ++i) {
 ;
-	lda     #$04
+	lda     #$05
 	sta     _i
 L001B:	lda     _i
 	cmp     #$0E
@@ -8331,7 +8141,7 @@ L001C:	ldy     _i
 	ldy     _i
 	sta     _actors+280,y
 ;
-; for (i = SKULL; i < ACTOR_NUMBER; ++i) {
+; for (i = 5; i < ACTOR_NUMBER; ++i) {
 ;
 	inc     _i
 	jmp     L001B
@@ -8349,18 +8159,29 @@ L001C:	ldy     _i
 .segment	"BANK0"
 
 ;
-; for (i = 6; i < 8; ++i) {
+; temp = SKELETON1 + 2; // TODO, replace hardcoded 2 with skel_number???
 ;
-	lda     #$06
+	lda     _SKELETON1
+	clc
+	adc     #$02
+	sta     _temp
+;
+; for (i = SKELETON1; i < temp; ++i) {
+;
+	lda     _SKELETON1
 	sta     _i
-L0016:	lda     _i
-	cmp     #$08
-	bcs     L0003
+L0017:	lda     _i
+	cmp     _temp
+	bcc     L0018
 ;
-; if (i == 6) {
+; }
 ;
-	cmp     #$06
-	bne     L0006
+	rts
+;
+; if (i == SKELETON1) {
+;
+L0018:	cmp     _SKELETON1
+	bne     L0007
 ;
 ; actors.x[i] = 40;
 ;
@@ -8376,11 +8197,11 @@ L0016:	lda     _i
 ;
 ; } else {
 ;
-	jmp     L0009
+	jmp     L000A
 ;
 ; actors.x[i] = 160;
 ;
-L0006:	ldy     _i
+L0007:	ldy     _i
 	lda     #$A0
 	sta     _actors,y
 ;
@@ -8398,7 +8219,7 @@ L0006:	ldy     _i
 ;
 ; actors.width[i] = 0x04;
 ;
-L0009:	ldy     _i
+L000A:	ldy     _i
 	lda     #$04
 	sta     _actors+28,y
 ;
@@ -8450,14 +8271,10 @@ L0009:	ldy     _i
 	lda     #$01
 	sta     _actors+280,y
 ;
-; for (i = 6; i < 8; ++i) {
+; for (i = SKELETON1; i < temp; ++i) {
 ;
 	inc     _i
-	jmp     L0016
-;
-; }
-;
-L0003:	rts
+	jmp     L0017
 
 .endproc
 
@@ -8482,70 +8299,70 @@ L0003:	rts
 	cmp     #$01
 	jeq     L001D
 	cmp     #$02
-	jeq     L0032
+	jeq     L0036
 	cmp     #$03
-	jeq     L0093
+	jeq     L0045
 	cmp     #$04
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$05
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$06
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$07
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$08
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$09
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0A
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0B
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0C
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0D
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0E
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$0F
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$10
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$11
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$12
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$13
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$14
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$15
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$16
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$17
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$18
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$19
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1A
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1B
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1C
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1D
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1E
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$1F
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$20
-	jeq     L0094
+	jeq     L00A6
 	cmp     #$21
-	jeq     L0094
-	jmp     L0094
+	jeq     L00A6
+	jmp     L00A6
 ;
 ; current_nametable = altar;
 ;
@@ -8595,9 +8412,9 @@ L0004:	lda     #>(_altar)
 	lda     #$80
 	sta     _actors+270
 ;
-; LIGHTNING = 6;
+; LIGHTNING = 12;
 ;
-	lda     #$06
+	lda     #$0C
 	sta     _LIGHTNING
 ;
 ; actors.x[LIGHTNING] = 128;
@@ -8654,9 +8471,9 @@ L0004:	lda     #>(_altar)
 ;
 	lda     #$07
 	sta     _i
-L008F:	lda     _i
+L00A2:	lda     _i
 	cmp     #$0B
-	bcs     L0090
+	bcs     L00A3
 ;
 ; actors.y[i] = 72;
 ;
@@ -8690,11 +8507,11 @@ L008F:	lda     _i
 ; for (i = 7; i < 11; ++i) {
 ;
 	inc     _i
-	jmp     L008F
+	jmp     L00A2
 ;
-; NECROMANCER = 11;
+; NECROMANCER = 6;
 ;
-L0090:	lda     #$0B
+L00A3:	lda     #$06
 	sta     _NECROMANCER
 ;
 ; actors.x[NECROMANCER] = 120;
@@ -8727,9 +8544,9 @@ L0090:	lda     #$0B
 	lda     #$0D
 	sta     _actors+280,y
 ;
-; HERO = 12;
+; HERO = 11;
 ;
-	lda     #$0C
+	lda     #$0B
 	sta     _HERO
 ;
 ; actors.animation_delay[HERO] = 1;
@@ -8763,7 +8580,7 @@ L0090:	lda     #$0B
 ;
 ; break;
 ;
-	jmp     L0096
+	jmp     L00A8
 ;
 ; current_nametable = cemetery;
 ;
@@ -8832,6 +8649,12 @@ L001D:	lda     #>(_cemetery)
 	lda     #$08
 	sta     _actors+280,y
 ;
+; actors.state[GATE] = IDLE;
+;
+	ldy     _GATE
+	lda     #$00
+	sta     _actors+266,y
+;
 ; paddle_count = 1;
 ;
 	lda     #$01
@@ -8846,6 +8669,16 @@ L001D:	lda     #>(_cemetery)
 ;
 	lda     #$D0
 	sta     _actors+14
+;
+; SKELETON1 = 6;
+;
+	lda     #$06
+	sta     _SKELETON1
+;
+; SKELETON2 = 7;
+;
+	lda     #$07
+	sta     _SKELETON2
 ;
 ; banked_call(0, init_skeletons);
 ;
@@ -8936,6 +8769,12 @@ L001D:	lda     #>(_cemetery)
 	lda     #$3D
 	sta     _actors+14,y
 ;
+; actors.state[STILL_DECORATION] = IDLE;
+;
+	ldy     _STILL_DECORATION
+	lda     #$00
+	sta     _actors+266,y
+;
 ; actors.type[STILL_DECORATION] = TYPE_TREE;
 ;
 	ldy     _STILL_DECORATION
@@ -8959,19 +8798,30 @@ L001D:	lda     #>(_cemetery)
 	lda     #$5C
 	sta     _actors+14,y
 ;
-; actors.animation_delay[GHOST] = 16;            
+; actors.animation_delay[GHOST] = 16;
 ;
 	ldy     _GHOST
 	lda     #$10
 	sta     _actors+238,y
 ;
+; actors.state[GHOST] = IDLE;
+;
+	ldy     _GHOST
+	lda     #$00
+	sta     _actors+266,y
+;
+; actors.type[GHOST] = TYPE_ANGELIC;
+;
+	ldy     _GHOST
+	lda     #$0A
+;
 ; break;
 ;
-	jmp     L0094
+	jmp     L00A8
 ;
 ; current_nametable = temple;
 ;
-L0032:	lda     #>(_temple)
+L0036:	lda     #>(_temple)
 	sta     _current_nametable+1
 	lda     #<(_temple)
 	sta     _current_nametable
@@ -9036,9 +8886,9 @@ L0032:	lda     #>(_temple)
 ;
 	lda     #$06
 	sta     _i
-L0091:	lda     _i
+L00A4:	lda     _i
 	cmp     #$09
-	bcs     L0092
+	bcs     L00A5
 ;
 ; actors.animation_delay[i] = 12;
 ;
@@ -9070,14 +8920,20 @@ L0091:	lda     _i
 	lda     #$32
 	sta     _actors+42,y
 ;
+; actors.state[i] = IDLE;
+;
+	ldy     _i
+	lda     #$00
+	sta     _actors+266,y
+;
 ; for (i = 6; i < 9; ++i) {
 ;
 	inc     _i
-	jmp     L0091
+	jmp     L00A4
 ;
 ; STILL_DECORATION = 9;
 ;
-L0092:	lda     #$09
+L00A5:	lda     #$09
 	sta     _STILL_DECORATION
 ;
 ; actors.x[STILL_DECORATION] = 184;
@@ -9092,6 +8948,12 @@ L0092:	lda     #$09
 	lda     #$50
 	sta     _actors+14,y
 ;
+; actors.state[STILL_DECORATION] = IDLE;
+;
+	ldy     _STILL_DECORATION
+	lda     #$00
+	sta     _actors+266,y
+;
 ; actors.type[STILL_DECORATION] = TYPE_SKULL_PILE;
 ;
 	ldy     _STILL_DECORATION
@@ -9099,36 +8961,11 @@ L0092:	lda     #$09
 ;
 ; break;
 ;
-	jmp     L0096
-;
-; chr_4_index = 0x0a;
-;
-L0093:	lda     #$0A
-	sta     _chr_4_index
-;
-; chr_5_index = 0x0b;
-;
-	lda     #$0B
-	sta     _chr_5_index
-;
-; paddle_count = 1;
-;
-	lda     #$01
-	sta     _paddle_count
-;
-; actors.x[0] = 0x70;
-;
-	lda     #$70
-	sta     _actors
-;
-; actors.y[0] = 0xD0;
-;
-	lda     #$D0
-	sta     _actors+14
+	jmp     L00A8
 ;
 ; current_nametable = town_ruins;
 ;
-	lda     #>(_town_ruins)
+L0045:	lda     #>(_town_ruins)
 	sta     _current_nametable+1
 	lda     #<(_town_ruins)
 	sta     _current_nametable
@@ -9153,6 +8990,31 @@ L0093:	lda     #$0A
 	sta     _current_sprite_palette+1
 	lda     #<(_pal_town_spr)
 	sta     _current_sprite_palette
+;
+; chr_4_index = 0x0a;
+;
+	lda     #$0A
+	sta     _chr_4_index
+;
+; chr_5_index = 0x0b;
+;
+	lda     #$0B
+	sta     _chr_5_index
+;
+; paddle_count = 1;
+;
+	lda     #$01
+	sta     _paddle_count
+;
+; actors.x[0] = 0x70;
+;
+	lda     #$70
+	sta     _actors
+;
+; actors.y[0] = 0xD0;
+;
+	lda     #$D0
+	sta     _actors+14
 ;
 ; DOOR1 = 6;
 ;
@@ -9181,6 +9043,24 @@ L0093:	lda     #$0A
 	lda     #$57
 	sta     _actors+14,y
 ;
+; actors.width[DOOR1] = 16;
+;
+	ldy     _DOOR1
+	lda     #$10
+	sta     _actors+28,y
+;
+; actors.height[DOOR1] = 50;
+;
+	ldy     _DOOR1
+	lda     #$32
+	sta     _actors+42,y
+;
+; actors.state[DOOR1] = IDLE;
+;
+	ldy     _DOOR1
+	lda     #$00
+	sta     _actors+266,y
+;
 ; actors.type[DOOR1] = TYPE_HOUSE_DOOR;
 ;
 	ldy     _DOOR1
@@ -9199,6 +9079,24 @@ L0093:	lda     #$0A
 	lda     #$47
 	sta     _actors+14,y
 ;
+; actors.width[DOOR2] = 16;
+;
+	ldy     _DOOR2
+	lda     #$10
+	sta     _actors+28,y
+;
+; actors.height[DOOR2] = 50;
+;
+	ldy     _DOOR2
+	lda     #$32
+	sta     _actors+42,y
+;
+; actors.state[DOOR2] = IDLE;
+;
+	ldy     _DOOR2
+	lda     #$00
+	sta     _actors+266,y
+;
 ; actors.type[DOOR2] = TYPE_HOUSE_DOOR;
 ;
 	ldy     _DOOR2
@@ -9216,6 +9114,24 @@ L0093:	lda     #$0A
 	ldy     _DOOR3
 	lda     #$57
 	sta     _actors+14,y
+;
+; actors.width[DOOR3] = 16;
+;
+	ldy     _DOOR3
+	lda     #$10
+	sta     _actors+28,y
+;
+; actors.height[DOOR3] = 50;
+;
+	ldy     _DOOR3
+	lda     #$32
+	sta     _actors+42,y
+;
+; actors.state[DOOR3] = IDLE;
+;
+	ldy     _DOOR3
+	lda     #$00
+	sta     _actors+266,y
 ;
 ; actors.type[DOOR3] = TYPE_HOUSE_DOOR;
 ;
@@ -9250,34 +9166,6 @@ L0093:	lda     #$0A
 	lda     #$70
 	sta     _actors+14,y
 ;
-; actors.width[CRATE1] = 15;
-;
-	ldy     _CRATE1
-	lda     #$0F
-	sta     _actors+28,y
-;
-; actors.height[CRATE1] = 15;
-;
-	ldy     _CRATE1
-	sta     _actors+42,y
-;
-; actors.bbox_x[CRATE1] = 1;
-;
-	ldy     _CRATE1
-	lda     #$01
-	sta     _actors+56,y
-;
-; actors.bbox_y[CRATE1] = 1;
-;
-	ldy     _CRATE1
-	sta     _actors+70,y
-;
-; actors.type[CRATE1] = TYPE_CRATE;
-;
-	ldy     _CRATE1
-	lda     #$03
-	sta     _actors+280,y
-;
 ; actors.x[CRATE2] = 48;
 ;
 	ldy     _CRATE2
@@ -9289,34 +9177,6 @@ L0093:	lda     #$0A
 	ldy     _CRATE2
 	lda     #$70
 	sta     _actors+14,y
-;
-; actors.width[CRATE2] = 15;
-;
-	ldy     _CRATE2
-	lda     #$0F
-	sta     _actors+28,y
-;
-; actors.height[CRATE2] = 15;
-;
-	ldy     _CRATE2
-	sta     _actors+42,y
-;
-; actors.bbox_x[CRATE2] = 1;
-;
-	ldy     _CRATE2
-	lda     #$01
-	sta     _actors+56,y
-;
-; actors.bbox_y[CRATE2] = 1;
-;
-	ldy     _CRATE2
-	sta     _actors+70,y
-;
-; actors.type[CRATE2] = TYPE_CRATE;
-;
-	ldy     _CRATE2
-	lda     #$03
-	sta     _actors+280,y
 ;
 ; actors.x[CRATE3] = 224;
 ;
@@ -9330,32 +9190,118 @@ L0093:	lda     #$0A
 	lda     #$70
 	sta     _actors+14,y
 ;
-; actors.width[CRATE3] = 15;
+; temp = 15;
 ;
-	ldy     _CRATE3
 	lda     #$0F
+	sta     _temp
+;
+; actors.width[CRATE1] = temp;
+;
+	ldy     _CRATE1
+	lda     _temp
 	sta     _actors+28,y
 ;
-; actors.height[CRATE3] = 15;
+; actors.width[CRATE2] = temp;
+;
+	ldy     _CRATE2
+	lda     _temp
+	sta     _actors+28,y
+;
+; actors.width[CRATE3] = temp;
 ;
 	ldy     _CRATE3
+	lda     _temp
+	sta     _actors+28,y
+;
+; actors.height[CRATE1] = temp;
+;
+	ldy     _CRATE1
+	lda     _temp
 	sta     _actors+42,y
 ;
-; actors.bbox_x[CRATE3] = 1;
+; actors.height[CRATE2] = temp;
+;
+	ldy     _CRATE2
+	lda     _temp
+	sta     _actors+42,y
+;
+; actors.height[CRATE3] = temp;
 ;
 	ldy     _CRATE3
+	lda     _temp
+	sta     _actors+42,y
+;
+; temp = 1;
+;
 	lda     #$01
+	sta     _temp
+;
+; actors.bbox_x[CRATE1] = temp;
+;
+	ldy     _CRATE1
+	lda     _temp
 	sta     _actors+56,y
 ;
-; actors.bbox_y[CRATE3] = 1;
+; actors.bbox_y[CRATE1] = temp;
+;
+	ldy     _CRATE1
+	lda     _temp
+	sta     _actors+70,y
+;
+; actors.bbox_x[CRATE2] = temp;
+;
+	ldy     _CRATE2
+	lda     _temp
+	sta     _actors+56,y
+;
+; actors.bbox_y[CRATE2] = temp;
+;
+	ldy     _CRATE2
+	lda     _temp
+	sta     _actors+70,y
+;
+; actors.bbox_x[CRATE3] = temp;
 ;
 	ldy     _CRATE3
+	lda     _temp
+	sta     _actors+56,y
+;
+; actors.bbox_y[CRATE3] = temp;
+;
+	ldy     _CRATE3
+	lda     _temp
 	sta     _actors+70,y
+;
+; actors.state[CRATE1] = IDLE;
+;
+	ldy     _CRATE1
+	lda     #$00
+	sta     _actors+266,y
+;
+; actors.state[CRATE2] = IDLE;
+;
+	ldy     _CRATE2
+	sta     _actors+266,y
+;
+; actors.state[CRATE3] = IDLE;
+;
+	ldy     _CRATE3
+	sta     _actors+266,y
+;
+; actors.type[CRATE1] = TYPE_CRATE;
+;
+	ldy     _CRATE1
+	lda     #$03
+	sta     _actors+280,y
+;
+; actors.type[CRATE2] = TYPE_CRATE;
+;
+	ldy     _CRATE2
+	sta     _actors+280,y
 ;
 ; actors.type[CRATE3] = TYPE_CRATE;
 ;
 	ldy     _CRATE3
-	lda     #$03
 	sta     _actors+280,y
 ;
 ; DEVIL = 12;
@@ -9391,24 +9337,30 @@ L0093:	lda     #$0A
 	lda     #$10
 	sta     _actors+238,y
 ;
+; actors.state[DEVIL] = IDLE;
+;
+	ldy     _DEVIL
+	lda     #$00
+	sta     _actors+266,y
+;
 ; actors.type[DEVIL] = TYPE_DEVIL;
 ;
 	ldy     _DEVIL
 	lda     #$06
-L0096:	sta     _actors+280,y
+L00A8:	sta     _actors+280,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
-L0094:	lda     #$00
+L00A6:	lda     #$00
 	sta     _i
-L0095:	lda     _i
+L00A7:	lda     _i
 	cmp     _paddle_count
-	bcs     L0083
+	bcs     L0096
 ;
 ; if (i < 2) {
 ;
 	cmp     #$02
-	bcs     L0086
+	bcs     L0099
 ;
 ; actors.width[i] = 0x20;   // 32
 ;
@@ -9430,11 +9382,11 @@ L0095:	lda     _i
 ;
 ; } else {
 ;
-	jmp     L008A
+	jmp     L009D
 ;
 ; actors.width[i] = 0x04;
 ;
-L0086:	ldy     _i
+L0099:	ldy     _i
 	lda     #$04
 	sta     _actors+28,y
 ;
@@ -9452,18 +9404,18 @@ L0086:	ldy     _i
 ;
 ; actors.maxSpeed[i] = 250;
 ;
-L008A:	ldy     _i
+L009D:	ldy     _i
 	lda     #$FA
 	sta     _actors+210,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
 	inc     _i
-	jmp     L0095
+	jmp     L00A7
 ;
 ; }
 ;
-L0083:	rts
+L0096:	rts
 
 .endproc
 
@@ -9528,11 +9480,6 @@ L0083:	rts
 ;
 	lda     #$08
 	sta     _actors+242
-;
-; actors.state[SKULL] = ROTATE_H;
-;
-	lda     #$02
-	sta     _actors+270
 ;
 ; actors.type[SKULL] = TYPE_SKULL;
 ;
@@ -9955,141 +9902,6 @@ L0008:	sta     ptr1
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_level_specifics (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_draw_level_specifics: near
-
-.segment	"CODE"
-
-;
-; switch (current_level) {
-;
-	lda     _current_level
-;
-; }
-;
-	bne     L001A
-;
-; }
-;
-	rts
-;
-; }
-;
-L001A:	cmp     #$01
-	beq     L0005
-	cmp     #$02
-	bne     L001B
-;
-; }
-;
-	rts
-;
-; }
-;
-L001B:	cmp     #$03
-	bne     L001C
-;
-; }
-;
-	rts
-;
-; }
-;
-L001C:	rts
-;
-; if (actors.state[CROW] == FLYING) {
-;
-L0005:	ldy     _CROW
-	lda     _actors+266,y
-	bne     L0016
-;
-; param1 = CROW;
-;
-	lda     _CROW
-	sta     _param1
-;
-; actors.x[CROW] += get_x_speed();
-;
-	lda     #<(_actors)
-	ldx     #>(_actors)
-	clc
-	adc     _CROW
-	bcc     L0008
-	inx
-L0008:	jsr     pushax
-	sta     ptr1
-	stx     ptr1+1
-	ldx     #$00
-	lda     (ptr1,x)
-	jsr     pusha0
-	jsr     _get_x_speed
-	jsr     tosaddax
-	ldy     #$00
-	jsr     staspidx
-;
-; actors.y[CROW] += get_y_speed();
-;
-	lda     #<(_actors+14)
-	ldx     #>(_actors+14)
-	clc
-	adc     _CROW
-	bcc     L0009
-	inx
-L0009:	jsr     pushax
-	sta     ptr1
-	stx     ptr1+1
-	ldx     #$00
-	lda     (ptr1,x)
-	jsr     pusha0
-	jsr     _get_y_speed
-	jsr     tosaddax
-	ldy     #$00
-	jsr     staspidx
-;
-; if (actors.x[CROW] < 6) {
-;
-	ldy     _CROW
-	ldx     #$00
-	lda     _actors,y
-	cmp     #$06
-	bcs     L000E
-;
-; actors.state[CROW] = INACTIVE;
-;
-	ldy     _CROW
-	lda     #$80
-;
-; } else if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
-;
-	jmp     L0015
-L0016:	lda     _actors+18
-	cmp     #$79
-	lda     #$00
-	tax
-	bcc     L000E
-	lda     _actors+18
-	cmp     #$84
-	bcc     L0019
-	txa
-	jmp     L000E
-;
-; actors.state[CROW] = SKWAK;  // SKWAK!
-;
-L0019:	ldy     _CROW
-	lda     #$01
-L0015:	sta     _actors+266,y
-;
-; move_skeleton();
-;
-L000E:	jmp     _move_skeleton
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ load_black_level (void)
 ; ---------------------------------------------------------------
 
@@ -10285,14 +10097,6 @@ L0019:	lda     _current_collision_map
 	jsr     pusha
 	lda     #<(_reset_actors)
 	ldx     #>(_reset_actors)
-	jsr     _banked_call
-;
-; banked_call(0, init_skull);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_init_skull)
-	ldx     #>(_init_skull)
 	jsr     _banked_call
 ;
 ; banked_call(0, init_level_specifics);
@@ -11098,7 +10902,7 @@ L0003:	lda     _collision_index
 L000A:	jsr     tosicmp
 	bne     L0005
 ;
-; ++actors.state[draw_index];                   // NEXT STATE
+; ++actors.state[draw_index];
 ;
 	lda     #<(_actors+266)
 	ldx     #>(_actors+266)
@@ -11238,6 +11042,281 @@ L001A:	adc     _animation_array
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ move (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_move: near
+
+.segment	"CODE"
+
+;
+; switch(actors.type[draw_index]) {
+;
+	ldy     _draw_index
+	lda     _actors+280,y
+;
+; }
+;
+	cmp     #$01
+	beq     L0036
+	cmp     #$05
+	jeq     L0026
+	rts
+;
+; param1 = draw_index;  // actor index for get_x_speed()
+;
+L0036:	lda     _draw_index
+	sta     _param1
+;
+; if (actors.state[draw_index] == DEAD){
+;
+	ldy     _draw_index
+	lda     _actors+266,y
+	cmp     #$04
+	bne     L0006
+;
+; if (game_state != STORY && actors.counter[draw_index] == 254) {
+;
+	lda     _game_state
+	cmp     #$02
+	beq     L0008
+	ldy     _draw_index
+	lda     _actors+224,y
+	cmp     #$FE
+	bne     L0008
+;
+; actors.state[draw_index] = RISING;
+;
+	ldy     _draw_index
+	lda     #$05
+	sta     _actors+266,y
+;
+; actors.counter[draw_index] == 0;
+;
+	ldy     _draw_index
+	lda     _actors+224,y
+	jsr     booleq
+;
+; actors.animation_delay[draw_index] = 16;
+;
+	ldy     _draw_index
+	lda     #$10
+	sta     _actors+238,y
+;
+; } else if (actors.state[draw_index] != DYING && actors.state[draw_index] != RISING) {
+;
+L0008:	rts
+L0006:	ldy     _draw_index
+	lda     _actors+266,y
+	cmp     #$03
+	bne     L0040
+;
+; break;
+;
+	rts
+;
+; } else if (actors.state[draw_index] != DYING && actors.state[draw_index] != RISING) {
+;
+L0040:	ldy     _draw_index
+	lda     _actors+266,y
+	cmp     #$05
+	bne     L0041
+;
+; break;
+;
+	rts
+;
+; temp_x = actors.x[draw_index] + get_x_speed();
+;
+L0041:	ldy     _draw_index
+	lda     _actors,y
+	jsr     pusha0
+	jsr     _get_x_speed
+	jsr     tosaddax
+	sta     _temp_x
+;
+; temp_y_col = actors.y[draw_index] + actors.height[draw_index];
+;
+	ldy     _draw_index
+	lda     _actors+42,y
+	clc
+	ldy     _draw_index
+	adc     _actors+14,y
+	sta     _temp_y_col
+;
+; temp_x_col = temp_x;
+;
+	lda     _temp_x
+	sta     _temp_x_col
+;
+; if (actors.xDir[draw_index] == RIGHT) {
+;
+	lda     #<(_actors+84)
+	ldx     #>(_actors+84)
+	clc
+	adc     _draw_index
+	bcc     L001B
+	inx
+L001B:	ldy     #$00
+	jsr     ldaidx
+	cmp     #$01
+	bne     L001A
+;
+; temp_x_col += actors.width[draw_index];
+;
+	ldy     _draw_index
+	lda     _actors+28,y
+	clc
+	adc     _temp_x_col
+	sta     _temp_x_col
+;
+; if (get_collision_type()) {
+;
+L001A:	jsr     _get_collision_type
+	tax
+	beq     L001D
+;
+; actors.current_frame[draw_index] = 0;
+;
+	ldy     _draw_index
+	lda     #$00
+	sta     _actors+252,y
+;
+; actors.counter[draw_index] = 0;
+;
+	ldy     _draw_index
+	sta     _actors+224,y
+;
+; actors.state[draw_index] = TURNING;
+;
+	ldy     _draw_index
+	lda     #$01
+	sta     _actors+266,y
+;
+; actors.xDir[draw_index] = -actors.xDir[draw_index];
+;
+	lda     #<(_actors+84)
+	ldx     #>(_actors+84)
+	clc
+	adc     _draw_index
+	bcc     L0021
+	inx
+L0021:	sta     sreg
+	stx     sreg+1
+	lda     #<(_actors+84)
+	ldx     #>(_actors+84)
+	clc
+	adc     _draw_index
+	bcc     L0022
+	inx
+L0022:	ldy     #$00
+	jsr     ldaidx
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     (sreg),y
+;
+; } else {
+;
+	rts
+;
+; actors.x[draw_index] = temp_x;
+;
+L001D:	ldy     _draw_index
+	lda     _temp_x
+	sta     _actors,y
+;
+; break;
+;
+	rts
+;
+; if (actors.state[CROW] == FLYING) {
+;
+L0026:	ldy     _CROW
+	lda     _actors+266,y
+	bne     L003C
+;
+; param1 = CROW;
+;
+	lda     _CROW
+	sta     _param1
+;
+; actors.x[CROW] += get_x_speed();
+;
+	lda     #<(_actors)
+	ldx     #>(_actors)
+	clc
+	adc     _CROW
+	bcc     L0029
+	inx
+L0029:	jsr     pushax
+	sta     ptr1
+	stx     ptr1+1
+	ldx     #$00
+	lda     (ptr1,x)
+	jsr     pusha0
+	jsr     _get_x_speed
+	jsr     tosaddax
+	ldy     #$00
+	jsr     staspidx
+;
+; actors.y[CROW] += get_y_speed();
+;
+	lda     #<(_actors+14)
+	ldx     #>(_actors+14)
+	clc
+	adc     _CROW
+	bcc     L002A
+	inx
+L002A:	jsr     pushax
+	sta     ptr1
+	stx     ptr1+1
+	ldx     #$00
+	lda     (ptr1,x)
+	jsr     pusha0
+	jsr     _get_y_speed
+	jsr     tosaddax
+	ldy     #$00
+	jsr     staspidx
+;
+; if (actors.x[CROW] < 6) {
+;
+	ldy     _CROW
+	lda     _actors,y
+	cmp     #$06
+	bcs     L0004
+;
+; actors.state[CROW] = INACTIVE;
+;
+	ldy     _CROW
+	lda     #$80
+;
+; } else if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
+;
+	jmp     L0035
+L003C:	lda     _actors+18
+	cmp     #$79
+	bcc     L003E
+	cmp     #$84
+	bcc     L003F
+L003E:	rts
+;
+; actors.state[CROW] = SKWAK;  // SKWAK!
+;
+L003F:	ldy     _CROW
+	lda     #$01
+L0035:	sta     _actors+266,y
+;
+; }
+;
+L0004:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ animate_actors (void)
 ; ---------------------------------------------------------------
 
@@ -11266,6 +11345,10 @@ L0008:	lda     _draw_index
 ; animate();
 ;
 	jsr     _animate
+;
+; move();
+;
+	jsr     _move
 ;
 ; for (draw_index = SKULL; draw_index < ACTOR_NUMBER; ++draw_index) {
 ;
@@ -12013,20 +12096,24 @@ L000D:	lda     #$01
 ;
 	lda     #$06
 	sta     _i
-L0025:	lda     _i
+L0030:	lda     _i
 	cmp     #$0E
-	bcc     L0029
+	bcc     L0043
 ;
 ; }
 ;
 	rts
 ;
-; if (actors.state[i] != DEAD) {
+; if (actors.state[i] != INACTIVE && actors.state[i] != DEAD) {
 ;
-L0029:	ldy     _i
+L0043:	ldy     _i
+	lda     _actors+266,y
+	cmp     #$80
+	jeq     L0035
+	ldy     _i
 	lda     _actors+266,y
 	cmp     #$04
-	jeq     L0028
+	jeq     L0035
 ;
 ; pad_index = i;
 ;
@@ -12038,10 +12125,10 @@ L0029:	ldy     _i
 	ldy     _i
 	lda     _actors+266,y
 	cmp     #$03
-	jeq     L0028
+	jeq     L0035
 	jsr     _is_skull_collision_paddle
 	tax
-	jeq     L0028
+	jeq     L0035
 ;
 ; switch (actors.type[i]) {
 ;
@@ -12051,13 +12138,15 @@ L0029:	ldy     _i
 ; }
 ;
 	cmp     #$01
-	beq     L0014
+	beq     L0018
 	cmp     #$02
-	beq     L001C
+	jeq     L002B
 	cmp     #$03
-	beq     L0027
+	beq     L0024
+	cmp     #$04
+	beq     L002B
 	cmp     #$05
-	jne     L0028
+	jne     L0035
 ;
 ; actors.counter[i] = 0;
 ;
@@ -12078,11 +12167,11 @@ L0029:	ldy     _i
 ;
 ; break;
 ;
-	jmp     L0028
+	jmp     L0035
 ;
 ; actors.counter[i] = 0;
 ;
-L0014:	ldy     _i
+L0018:	ldy     _i
 	lda     #$00
 	sta     _actors+224,y
 ;
@@ -12113,17 +12202,49 @@ L0014:	ldy     _i
 	clc
 	adc     #$01
 	cmp     #$80
-	bcc     L0024
+	sta     _actors+102
 ;
 ; break;
 ;
-	jmp     L0024
+	jmp     L0035
+;
+; if (skull_was_beside()) {
+;
+L0024:	jsr     _skull_was_beside
+	tax
+	beq     L0034
+;
+; actors.xDir[SKULL] = -actors.xDir[SKULL];
+;
+	lda     _actors+88
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     _actors+88
+;
+; } else {
+;
+	jmp     L0035
+;
+; actors.yDir[SKULL] = -actors.yDir[SKULL];
+;
+L0034:	lda     _actors+102
+	eor     #$FF
+	clc
+	adc     #$01
+	cmp     #$80
+	sta     _actors+102
+;
+; break;
+;
+	jmp     L0035
 ;
 ; if (actors.state[i] == IDLE) {
 ;
-L001C:	ldy     _i
+L002B:	ldy     _i
 	lda     _actors+266,y
-	bne     L0028
+	bne     L0035
 ;
 ; ++actors.state[i];
 ;
@@ -12131,9 +12252,9 @@ L001C:	ldy     _i
 	ldx     #>(_actors+266)
 	clc
 	adc     _i
-	bcc     L001F
+	bcc     L002E
 	inx
-L001F:	sta     ptr1
+L002E:	sta     ptr1
 	stx     ptr1+1
 	ldy     #$00
 	lda     #$01
@@ -12141,32 +12262,10 @@ L001F:	sta     ptr1
 	adc     (ptr1),y
 	sta     (ptr1),y
 ;
-; break;
-;
-	jmp     L0028
-;
-; actors.xDir[SKULL] = -actors.xDir[SKULL];
-;
-L0027:	lda     _actors+88
-	eor     #$FF
-	clc
-	adc     #$01
-	cmp     #$80
-	sta     _actors+88
-;
-; actors.yDir[SKULL] = -actors.yDir[SKULL];
-;
-	lda     _actors+102
-	eor     #$FF
-	clc
-	adc     #$01
-	cmp     #$80
-L0024:	sta     _actors+102
-;
 ; for (i = 6; i < ACTOR_NUMBER; ++i) {
 ;
-L0028:	inc     _i
-	jmp     L0025
+L0035:	inc     _i
+	jmp     L0030
 
 .endproc
 
@@ -14290,12 +14389,12 @@ L0002:	jmp     incsp1
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0059
+	jeq     L0023
 	cmp     #$02
-	jeq     L0064
+	jeq     L0066
 	cmp     #$03
-	jeq     L0069
-	jmp     L006A
+	jeq     L006B
+	jmp     L006E
 ;
 ; oam_clear();
 ;
@@ -14311,11 +14410,11 @@ L0004:	jsr     _oam_clear
 ;
 ; }
 ;
-	beq     L0052
+	beq     L0055
 	cmp     #$01
-	beq     L0053
+	beq     L0056
 	cmp     #$02
-	jeq     L0055
+	jeq     L0058
 	cmp     #$03
 	jeq     L0016
 	cmp     #$04
@@ -14323,24 +14422,24 @@ L0004:	jsr     _oam_clear
 	cmp     #$05
 	jeq     L001A
 	cmp     #$06
-	jeq     L004F
+	jeq     L001B
 	cmp     #$07
-	jeq     L0056
+	jeq     L0059
 	cmp     #$08
-	jeq     L0057
+	jeq     L005A
 	cmp     #$09
-	jeq     L0058
+	jeq     L005B
 	cmp     #$0A
 	jeq     L0021
 	cmp     #$0B
-	jeq     L0022
-	jmp     L006A
+	jeq     L005C
+	jmp     L006E
 ;
 ; if (story_counter == 128) {
 ;
-L0052:	lda     _story_counter
+L0055:	lda     _story_counter
 	cmp     #$80
-	jne     L006A
+	jne     L006E
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -14374,13 +14473,13 @@ L0009:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; if (story_counter == 64) {
 ;
-L0053:	lda     _story_counter
+L0056:	lda     _story_counter
 	cmp     #$40
-	bne     L0054
+	bne     L0057
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -14400,9 +14499,9 @@ L000D:	sta     ptr1
 ;
 ; if (story_counter > 68) {
 ;
-L0054:	lda     _story_counter
+L0057:	lda     _story_counter
 	cmp     #$45
-	jcc     L006A
+	jcc     L006E
 ;
 ; pal_bright(6);
 ;
@@ -14441,11 +14540,11 @@ L000F:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; if (story_counter > 2) {
 ;
-L0055:	lda     _story_counter
+L0058:	lda     _story_counter
 	cmp     #$03
 	bcc     L0011
 ;
@@ -14481,7 +14580,7 @@ L0011:	ldy     _LIGHTNING
 L0012:	ldy     _LIGHTNING
 	lda     _actors+252,y
 	cmp     #$08
-	jne     L006A
+	jne     L006E
 ;
 ; pal_bright(6);
 ;
@@ -14495,7 +14594,7 @@ L0012:	ldy     _LIGHTNING
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; actors.state[HERO] = 1;
 ;
@@ -14507,7 +14606,7 @@ L0016:	ldy     _HERO
 ;
 	lda     _story_counter
 	cmp     #$B5
-	jcc     L006A
+	jcc     L006E
 ;
 ; ++story_step;
 ;
@@ -14520,7 +14619,7 @@ L0016:	ldy     _HERO
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; fadeout();
 ;
@@ -14528,7 +14627,7 @@ L0019:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; reset_actors();
 ;
@@ -14537,6 +14636,10 @@ L001A:	jsr     _reset_actors
 ; show_map();
 ;
 	jsr     _show_map
+;
+; init_skull();
+;
+	jsr     _init_skull
 ;
 ; actors.x[SKULL] = 128;
 ;
@@ -14552,13 +14655,17 @@ L001A:	jsr     _reset_actors
 ;
 	inc     _story_step
 ;
+; fadein();
+;
+L001B:	jsr     _fadein
+;
 ; break;
 ;
-	jmp     L004F
+	jmp     L006E
 ;
 ; story_counter = 56;
 ;
-L0056:	lda     #$38
+L0059:	lda     #$38
 	sta     _story_counter
 ;
 ; ++story_step;
@@ -14567,14 +14674,14 @@ L0056:	lda     #$38
 ;
 ; actors.y[SKULL] = story_counter;
 ;
-L0057:	lda     _story_counter
+L005A:	lda     _story_counter
 	sta     _actors+18
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L006A
+	jcc     L006E
 ;
 ; ++story_step;
 ;
@@ -14587,18 +14694,18 @@ L0057:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; actors.x[SKULL] = story_counter;
 ;
-L0058:	lda     _story_counter
+L005B:	lda     _story_counter
 	sta     _actors+4
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L006A
+	jcc     L006E
 ;
 ; ++story_step;
 ;
@@ -14611,7 +14718,7 @@ L0058:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; fadeout();
 ;
@@ -14619,11 +14726,16 @@ L0021:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
+;
+; actors.state[SKULL] = INACTIVE;
+;
+L005C:	lda     #$80
+	sta     _actors+270
 ;
 ; reset_actors();
 ;
-L0022:	jsr     _reset_actors
+	jsr     _reset_actors
 ;
 ; current_level = 1;
 ;
@@ -14637,23 +14749,21 @@ L0022:	jsr     _reset_actors
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
-; if (story_step > 6) {
+; oam_clear();
 ;
-L0059:	lda     _story_step
+L0023:	jsr     _oam_clear
+;
+; if (story_step > 6) {                
+;
+	lda     _story_step
 	cmp     #$07
-	bcc     L005A
+	bcc     L005D
 ;
 ; draw_sprites();
 ;
 	jsr     _draw_sprites
-;
-; if (story_step > 18){
-;
-	lda     _story_step
-	cmp     #$13
-	bcc     L005A
 ;
 ; oam_meta_spr(16, 8, angelic_face);
 ;
@@ -14670,62 +14780,62 @@ L0059:	lda     _story_step
 ;
 ; switch (story_step) {
 ;
-L005A:	lda     _story_step
+L005D:	lda     _story_step
 ;
 ; }
 ;
-	jeq     L0028
+	jeq     L0027
 	cmp     #$01
-	jeq     L005B
-	cmp     #$02
-	jeq     L002A
-	cmp     #$03
-	jeq     L005C
-	cmp     #$04
-	jeq     L002C
-	cmp     #$05
-	jeq     L005D
-	cmp     #$06
 	jeq     L005E
-	cmp     #$07
-	jeq     L004F
-	cmp     #$08
+	cmp     #$02
+	jeq     L0029
+	cmp     #$03
 	jeq     L005F
-	cmp     #$09
-	jeq     L0031
-	cmp     #$0A
-	jeq     L0032
-	cmp     #$0B
-	jeq     L0033
-	cmp     #$0C
-	jeq     L0034
-	cmp     #$0D
-	jeq     L0035
-	cmp     #$0E
-	jeq     L0036
-	cmp     #$0F
-	jeq     L0037
-	cmp     #$10
-	jeq     L0038
-	cmp     #$11
-	jeq     L0039
-	cmp     #$12
+	cmp     #$04
+	jeq     L002B
+	cmp     #$05
 	jeq     L0060
-	cmp     #$13
+	cmp     #$06
 	jeq     L0061
-	cmp     #$14
-	jeq     L003D
-	cmp     #$15
+	cmp     #$07
+	jeq     L002E
+	cmp     #$08
 	jeq     L0062
-	cmp     #$16
-	jeq     L0042
-	cmp     #$17
+	cmp     #$09
+	jeq     L0030
+	cmp     #$0A
+	jeq     L0031
+	cmp     #$0B
+	jeq     L0032
+	cmp     #$0C
+	jeq     L0033
+	cmp     #$0D
+	jeq     L0034
+	cmp     #$0E
+	jeq     L0035
+	cmp     #$0F
+	jeq     L0036
+	cmp     #$10
+	jeq     L0037
+	cmp     #$11
+	jeq     L0038
+	cmp     #$12
+	jeq     L0039
+	cmp     #$13
 	jeq     L0063
-	jmp     L006A
+	cmp     #$14
+	jeq     L0040
+	cmp     #$15
+	jeq     L0064
+	cmp     #$16
+	jeq     L0045
+	cmp     #$17
+	jeq     L0065
+	jmp     L006E
 ;
 ; load_black_level();
 ;
-L0028:	jsr     _load_black_level
+L0027:	jsr     _load_black_level
 ;
 ; pal_bg(pal_cemetery_bg);
 ;
@@ -14744,20 +14854,20 @@ L0028:	jsr     _load_black_level
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(128);
 ;
-L005B:	lda     #$80
+L005E:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
 ;
-L002A:	jsr     decsp3
+L0029:	jsr     decsp3
 	lda     #<(_dialogs)
 	ldy     #$01
 	sta     (sp),y
@@ -14777,20 +14887,20 @@ L002A:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(72);
 ;
-L005C:	lda     #$48
+L005F:	lda     #$48
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
 ;
-L002C:	jsr     decsp3
+L002B:	jsr     decsp3
 	lda     #<(_dialogs+24)
 	ldy     #$01
 	sta     (sp),y
@@ -14810,20 +14920,20 @@ L002C:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(128);
 ;
-L005D:	lda     #$80
+L0060:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; pal_bright(0);
 ;
-L005E:	lda     #$00
+L0061:	lda     #$00
 	jsr     _pal_bright
 ;
 ; brightness = 0;
@@ -14834,6 +14944,11 @@ L005E:	lda     #$00
 ; load_level();
 ;
 	jsr     _load_level
+;
+; actors.state[SKULL] = ROTATE_H;
+;
+	lda     #$02
+	sta     _actors+270
 ;
 ; actors.x[SKULL] = 0x7C;
 ;
@@ -14851,20 +14966,28 @@ L005E:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
+;
+; fadein();
+;
+L002E:	jsr     _fadein
+;
+; break;
+;
+	jmp     L006E
 ;
 ; wait(128);
 ;
-L005F:	lda     #$80
+L0062:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
-L0031:	jsr     decsp3
+L0030:	jsr     decsp3
 	lda     #<(_dialogs+48)
 	ldy     #$01
 	sta     (sp),y
@@ -14900,19 +15023,19 @@ L0031:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait_input();
 ;
-L0032:	jsr     _wait_input
+L0031:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
-L0033:	jsr     decsp3
+L0032:	jsr     decsp3
 	lda     #<(_dialogs+96)
 	ldy     #$01
 	sta     (sp),y
@@ -14948,19 +15071,19 @@ L0033:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait_input();
 ;
-L0034:	jsr     _wait_input
+L0033:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
-L0035:	jsr     decsp3
+L0034:	jsr     decsp3
 	lda     #<(_dialogs+144)
 	ldy     #$01
 	sta     (sp),y
@@ -15012,19 +15135,19 @@ L0035:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait_input();
 ;
-L0036:	jsr     _wait_input
+L0035:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
-L0037:	jsr     decsp3
+L0036:	jsr     decsp3
 	lda     #<(_dialogs+216)
 	ldy     #$01
 	sta     (sp),y
@@ -15076,41 +15199,51 @@ L0037:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait_input();
 ;
-L0038:	jsr     _wait_input
+L0037:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; brightout();
 ;
-L0039:	jsr     _brightout
+L0038:	jsr     _brightout
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
-; pal_bright(4);
+; actors.state[GHOST] = INACTIVE;
 ;
-L0060:	lda     #$04
-	jsr     _pal_bright
+L0039:	ldy     _GHOST
+	lda     #$80
+	sta     _actors+266,y
 ;
-; show_HUD();
+; actors.counter[SKELETON1] = 250;
 ;
-	jsr     _show_HUD
-;
-; actors.counter[6] = 250;
-;
+	ldy     _SKELETON1
 	lda     #$FA
-	sta     _actors+230
+	sta     _actors+224,y
 ;
-; actors.counter[7] = 250;
+; actors.counter[SKELETON2] = 250;
 ;
-	sta     _actors+231
+	ldy     _SKELETON2
+	sta     _actors+224,y
+;
+; actors.state[SKELETON1] = RISING;
+;
+	ldy     _SKELETON1
+	lda     #$05
+	sta     _actors+266,y
+;
+; actors.state[SKELETON2] = RISING;
+;
+	ldy     _SKELETON2
+	sta     _actors+266,y
 ;
 ; ++story_step;
 ;
@@ -15121,30 +15254,33 @@ L0060:	lda     #$04
 	lda     #$01
 	sta     _game_state
 ;
-; actors.state[GHOST] = INACTIVE;
+; pal_bright(4);
 ;
-	ldy     _GHOST
-	lda     #$80
-	sta     _actors+266,y
+	lda     #$04
+	jsr     _pal_bright
+;
+; show_HUD();
+;
+	jsr     _show_HUD
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(64);
 ;
-L0061:	lda     #$40
+L0063:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; if (actors.state[CROW] != FLYING){
 ;
-L003D:	ldy     _CROW
+L0040:	ldy     _CROW
 	lda     _actors+266,y
-	jeq     L006A
+	jeq     L006E
 ;
 ; one_vram_buffer(0x11, NTADR_A(15,9));
 ;
@@ -15174,28 +15310,28 @@ L003D:	ldy     _CROW
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(64);
 ;
-L0062:	lda     #$40
+L0064:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; fadeout();
 ;
-L0042:	jsr     _fadeout
+L0045:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; ++current_level;
 ;
-L0063:	inc     _current_level
+L0065:	inc     _current_level
 ;
 ; load_level();
 ;
@@ -15208,28 +15344,36 @@ L0063:	inc     _current_level
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; switch (story_step) {
 ;
-L0064:	lda     _story_step
+L0066:	lda     _story_step
 ;
 ; }
 ;
-	beq     L004F
-	cmp     #$01
-	beq     L0066
-	cmp     #$02
-	beq     L0067
-	cmp     #$03
 	beq     L004A
-	cmp     #$04
+	cmp     #$01
 	beq     L0068
-	jmp     L006A
+	cmp     #$02
+	beq     L0069
+	cmp     #$03
+	beq     L004D
+	cmp     #$04
+	beq     L006A
+	jmp     L006E
+;
+; fadein();
+;
+L004A:	jsr     _fadein
+;
+; break;
+;
+	jmp     L006E
 ;
 ; game_state = MAIN;
 ;
-L0066:	sta     _game_state
+L0068:	sta     _game_state
 ;
 ; ++story_step;
 ;
@@ -15237,28 +15381,32 @@ L0066:	sta     _game_state
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; wait(64);
 ;
-L0067:	lda     #$40
+L0069:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; fadeout();
 ;
-L004A:	jsr     _fadeout
+L004D:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; ++current_level;
 ;
-L0068:	inc     _current_level
+L006A:	inc     _current_level
+;
+; load_level();
+;
+	jsr     _load_level
 ;
 ; story_step = 0;
 ;
@@ -15267,32 +15415,40 @@ L0068:	inc     _current_level
 ;
 ; break;
 ;
-	jmp     L006A
+	jmp     L006E
 ;
 ; switch (story_step) {
 ;
-L0069:	lda     _story_step
+L006B:	lda     _story_step
 ;
 ; }
 ;
-	beq     L004F
+	beq     L0052
 	cmp     #$01
-	beq     L006A
-	jmp     L006A
+	beq     L006D
+	jmp     L006E
 ;
 ; fadein();
 ;
-L004F:	jsr     _fadein
+L0052:	jsr     _fadein
+;
+; break;
+;
+	jmp     L006E
+;
+; game_state = MAIN;
+;
+L006D:	sta     _game_state
 ;
 ; ++story_counter;
 ;
-L006A:	inc     _story_counter
+L006E:	inc     _story_counter
 ;
 ; if (wait_timer == 127){
 ;
 	lda     _wait_timer
 	cmp     #$7F
-	bne     L006B
+	bne     L006F
 ;
 ; wait_timer = 0;
 ;
@@ -15301,7 +15457,7 @@ L006A:	inc     _story_counter
 ;
 ; ++wait_timer;
 ;
-L006B:	inc     _wait_timer
+L006F:	inc     _wait_timer
 ;
 ; }
 ;
@@ -15366,6 +15522,14 @@ L006B:	inc     _wait_timer
 ;
 	jsr     _load_map
 ;
+; banked_call(0, init_skull);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_skull)
+	ldx     #>(_init_skull)
+	jsr     _banked_call
+;
 ; bank_spr(1);
 ;
 	lda     #$01
@@ -15412,6 +15576,16 @@ L0002:	jsr     _ppu_wait_nmi
 ; story_step = 0;
 ;
 	sta     _story_step
+;
+; game_state = MAIN;
+;
+	lda     #$01
+	sta     _game_state
+;
+; current_level = 3;
+;
+	lda     #$03
+	sta     _current_level
 ;
 ; load_level();
 ;
@@ -15480,15 +15654,11 @@ L001A:	lda     _game_state
 ;
 L001B:	lda     _game_state
 	cmp     #$03
-	bne     L0013
+	jne     L0002
 ;
 ; show_map();
 ;
 	jsr     _show_map
-;
-; gray_line();
-;
-L0013:	jsr     _gray_line
 ;
 ; while (1) {
 ;

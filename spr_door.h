@@ -31,7 +31,8 @@ const unsigned char house_door_animation_index[] = {
     0, 1,  // IDLE
     1, 2,  // OPENING
     2, 1  // OPENED
-
+    2, 1  // OPENED
+    2, 1  // OPENED (DEAD)
 };
 
 const unsigned char* const house_door_animation[] = {

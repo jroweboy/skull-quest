@@ -74,8 +74,6 @@
 #define TYPE_HERO 17
 
 
-void move_skeleton();
-
 // index = actor index
 // array = animation index
 void set_animation_info();
