@@ -52,11 +52,13 @@ MAY 2022
     x Bridge Design
     x Compress collision tables
     x Ruin Town Design
+    - Temple ennemy (ghost appear when hit the skull pile and throw paralyzing wave toward paddle)
     
-2:
+JUNE
+1:
+    - Paralyzer weapon for sorcerer
     - Ruin town implementation
     - Town ghost NPC
-3:
     - ITEMS Design
     - bomb
     - magnet
@@ -65,19 +67,15 @@ MAY 2022
     - SELECT BUTTON -> Item selection (fade out background)
     - Bridge boss animation
     - Boss fight coding
-4:
-    - Temple ennemy (ghost appear when hit the skull pile and throw paralyzing wave toward paddle)
     - Temple alternate route (middle stained glass broke reveal passageway to crypte);
     - Forest level ennemies
     - Forest level design
     - Forest boss design & AI 
 
-JUNE
-1:
+2:
     - Necromant tower Entrance Design
     - Necromant lower tower Design
     - Necromant higher tower Design
-2:
     - Tower Level design
     - Ennemies - Boss
     - Save state

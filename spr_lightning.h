@@ -1,9 +1,3 @@
-const unsigned char lightning_dead[]={
-    256, 256, 0xFF, 0,
-    128
-
-};
-
 const unsigned char lightning_0_data[]={
 
 	-15,-34,0xc0,2,
@@ -319,7 +313,7 @@ const unsigned char lightning_animation_index[] = {
 
 const unsigned char* const lightning_animation[]={
 
-    lightning_dead,
+    no_sprite,
 	lightning_0_data,
 	lightning_1_data,
 	lightning_2_data,

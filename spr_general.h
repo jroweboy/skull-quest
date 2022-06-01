@@ -54,7 +54,7 @@ const unsigned char gate0[] = {
     8, 8, 0x40, 1,
     8, 16, 0x50, 1,
     128
-    
+
 };
 
 const unsigned char gate1[] = {

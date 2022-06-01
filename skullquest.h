@@ -44,9 +44,12 @@
 #define TURNING 1
 #define SKWAK 1
 #define OPENING 1
-#define ATTACKING 1
+#define APPEARING 1
+#define ATTACKING 2
 #define WALKING 2
+#define DISAPPEARING 3
 #define RISING 5
+#define PARALYZED 5
 #define INACTIVE 128
 
 #define ROTATE_H 2
@@ -72,6 +75,8 @@
 #define TYPE_VILLAGER1 15
 #define TYPE_TORCHES 16
 #define TYPE_HERO 17
+#define TYPE_SORCERER 18
+#define TYPE_PARALYZER 19
 
 
 // index = actor index
