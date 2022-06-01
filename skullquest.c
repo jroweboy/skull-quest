@@ -1512,13 +1512,14 @@ void update_skull() {
                     temp_y_col += actors.height[SKULL];
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_x_col & 0b11111000;  // Find the x of collision tile
-                            if (actors.x[SKULL] + 7 < temp) {
+                            temp = temp_y_col - (temp_y_col % 8);
+                            temp2 = actors.y[SKULL] + 7 % 8;
+                            if (temp == temp2) {
                                 actors.xDir[SKULL] = LEFT;
-                                temp_x &= 0b11111000;
+                                temp_x = actors.x[SKULL];
                             } else {
                                 actors.yDir[SKULL] = UP;
-                                temp_y &= 0b11111000;
+                                temp_y = actors.y[SKULL];
                             }
                         }
                         do_skull_tile_collision();
@@ -1551,13 +1552,14 @@ void update_skull() {
                     temp_y_col = temp_y;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_x_col & 0b11111000;
-                            if (actors.x[SKULL] + 7 < temp) {
+                            temp = temp_y_col - (temp_y_col % 8);
+                            temp2 = actors.y[SKULL] + 7 % 8;
+                            if (temp == temp2) {
                                 actors.xDir[SKULL] = LEFT;
-                                temp_x &= 0b11111000;
+                                temp_x = actors.x[SKULL];
                             } else {
                                 actors.yDir[SKULL] = DOWN;
-                                temp_y = (actors.y[SKULL] & 0b11111000) + 8;
+                                temp_y = actors.y[SKULL];
                             }
                         }
                         do_skull_tile_collision();
@@ -1593,13 +1595,14 @@ void update_skull() {
                     temp_y_col += actors.height[SKULL];
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_x_col & 0b11111000;
-                            if (actors.x[SKULL] > temp + 7) {
+                            temp = temp_y_col - (temp_y_col % 8);
+                            temp2 = actors.y[SKULL] + 7 % 8;
+                            if (temp == temp2) {
                                 actors.xDir[SKULL] = RIGHT;
-                                temp_x = actors.x[SKULL] & 0b11111000;
+                                temp_x = actors.x[SKULL];
                             } else {
                                 actors.yDir[SKULL] = UP;
-                                temp_y &= 0b11111000;
+                                temp_y = actors.y[SKULL];
                             }
                         }
                         do_skull_tile_collision();
@@ -1633,13 +1636,14 @@ void update_skull() {
                     temp_y_col = temp_y;
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = (temp_x_col & 0b11111000) + 7;
-                            if (actors.x[SKULL] > temp) {
+                            temp = temp_y_col - (temp_y_col % 8);
+                            temp2 = actors.y[SKULL] + 7 % 8;
+                            if (temp == temp2) {
                                 actors.xDir[SKULL] = RIGHT;
-                                temp_x = temp;
+                                temp_x = actors.x[SKULL];
                             } else {
                                 actors.yDir[SKULL] = DOWN;
-                                temp_y = (actors.y[SKULL] & 0b11111000) + 8;
+                                temp_y = actors.y[SKULL];
                             }
                         }
                         do_skull_tile_collision();

@@ -2597,7 +2597,7 @@ _pal_temple_spr:
 	.byte	$28
 	.byte	$10
 	.byte	$08
-	.byte	$27
+	.byte	$26
 	.byte	$22
 	.byte	$10
 	.byte	$08
@@ -14371,7 +14371,7 @@ L0023:	rts
 ; if (skull_launched) {
 ;
 	lda     _skull_launched
-	jeq     L004C
+	jeq     L0048
 ;
 ; param1 = SKULL;
 ;
@@ -14430,7 +14430,7 @@ L0023:	rts
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0041
+	beq     L003D
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -14458,7 +14458,7 @@ L0008:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col += actors.width[SKULL];
 ;
-L0041:	lda     _actors+32
+L003D:	lda     _actors+32
 	clc
 	adc     _temp_x_col
 	sta     _temp_x_col
@@ -14472,13 +14472,13 @@ L0041:	lda     _actors+32
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0042
+	beq     L003E
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
@@ -14496,11 +14496,11 @@ L0041:	lda     _actors+32
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; temp_y_col += actors.height[SKULL];
 ;
-L0042:	lda     _actors+46
+L003E:	lda     _actors+46
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -14509,63 +14509,57 @@ L0042:	lda     _actors+46
 ;
 	jsr     _set_collision_data
 	tax
-	jeq     L0030
+	jeq     L002F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
-; temp = temp_x_col & 0b11111000;  // Find the x of collision tile
+; temp = temp_y_col - (temp_y_col % 8);
 ;
-	lda     _temp_x_col
-	and     #$F8
+	lda     _temp_y_col
+	jsr     pusha0
+	lda     _temp_y_col
+	and     #$07
+	jsr     tossuba0
 	sta     _temp
 ;
-; if (actors.x[SKULL] + 7 < temp) {
+; temp2 = actors.y[SKULL] + 7 % 8;
 ;
-	ldx     #$00
-	lda     _actors+4
+	lda     _actors+18
 	clc
 	adc     #$07
-	bcc     L000F
-	inx
-L000F:	cmp     _temp
-	txa
-	sbc     #$00
-	bvc     L003E
-	eor     #$80
-L003E:	bpl     L000E
+	sta     _temp2
+;
+; if (temp == temp2) {
+;
+	lda     _temp
+	cmp     _temp2
+	bne     L000F
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
 	lda     #$FF
 	sta     _actors+88
 ;
-; temp_x &= 0b11111000;
+; temp_x = actors.x[SKULL];
 ;
-	lda     _temp_x
-	and     #$F8
+	lda     _actors+4
 	sta     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; actors.yDir[SKULL] = UP;
 ;
-L000E:	lda     #$FF
-	sta     _actors+102
-;
-; temp_y &= 0b11111000;
-;
-	lda     _temp_y
-	and     #$F8
+L000F:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L004E
+	jmp     L004C
 ;
 ; temp_x_col = temp_x;
 ;
@@ -14581,7 +14575,7 @@ L0005:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0043
+	beq     L003F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -14615,7 +14609,7 @@ L0013:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
-L0043:	lda     _temp_x
+L003F:	lda     _temp_x
 	clc
 	adc     _actors+32
 	sta     _temp_x_col
@@ -14631,13 +14625,13 @@ L0043:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0044
+	beq     L0040
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
@@ -14655,66 +14649,66 @@ L0043:	lda     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; temp_y_col = temp_y;
 ;
-L0044:	lda     _temp_y
+L0040:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
 ;
 	jsr     _set_collision_data
 	tax
-	jeq     L0030
+	jeq     L002F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
-; temp = temp_x_col & 0b11111000;
+; temp = temp_y_col - (temp_y_col % 8);
 ;
-	lda     _temp_x_col
-	and     #$F8
+	lda     _temp_y_col
+	jsr     pusha0
+	lda     _temp_y_col
+	and     #$07
+	jsr     tossuba0
 	sta     _temp
 ;
-; if (actors.x[SKULL] + 7 < temp) {
+; temp2 = actors.y[SKULL] + 7 % 8;
 ;
-	ldx     #$00
-	lda     _actors+4
+	lda     _actors+18
 	clc
 	adc     #$07
-	bcc     L001A
-	inx
-L001A:	cmp     _temp
-	txa
-	sbc     #$00
-	bvc     L003F
-	eor     #$80
-L003F:	jpl     L004A
+	sta     _temp2
+;
+; if (temp == temp2) {
+;
+	lda     _temp
+	cmp     _temp2
+	jne     L0046
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
 	lda     #$FF
 	sta     _actors+88
 ;
-; temp_x &= 0b11111000;
+; temp_x = actors.x[SKULL];
 ;
-	lda     _temp_x
-	and     #$F8
+	lda     _actors+4
 	sta     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; if (actors.yDir[SKULL] == DOWN) {
 ;
 L0003:	lda     _actors+102
 	cmp     #$01
-	jne     L001E
+	jne     L001D
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
@@ -14734,13 +14728,13 @@ L0003:	lda     _actors+102
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0046
+	beq     L0042
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L0021
+	beq     L0020
 ;
 ; actors.yDir[SKULL] = UP;
 ;
@@ -14758,11 +14752,11 @@ L0003:	lda     _actors+102
 ;
 ; do_skull_tile_collision();
 ;
-L0021:	jsr     _do_skull_tile_collision
+L0020:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0046:	lda     _temp_x
+L0042:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y;
@@ -14774,13 +14768,13 @@ L0046:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0047
+	beq     L0043
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -14804,11 +14798,11 @@ L0046:	lda     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; temp_x_col = temp_x;
 ;
-L0047:	lda     _temp_x
+L0043:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col += actors.height[SKULL];
@@ -14822,65 +14816,61 @@ L0047:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	jeq     L0030
+	jeq     L002F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	jeq     L0034
+	jeq     L0033
 ;
-; temp = temp_x_col & 0b11111000;
+; temp = temp_y_col - (temp_y_col % 8);
 ;
-	lda     _temp_x_col
-	and     #$F8
+	lda     _temp_y_col
+	jsr     pusha0
+	lda     _temp_y_col
+	and     #$07
+	jsr     tossuba0
 	sta     _temp
 ;
-; if (actors.x[SKULL] > temp + 7) {
+; temp2 = actors.y[SKULL] + 7 % 8;
 ;
-	lda     _actors+4
-	jsr     pusha0
-	lda     _temp
+	lda     _actors+18
 	clc
 	adc     #$07
-	bcc     L0028
-	ldx     #$01
-L0028:	jsr     tosicmp
-	bmi     L0027
-	beq     L0027
+	sta     _temp2
+;
+; if (temp == temp2) {
+;
+	lda     _temp
+	cmp     _temp2
+	bne     L0027
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
 	sta     _actors+88
 ;
-; temp_x = actors.x[SKULL] & 0b11111000;
+; temp_x = actors.x[SKULL];
 ;
 	lda     _actors+4
-	and     #$F8
 	sta     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; actors.yDir[SKULL] = UP;
 ;
 L0027:	lda     #$FF
-	sta     _actors+102
-;
-; temp_y &= 0b11111000;
-;
-	lda     _temp_y
-	and     #$F8
 ;
 ; } else {
 ;
-	jmp     L004E
+	jmp     L004C
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
-L001E:	lda     _temp_x
+L001D:	lda     _temp_x
 	clc
 	adc     _actors+32
 	sta     _temp_x_col
@@ -14894,13 +14884,13 @@ L001E:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0048
+	beq     L0044
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L002C
+	beq     L002B
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
@@ -14924,11 +14914,11 @@ L001E:	lda     _temp_x
 ;
 ; do_skull_tile_collision();
 ;
-L002C:	jsr     _do_skull_tile_collision
+L002B:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0048:	lda     _temp_x
+L0044:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y + actors.height[SKULL];
@@ -14942,13 +14932,13 @@ L0048:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0049
+	beq     L0045
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L0034
+	beq     L0033
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -14972,74 +14962,78 @@ L0048:	lda     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; temp_y_col = temp_y;
 ;
-L0049:	lda     _temp_y
+L0045:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0030
+	beq     L002F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
 	lda     _backup_col_type
 	cmp     #$06
-	beq     L0034
+	beq     L0033
 ;
-; temp = (temp_x_col & 0b11111000) + 7;
+; temp = temp_y_col - (temp_y_col % 8);
 ;
-	lda     _temp_x_col
-	and     #$F8
-	clc
-	adc     #$07
+	lda     _temp_y_col
+	jsr     pusha0
+	lda     _temp_y_col
+	and     #$07
+	jsr     tossuba0
 	sta     _temp
 ;
-; if (actors.x[SKULL] > temp) {
+; temp2 = actors.y[SKULL] + 7 % 8;
 ;
-	lda     _actors+4
-	cmp     _temp
-	bcc     L004A
-	beq     L004A
+	lda     _actors+18
+	clc
+	adc     #$07
+	sta     _temp2
+;
+; if (temp == temp2) {
+;
+	lda     _temp
+	cmp     _temp2
+	bne     L0046
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
 	lda     #$01
 	sta     _actors+88
 ;
-; temp_x = temp;
+; temp_x = actors.x[SKULL];
 ;
-	lda     _temp
+	lda     _actors+4
 	sta     _temp_x
 ;
 ; } else {
 ;
-	jmp     L0034
+	jmp     L0033
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
-L004A:	lda     #$01
-	sta     _actors+102
+L0046:	lda     #$01
+L004C:	sta     _actors+102
 ;
-; temp_y = (actors.y[SKULL] & 0b11111000) + 8;
+; temp_y = actors.y[SKULL];
 ;
 	lda     _actors+18
-	and     #$F8
-	clc
-	adc     #$08
-L004E:	sta     _temp_y
+	sta     _temp_y
 ;
 ; do_skull_tile_collision();
 ;
-L0034:	jsr     _do_skull_tile_collision
+L0033:	jsr     _do_skull_tile_collision
 ;
 ; check_paddle_collision();
 ;
-L0030:	jsr     _check_paddle_collision
+L002F:	jsr     _check_paddle_collision
 ;
 ; check_enemy_collision();
 ;
@@ -15055,17 +15049,17 @@ L0030:	jsr     _check_paddle_collision
 ;
 ; } else {
 ;
-	jmp     L004D
+	jmp     L0049
 ;
 ; temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
 ;
-L004C:	lda     _actors+28
+L0048:	lda     _actors+28
 	lsr     a
 	clc
 	adc     _actors
-	bcc     L0040
+	bcc     L003C
 	inx
-L0040:	jsr     pushax
+L003C:	jsr     pushax
 	lda     _actors+32
 	lsr     a
 	jsr     tossuba0
@@ -15084,7 +15078,7 @@ L0040:	jsr     pushax
 ;
 ; actors.x[SKULL] = temp_x;
 ;
-L004D:	lda     _temp_x
+L0049:	lda     _temp_x
 	sta     _actors+4
 ;
 ; actors.y[SKULL] = temp_y;
