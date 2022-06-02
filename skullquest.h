@@ -77,6 +77,21 @@
 #define TYPE_HERO 17
 #define TYPE_SORCERER 18
 #define TYPE_PARALYZER 19
+#define TYPE_FACE_ANGELIC 20
+
+
+#define FACE_X 16
+#define FACE_Y 8
+#define ITEM_X 188
+#define ITEM_Y 21
+
+// ITEMS CHAR 
+#define ITEM_MAGNET 0x09
+#define ITEM_BOMB 0x0A
+
+// ITEMS TYPE
+#define TYPE_MAGNET 1
+#define TYPE_BOMB 2
 
 
 // index = actor index

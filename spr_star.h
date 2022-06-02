@@ -1,9 +1,3 @@
-const unsigned char no_star[] = {
-    0, 240, 0xFF, 0,
-    128
-
-};
-
 const unsigned char star_0_data[] = {
 
     -3, -23, 0x08, 0,
@@ -119,7 +113,7 @@ const unsigned char stars_animation_index[] = {
 
 const unsigned char* const stars_animation[] = {
 
-    no_star,
+    no_sprite,
     star_0_data,
     star_1_data,
     star_2_data,

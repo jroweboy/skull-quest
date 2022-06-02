@@ -42,9 +42,9 @@ static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index
 static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count, wait_timer;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
-static unsigned char animation_index, frame_count;
+static unsigned char animation_index, frame_count, show_face, show_item, current_item;
 static unsigned char brightness = 4;
-static unsigned char NECROMANCER, GHOST, LIGHTNING, DEVIL, SKELETON1, SKELETON2, DOOR1, DOOR2, DOOR3;
+static unsigned char NECROMANCER, GHOST, LIGHTNING, DEVIL, SKELETON1, SKELETON2, DOOR1, DOOR2, DOOR3, STARS;
 static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION, SORCERER;
 
 unsigned char const * * animation_array;
@@ -65,6 +65,15 @@ const unsigned char* current_nametable;
 const unsigned char* current_collision_map;
 const unsigned char* current_background_palette;
 const char* current_sprite_palette;
+
+#define ITEM_NUMBER 8
+typedef struct {
+    unsigned char type[ITEM_NUMBER];
+    unsigned char is_active[ITEM_NUMBER];
+    unsigned char sprite[ITEM_NUMBER];
+} Item;
+
+Item items;
 
 #define ACTOR_NUMBER 14
 
@@ -274,13 +283,6 @@ void set_animation_info() {
             frame_count = fireball_animation_index[j];
             animation_array = fireball_animation;
             break;
-
-        // case TYPE_ :
-        //     animation_index = [j];
-        //     ++j;
-        //     frame_count = [j];
-        //     animation_array = ;
-        //     break;
     }
 }
 
@@ -349,26 +351,13 @@ void init_level_specifics() {
             chr_4_index = 2;
             chr_5_index = 3;
 
-            // GATE
-            GATE = 5;
-            actors.x[GATE] = 120;
-            actors.y[GATE] = 48;
-            actors.animation_delay[GATE] = 16;
-            actors.type[GATE] = TYPE_GATE;
-            actors.state[GATE] = IDLE;
-
             // Paddle
             paddle_count = 1;
             actors.x[0] = 0x70;
             actors.y[0] = 0xD0;
 
-            // Skeleton index 6 & 7
-            SKELETON1 = 6;
-            SKELETON2 = 7;
-            banked_call(0, init_skeletons);
-
             // CROW
-            CROW = 8;
+            CROW = 5;
             actors.x[CROW] = 207;
             actors.y[CROW] = 117;
             actors.state[CROW] = 2;  // IDLE state of crow is 2... don't ask!
@@ -379,6 +368,19 @@ void init_level_specifics() {
             actors.bbox_y[CROW] = 4;
             actors.width[CROW] = 16;
             actors.height[CROW] = 16;
+            
+            // Skeleton index 6 & 7
+            SKELETON1 = 6;
+            SKELETON2 = 7;
+            banked_call(0, init_skeletons);      
+            
+            // GATE
+            GATE = 8;
+            actors.x[GATE] = 120;
+            actors.y[GATE] = 48;
+            actors.animation_delay[GATE] = 16;
+            actors.type[GATE] = TYPE_GATE;
+            actors.state[GATE] = IDLE;
 
             // TREE
             STILL_DECORATION = 9;
@@ -394,6 +396,14 @@ void init_level_specifics() {
             actors.animation_delay[GHOST] = 16;
             actors.state[GHOST] = IDLE;
             actors.type[GHOST] = TYPE_ANGELIC;
+
+            // STARS
+            STARS = 11;
+            actors.x[STARS] = 127;
+            actors.y[STARS] = 136;
+            actors.state[STARS] = IDLE;
+            actors.type[STARS] = TYPE_STARS;
+            actors.animation_delay[STARS] = 8;
             break;
         case 2:
             // TEMPLE
@@ -685,7 +695,6 @@ void show_HUD() {
     one_vram_buffer(0x7e, NTADR_A(23, 3));
     one_vram_buffer(0x7f, NTADR_A(24, 3));
 
-    // TODO show item sprite
 
     // COINS
     // TODO update_coins();
@@ -1446,17 +1455,16 @@ void check_main_input() {
         }
     }
 
-    if (pad1 & PAD_B) {
-        // TODO ITEM USE
-        actors.state[SORCERER] = APPEARING;
-        if (actors.x[SORCERER] > actors.x[0]) {
-                                actors.xDir[SORCERER] = LEFT;
-                            } else {
-                                actors.xDir[SORCERER] = RIGHT;
-                            }
+    if (pad1_new & PAD_B) {
+        switch (items.type[current_item]) {
+            case TYPE_MAGNET:
+                actors.yDir[SKULL] = DOWN;
+                actors.xDir[SKULL] = actors.x[SKULL] < actors.x[0] ? RIGHT : LEFT;
+                break;
+        }
     }
 
-    if (pad1 & PAD_SELECT) {
+    if (pad1_new & PAD_SELECT) {
         // TODO ITEM SELECTION...
         // stop music (or lower volume?)
         // palette fade
@@ -1513,7 +1521,8 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7 % 8;
+                            temp2 = actors.y[SKULL] + 7;
+                            temp2 -= temp2 % 8;
                             if (temp == temp2) {
                                 actors.xDir[SKULL] = LEFT;
                                 temp_x = actors.x[SKULL];
@@ -1553,7 +1562,9 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7 % 8;
+                            temp2 = actors.y[SKULL];
+                            ++temp2; // BBox
+                            temp2 -= temp2 % 8;
                             if (temp == temp2) {
                                 actors.xDir[SKULL] = LEFT;
                                 temp_x = actors.x[SKULL];
@@ -1596,7 +1607,8 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7 % 8;
+                            temp2 = actors.y[SKULL] + 7;
+                            temp2 -= temp2 % 8;
                             if (temp == temp2) {
                                 actors.xDir[SKULL] = RIGHT;
                                 temp_x = actors.x[SKULL];
@@ -1637,7 +1649,9 @@ void update_skull() {
                     if (set_collision_data()) {
                         if (backup_col_type != COL_TYPE_SOFT) {
                             temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7 % 8;
+                            temp2 = actors.y[SKULL];
+                            ++temp2; // BBox
+                            temp2 -= temp2 % 8;
                             if (temp == temp2) {
                                 actors.xDir[SKULL] = RIGHT;
                                 temp_x = actors.x[SKULL];
@@ -1861,6 +1875,8 @@ void play_story() {
                     reset_actors();
                     current_level = 1;
                     story_step = 0;
+                    show_face = FALSE;
+                    show_item = FALSE;
                     break;
             }
             break;
@@ -1870,7 +1886,12 @@ void play_story() {
             oam_clear();
             if (story_step > 6) {                
                 draw_sprites();
-                oam_meta_spr(16, 8, angelic_face);
+            }
+            if (show_face) {
+                oam_meta_spr(FACE_X, FACE_Y, angelic_face);
+            }
+            if (show_item) {
+                oam_spr(123, 130, ITEM_MAGNET, 0);
             }
             switch (story_step) {
                 case 0:
@@ -1901,6 +1922,7 @@ void play_story() {
                 case 6:
                     pal_bright(0);
                     brightness = 0;
+                    show_face = TRUE;
                     load_level();
                     actors.state[SKULL] = ROTATE_H;
                     actors.x[SKULL] = 0x7C;
@@ -1942,58 +1964,60 @@ void play_story() {
                     wait_input();
                     break;
                 case 15:
-                //     // Take this
-                //     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
-                //     // Show magnet item
-                //     ++actors.state[STARS];
-                //     ++story_step;
-                // case 16:
-                //     oam_meta_spr(actors.x[STARS], actors.y[STARS], stars_animation[actors.current_frame[STARS] + param2]);
-                //     if (actors.state[STARS] == WALKING){
-                //         ++story_step;
-                //     }
-                //     break;
-                // case 17:
-                //     // Use it if you get stuck
-                //     multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
-                //     multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
-                //     ++story_step;
-                //     break;
-                // case 18:
-                //     wait_input();
-                //     break;
-                // case 19:
-                    // Hit all tombstones...
+                    // Take this!
                     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 3));
+                    ++actors.state[STARS];
+                    show_item = TRUE;
+                    items.type[0] = TYPE_MAGNET;
+                    items.is_active[0] = TRUE;
+                    items.sprite[0] = ITEM_MAGNET;
+                    current_item = 0;
                     ++story_step;
                     break;
                 case 16:
                     wait_input();
                     break;
                 case 17:
-                    brightout();
+                    // Use it
+                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
+                    ++story_step;
                     break;
                 case 18:
+                    wait_input();
+                    break;
+                case 19:
+                    // Hit all tombstones...
+                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 3));
+                    ++story_step;
+                    break;
+                case 20:
+                    wait_input();
+                    break;
+                case 21:
+                    brightout();
+                    break;
+                case 22:
                     actors.state[GHOST] = INACTIVE;
                     //
                     actors.counter[SKELETON1] = 250;
                     actors.counter[SKELETON2] = 250;
                     actors.state[SKELETON1] = RISING;
                     actors.state[SKELETON2] = RISING;
-                    // actors.animation_delay[SKELETON1] = 12;
-                    // actors.animation_delay[SKELETON2] = 12;
                     // MAIN GAMEPLAY
                     ++story_step;
                     game_state = MAIN;
+                    show_face = FALSE;
+                    show_item = FALSE;
                     pal_bright(4);
                     show_HUD();
                     break;
-                case 19:
+                case 23:
                     wait(64);
                     break;
-                case 20:
+                case 24:
                     // END OF LEVEL
                     if (actors.state[CROW] != FLYING){
                         one_vram_buffer(0x11, NTADR_A(15,9));
@@ -2002,13 +2026,13 @@ void play_story() {
                         ++story_step;
                     }
                     break;
-                case 21:
+                case 25:
                     wait(64);
                     break;
-                case 22:
+                case 26:
                     fadeout();
                     break;
-                case 23:
+                case 27:
                     ++current_level;
                     load_level();
                     story_step = 0;
@@ -2017,6 +2041,7 @@ void play_story() {
             break;
         case 2:
             // TEMPLE
+            oam_clear();
             switch (story_step) {
                 case 0:
                     fadein();
@@ -2040,6 +2065,7 @@ void play_story() {
             break;
         case 3:
             // TOWN
+            oam_clear();
             switch (story_step) {
                 case 0:
                     fadein();
@@ -2099,8 +2125,8 @@ void main() {
             story_step = 0;
             
             // DEBUG
-            game_state = MAIN;
-            current_level = 2;
+            // game_state = MAIN;
+            // current_level = 2;
 
             load_level();
         } else if (game_state == MAP && pad1_new & PAD_START) {
@@ -2117,6 +2143,9 @@ void main() {
 
             draw_sprites();
 
+            // Current item:
+            oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
+
             if (brick_counter == 0) {
                 game_state = STORY;
             }
@@ -2124,8 +2153,8 @@ void main() {
             if (game_state == MAP) {
                 show_map();
             }
-
-            // gray_line();
+            
+            gray_line();
         }
     }
 }
