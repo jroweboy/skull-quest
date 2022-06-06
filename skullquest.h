@@ -47,6 +47,7 @@
 #define APPEARING 1
 #define ATTACKING 2
 #define WALKING 2
+#define IDLE2 2
 #define DISAPPEARING 3
 #define RISING 5
 #define PARALYZED 5

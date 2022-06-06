@@ -12,6 +12,7 @@
 	.macpack	longbranch
 	.forceimport	__STARTUP__
 	.export		_empty_line
+	.export		_story
 	.export		_dialogs
 	.export		_set_animation_info
 	.export		_get_x_speed
@@ -21,9 +22,7 @@
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
 	.import		_set_scroll_x
-	.import		_set_scroll_y
 	.import		_color_emphasis
-	.import		_gray_line
 	.import		_pal_bg
 	.import		_pal_spr
 	.import		_pal_col
@@ -45,6 +44,9 @@
 	.export		_bank_push
 	.export		_bank_pop
 	.import		_set_prg_8000
+	.import		_set_chr_mode_1
+	.import		_set_chr_mode_2
+	.import		_set_chr_mode_3
 	.import		_set_chr_mode_4
 	.import		_set_chr_mode_5
 	.import		_disable_irq
@@ -53,7 +55,8 @@
 	.export		_map
 	.export		_temple
 	.export		_title_screen
-	.export		_black_level
+	.export		_pal_title
+	.export		_pal_staff
 	.export		_pal_cemetery_bg
 	.export		_pal_cemetery_spr
 	.export		_pal_altar_bg
@@ -200,12 +203,6 @@
 	.export		_house_door_open2
 	.export		_house_door_animation_index
 	.export		_house_door_animation
-	.export		_villager_beard_idle1
-	.export		_villager_beard_idle2
-	.export		_villager_beard_idle3
-	.export		_villager_beard_face
-	.export		_villager_animation_index
-	.export		_villager_animation
 	.export		_animation_array
 	.export		_wram_array
 	.export		_current_nametable
@@ -214,10 +211,19 @@
 	.export		_current_sprite_palette
 	.export		_items
 	.export		_actors
+	.export		_black_level
 	.export		_cemetery_col
 	.export		_temple_col
+	.export		_temple2_col
 	.export		_town_col
 	.export		_town_ruins
+	.export		_temple2
+	.export		_villager_beard_idle1
+	.export		_villager_beard_idle2
+	.export		_villager_beard_idle3
+	.export		_villager_beard_face
+	.export		_villager_animation_index
+	.export		_villager_animation
 	.export		_sorcerer_appear0_left
 	.export		_sorcerer_appear1_left
 	.export		_sorcerer_appear2_left
@@ -244,8 +250,11 @@
 	.export		_fireball1_right
 	.export		_fireball2_right
 	.export		_fireball3_right
+	.export		_fireball_appear1
+	.export		_fireball_appear2
 	.export		_fireball_animation_index
 	.export		_fireball_animation
+	.export		_staff
 	.export		_reset_actors
 	.export		_init_skeletons
 	.export		_init_level_specifics
@@ -309,6 +318,44 @@ _exp:
 _empty_line:
 	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
 	.byte	$20,$20,$20,$20,$20,$20,$20,$00
+_story:
+	.byte	$54,$68,$65,$20,$63,$69,$74,$79,$20,$6F,$66,$20,$58,$79,$6C,$65
+	.byte	$72,$69,$61,$20,$77,$61,$73,$20,$72,$75,$6C,$65,$64,$20,$62,$79
+	.byte	$20,$4B,$68,$61,$72,$7A,$6F,$69,$64,$2C,$20,$61,$20,$64,$61,$72
+	.byte	$6B,$20,$61,$6E,$64,$20,$70,$6F,$77,$65,$72,$66,$75,$6C,$20,$77
+	.byte	$69,$7A,$61,$72,$64,$2E,$00
+	.byte	$49,$6E,$20,$68,$69,$73,$20,$74,$77,$69,$73,$74,$65,$64,$20,$69
+	.byte	$6D,$61,$67,$69,$6E,$61,$74,$69,$6F,$6E,$2C,$20,$68,$65,$20,$63
+	.byte	$6F,$6E,$63,$65,$69,$76,$65,$64,$20,$61,$20,$64,$69,$61,$62,$6F
+	.byte	$6C,$69,$63,$61,$6C,$20,$67,$61,$6D,$65,$2C,$20,$66,$69,$6C,$6C
+	.byte	$65,$64,$20,$77,$69,$74,$68,$20,$74,$72,$61,$70,$73,$20,$61,$6E
+	.byte	$64,$20,$66,$6F,$65,$73,$2E,$00
+	.byte	$45,$61,$63,$68,$20,$79,$65,$61,$72,$2C,$20,$61,$20,$70,$72,$69
+	.byte	$73,$6F,$6E,$65,$72,$20,$77,$6F,$75,$6C,$64,$20,$67,$65,$74,$20
+	.byte	$61,$20,$63,$68,$61,$6E,$63,$65,$20,$6F,$66,$20,$72,$65,$64,$65
+	.byte	$6D,$70,$74,$69,$6F,$6E,$20,$69,$66,$20,$68,$65,$20,$63,$6F,$75
+	.byte	$6C,$64,$20,$73,$75,$63,$63,$65,$65,$64,$20,$74,$68,$65,$20,$74
+	.byte	$72,$69,$61,$6C,$2E,$00
+	.byte	$48,$69,$73,$20,$73,$6F,$75,$6C,$20,$77,$61,$73,$20,$74,$72,$61
+	.byte	$6E,$73,$66,$65,$72,$65,$64,$20,$69,$6E,$74,$6F,$20,$61,$20,$6D
+	.byte	$61,$67,$69,$63,$61,$6C,$20,$73,$6B,$75,$6C,$6C,$2E,$20,$49,$66
+	.byte	$20,$69,$74,$20,$67,$6F,$74,$20,$64,$65,$73,$74,$72,$6F,$79,$65
+	.byte	$64,$2C,$20,$68,$69,$73,$20,$73,$6F,$75,$6C,$20,$77,$61,$73,$20
+	.byte	$6C,$6F,$73,$74,$2E,$00
+	.byte	$42,$75,$74,$20,$61,$20,$62,$72,$61,$76,$65,$20,$61,$6E,$64,$20
+	.byte	$63,$6F,$75,$72,$61,$67,$65,$6F,$75,$73,$20,$6D,$61,$6E,$20,$73
+	.byte	$74,$6F,$6F,$64,$20,$75,$70,$20,$74,$6F,$20,$74,$68,$65,$20,$63
+	.byte	$68,$61,$6C,$6C,$65,$6E,$67,$65,$2E,$00
+	.res	13,$00
+	.byte	$48,$65,$20,$67,$6F,$74,$20,$70,$75,$74,$20,$69,$6E,$20,$6A,$61
+	.byte	$69,$6C,$2C,$20,$61,$6C,$74,$68,$6F,$75,$67,$68,$20,$68,$65,$20
+	.byte	$77,$61,$73,$20,$66,$61,$75,$6C,$74,$6C,$65,$73,$73,$2E,$20,$41
+	.byte	$6E,$64,$20,$77,$61,$69,$74,$65,$64,$20,$70,$61,$74,$69,$65,$6E
+	.byte	$74,$6C,$79,$20,$66,$6F,$72,$20,$74,$68,$65,$20,$64,$61,$79,$20
+	.byte	$6F,$66,$20,$74,$68,$65,$20,$54,$72,$69,$61,$6C,$2E,$00
+	.byte	$54,$68,$65,$20,$64,$61,$79,$20,$6F,$66,$20,$72,$65,$76,$65,$6E
+	.byte	$67,$65,$2E,$00
+	.res	51,$00
 _dialogs:
 	.byte	$57,$68,$65,$72,$65,$2E,$2E,$2E,$20,$00
 	.res	14,$00
@@ -2394,98 +2441,471 @@ _temple:
 	.byte	$02
 	.byte	$00
 _title_screen:
-	.byte	$01
-	.byte	$00
-	.byte	$01
-	.byte	$FE
-	.byte	$00
-	.byte	$01
+	.byte	$0E
+	.byte	$0F
+	.byte	$0E
+	.byte	$4B
+	.byte	$13
+	.byte	$14
+	.byte	$17
+	.byte	$18
+	.byte	$1B
+	.byte	$1C
+	.byte	$1F
+	.byte	$20
+	.byte	$0F
+	.byte	$0E
+	.byte	$13
+	.byte	$10
+	.byte	$0F
+	.byte	$11
+	.byte	$12
+	.byte	$15
+	.byte	$16
+	.byte	$19
+	.byte	$1A
+	.byte	$1D
+	.byte	$1E
+	.byte	$21
+	.byte	$22
+	.byte	$0F
+	.byte	$0E
+	.byte	$13
+	.byte	$23
+	.byte	$0F
+	.byte	$25
+	.byte	$0F
+	.byte	$28
+	.byte	$0F
+	.byte	$0E
+	.byte	$08
+	.byte	$2D
+	.byte	$2E
+	.byte	$0F
+	.byte	$0E
+	.byte	$0F
+	.byte	$23
+	.byte	$24
+	.byte	$26
+	.byte	$27
 	.byte	$29
-	.byte	$53
-	.byte	$6B
-	.byte	$75
-	.byte	$6C
-	.byte	$6C
-	.byte	$00
-	.byte	$01
-	.byte	$03
-	.byte	$51
-	.byte	$75
-	.byte	$65
-	.byte	$73
-	.byte	$74
-	.byte	$00
-	.byte	$01
-	.byte	$B3
-	.byte	$50
-	.byte	$72
-	.byte	$65
-	.byte	$73
-	.byte	$73
-	.byte	$00
-	.byte	$53
-	.byte	$74
-	.byte	$61
-	.byte	$72
-	.byte	$74
-	.byte	$00
-	.byte	$01
-	.byte	$FE
-	.byte	$00
-	.byte	$01
-	.byte	$32
-	.byte	$54
-	.byte	$68
-	.byte	$65
-	.byte	$00
-	.byte	$6F
-	.byte	$6C
-	.byte	$64
-	.byte	$00
-	.byte	$67
-	.byte	$61
-	.byte	$6D
-	.byte	$65
-	.byte	$00
-	.byte	$6D
-	.byte	$61
-	.byte	$6B
-	.byte	$65
-	.byte	$72
-	.byte	$00
-	.byte	$01
-	.byte	$33
-	.byte	$40
-	.byte	$32
+	.byte	$2A
+	.byte	$2B
+	.byte	$0F
+	.byte	$0E
+	.byte	$05
+	.byte	$2C
+	.byte	$2F
 	.byte	$30
+	.byte	$0F
+	.byte	$0E
+	.byte	$0F
+	.byte	$31
 	.byte	$32
-	.byte	$32
-	.byte	$00
-	.byte	$01
+	.byte	$34
+	.byte	$35
+	.byte	$37
+	.byte	$38
+	.byte	$3A
+	.byte	$3B
+	.byte	$3E
+	.byte	$3F
+	.byte	$42
+	.byte	$43
+	.byte	$46
+	.byte	$47
+	.byte	$4A
+	.byte	$4B
+	.byte	$0F
+	.byte	$0E
+	.byte	$0F
+	.byte	$33
+	.byte	$0F
+	.byte	$25
+	.byte	$36
+	.byte	$25
+	.byte	$39
+	.byte	$3C
+	.byte	$3D
+	.byte	$40
+	.byte	$41
+	.byte	$44
+	.byte	$45
+	.byte	$48
+	.byte	$49
+	.byte	$4C
+	.byte	$4D
+	.byte	$0F
+	.byte	$0E
+	.byte	$0F
+	.byte	$4E
+	.byte	$0F
+	.byte	$4F
+	.byte	$50
+	.byte	$51
+	.byte	$0F
+	.byte	$0E
+	.byte	$04
+	.byte	$53
+	.byte	$0F
+	.byte	$0E
+	.byte	$1D
+	.byte	$52
+	.byte	$54
+	.byte	$0F
+	.byte	$0E
+	.byte	$35
+	.byte	$55
+	.byte	$56
+	.byte	$57
+	.byte	$58
+	.byte	$0F
+	.byte	$0F
+	.byte	$59
+	.byte	$5A
+	.byte	$5B
+	.byte	$0F
+	.byte	$0E
+	.byte	$16
+	.byte	$5C
+	.byte	$5E
+	.byte	$5F
+	.byte	$62
+	.byte	$0F
+	.byte	$65
+	.byte	$66
+	.byte	$69
+	.byte	$6A
+	.byte	$6D
+	.byte	$0F
+	.byte	$0E
+	.byte	$15
+	.byte	$5D
+	.byte	$60
+	.byte	$61
+	.byte	$63
+	.byte	$64
+	.byte	$67
+	.byte	$68
+	.byte	$6B
+	.byte	$6C
+	.byte	$6E
+	.byte	$6F
+	.byte	$E3
+	.byte	$0F
+	.byte	$0E
+	.byte	$13
+	.byte	$70
+	.byte	$72
+	.byte	$73
+	.byte	$E4
+	.byte	$E5
+	.byte	$76
+	.byte	$77
+	.byte	$7A
+	.byte	$7B
+	.byte	$7E
+	.byte	$7F
+	.byte	$0F
+	.byte	$0F
+	.byte	$82
+	.byte	$83
+	.byte	$0F
+	.byte	$0E
+	.byte	$10
+	.byte	$71
+	.byte	$74
+	.byte	$75
+	.byte	$E6
+	.byte	$E7
+	.byte	$78
+	.byte	$79
+	.byte	$7C
+	.byte	$7D
+	.byte	$80
+	.byte	$81
+	.byte	$E8
+	.byte	$E9
+	.byte	$84
+	.byte	$85
+	.byte	$0F
+	.byte	$0E
+	.byte	$11
+	.byte	$86
+	.byte	$87
+	.byte	$8A
 	.byte	$8B
-	.byte	$00
-	.byte	$01
-	.byte	$00
-_black_level:
-	.byte	$01
-	.byte	$00
-	.byte	$01
+	.byte	$EA
+	.byte	$EB
+	.byte	$8E
+	.byte	$8F
+	.byte	$92
+	.byte	$93
+	.byte	$EE
+	.byte	$EF
+	.byte	$96
+	.byte	$97
+	.byte	$0F
+	.byte	$0E
+	.byte	$11
+	.byte	$88
+	.byte	$89
+	.byte	$8C
+	.byte	$8D
+	.byte	$EC
+	.byte	$ED
+	.byte	$90
+	.byte	$91
+	.byte	$94
+	.byte	$95
+	.byte	$F0
+	.byte	$F1
+	.byte	$98
+	.byte	$0F
+	.byte	$0E
+	.byte	$10
+	.byte	$99
+	.byte	$9A
+	.byte	$9D
+	.byte	$0F
+	.byte	$0E
+	.byte	$02
+	.byte	$9E
+	.byte	$9F
+	.byte	$A2
+	.byte	$A3
+	.byte	$0F
+	.byte	$A6
+	.byte	$A9
+	.byte	$AA
+	.byte	$F4
+	.byte	$F5
+	.byte	$F7
+	.byte	$0F
+	.byte	$0E
+	.byte	$0E
+	.byte	$9B
+	.byte	$9C
+	.byte	$0F
+	.byte	$0F
+	.byte	$F2
+	.byte	$F3
+	.byte	$A0
+	.byte	$A1
+	.byte	$A4
+	.byte	$A5
+	.byte	$A7
+	.byte	$A8
+	.byte	$AB
+	.byte	$0F
+	.byte	$0F
+	.byte	$F6
+	.byte	$F8
+	.byte	$F9
+	.byte	$0F
+	.byte	$0E
+	.byte	$0D
+	.byte	$AC
+	.byte	$AD
+	.byte	$0F
+	.byte	$0E
+	.byte	$03
+	.byte	$B4
+	.byte	$B5
+	.byte	$B8
+	.byte	$B9
+	.byte	$FA
+	.byte	$0F
+	.byte	$0E
+	.byte	$03
+	.byte	$FD
 	.byte	$FE
-	.byte	$00
-	.byte	$01
-	.byte	$FE
-	.byte	$00
-	.byte	$01
-	.byte	$FE
-	.byte	$00
-	.byte	$01
-	.byte	$FE
-	.byte	$00
+	.byte	$FF
+	.byte	$0F
+	.byte	$0E
+	.byte	$0D
+	.byte	$AE
+	.byte	$AF
+	.byte	$B0
+	.byte	$B1
+	.byte	$B2
+	.byte	$B3
+	.byte	$B6
+	.byte	$B7
+	.byte	$BA
+	.byte	$BB
+	.byte	$FB
+	.byte	$FC
+	.byte	$0F
+	.byte	$0E
+	.byte	$14
+	.byte	$BC
+	.byte	$BD
+	.byte	$BE
+	.byte	$C0
+	.byte	$C1
+	.byte	$C4
+	.byte	$C5
+	.byte	$C8
+	.byte	$C9
+	.byte	$CC
+	.byte	$CD
+	.byte	$0F
+	.byte	$0E
+	.byte	$15
+	.byte	$2F
+	.byte	$BF
+	.byte	$C2
+	.byte	$C3
+	.byte	$C6
+	.byte	$C7
+	.byte	$CA
+	.byte	$CB
+	.byte	$CE
+	.byte	$CF
+	.byte	$D0
+	.byte	$D1
+	.byte	$D2
+	.byte	$0F
+	.byte	$0E
+	.byte	$13
+	.byte	$D3
+	.byte	$D5
+	.byte	$D6
+	.byte	$D2
+	.byte	$0F
+	.byte	$0F
+	.byte	$D9
+	.byte	$DC
+	.byte	$DD
+	.byte	$DE
+	.byte	$DF
+	.byte	$E1
+	.byte	$0F
+	.byte	$0E
+	.byte	$13
+	.byte	$D4
+	.byte	$0F
+	.byte	$0F
+	.byte	$D7
+	.byte	$D8
+	.byte	$DA
+	.byte	$DB
+	.byte	$98
+	.byte	$0F
+	.byte	$0F
+	.byte	$E0
+	.byte	$E2
+	.byte	$0F
+	.byte	$0E
+	.byte	$2D
 	.byte	$01
 	.byte	$02
+	.byte	$03
+	.byte	$04
+	.byte	$05
+	.byte	$06
+	.byte	$04
+	.byte	$07
+	.byte	$08
+	.byte	$0F
+	.byte	$0E
+	.byte	$05
+	.byte	$09
+	.byte	$08
+	.byte	$0A
+	.byte	$0F
+	.byte	$0B
+	.byte	$0C
+	.byte	$0D
+	.byte	$08
+	.byte	$0F
+	.byte	$0E
+	.byte	$43
 	.byte	$00
+	.byte	$0E
+	.byte	$08
+	.byte	$B3
+	.byte	$A2
+	.byte	$A0
+	.byte	$0E
+	.byte	$03
+	.byte	$00
+	.byte	$0E
+	.byte	$02
+	.byte	$50
+	.byte	$50
+	.byte	$10
+	.byte	$00
+	.byte	$0E
+	.byte	$04
+	.byte	$A5
+	.byte	$55
+	.byte	$55
+	.byte	$91
+	.byte	$00
+	.byte	$0E
+	.byte	$02
+	.byte	$40
+	.byte	$58
+	.byte	$56
+	.byte	$55
+	.byte	$59
+	.byte	$10
+	.byte	$00
+	.byte	$00
+	.byte	$04
+	.byte	$55
+	.byte	$0E
+	.byte	$03
+	.byte	$11
+	.byte	$00
+	.byte	$0E
+	.byte	$02
+	.byte	$05
+	.byte	$0E
+	.byte	$03
 	.byte	$01
 	.byte	$00
+	.byte	$0E
+	.byte	$07
+	.byte	$00
+	.byte	$0E
+	.byte	$00
+_pal_title:
+	.byte	$0F
+	.byte	$37
+	.byte	$23
+	.byte	$17
+	.byte	$0F
+	.byte	$23
+	.byte	$13
+	.byte	$06
+	.byte	$0F
+	.byte	$13
+	.byte	$22
+	.byte	$06
+	.byte	$0F
+	.byte	$07
+	.byte	$13
+	.byte	$06
+_pal_staff:
+	.byte	$0F
+	.byte	$21
+	.byte	$18
+	.byte	$0C
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
+	.byte	$0F
 _pal_cemetery_bg:
 	.byte	$0F
 	.byte	$00
@@ -2587,7 +3007,7 @@ _pal_temple_bg:
 	.byte	$0F
 	.byte	$15
 	.byte	$30
-	.byte	$09
+	.byte	$0C
 _pal_temple_spr:
 	.byte	$10
 	.byte	$30
@@ -2596,10 +3016,10 @@ _pal_temple_spr:
 	.byte	$10
 	.byte	$01
 	.byte	$19
-	.byte	$28
+	.byte	$26
 	.byte	$10
 	.byte	$08
-	.byte	$26
+	.byte	$28
 	.byte	$22
 	.byte	$10
 	.byte	$08
@@ -5848,85 +6268,27 @@ _house_door_animation:
 	.addr	_house_door_idle
 	.addr	_house_door_open1
 	.addr	_house_door_open2
-_villager_beard_idle1:
-	.byte	$00
-	.byte	$00
-	.byte	$94
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$A4
-	.byte	$03
-	.byte	$00
-	.byte	$10
-	.byte	$B4
-	.byte	$03
-	.byte	$80
-_villager_beard_idle2:
+.segment	"BANK0"
+_black_level:
+	.byte	$01
 	.byte	$00
 	.byte	$01
-	.byte	$94
-	.byte	$03
+	.byte	$FE
 	.byte	$00
-	.byte	$09
-	.byte	$A4
-	.byte	$03
+	.byte	$01
+	.byte	$FE
 	.byte	$00
-	.byte	$11
-	.byte	$B4
-	.byte	$03
-	.byte	$80
-_villager_beard_idle3:
+	.byte	$01
+	.byte	$FE
 	.byte	$00
+	.byte	$01
+	.byte	$FE
+	.byte	$00
+	.byte	$01
 	.byte	$02
-	.byte	$94
-	.byte	$03
 	.byte	$00
-	.byte	$0A
-	.byte	$A4
-	.byte	$03
+	.byte	$01
 	.byte	$00
-	.byte	$12
-	.byte	$B4
-	.byte	$03
-	.byte	$80
-_villager_beard_face:
-	.byte	$00
-	.byte	$00
-	.byte	$95
-	.byte	$03
-	.byte	$00
-	.byte	$08
-	.byte	$A5
-	.byte	$03
-	.byte	$00
-	.byte	$10
-	.byte	$B5
-	.byte	$03
-	.byte	$08
-	.byte	$00
-	.byte	$96
-	.byte	$03
-	.byte	$08
-	.byte	$08
-	.byte	$A6
-	.byte	$03
-	.byte	$08
-	.byte	$10
-	.byte	$B6
-	.byte	$03
-	.byte	$80
-_villager_animation_index:
-	.byte	$00
-	.byte	$06
-_villager_animation:
-	.addr	_villager_beard_idle1
-	.addr	_villager_beard_idle2
-	.addr	_villager_beard_idle3
-	.addr	_villager_beard_idle3
-	.addr	_villager_beard_idle2
-	.addr	_villager_beard_idle1
-.segment	"BANK0"
 _cemetery_col:
 	.byte	$A3
 	.byte	$01
@@ -6128,7 +6490,19 @@ _cemetery_col:
 	.byte	$01
 	.byte	$FF
 _temple_col:
-	.byte	$A3
+	.byte	$2F
+	.byte	$01
+	.byte	$02
+	.byte	$09
+	.byte	$1E
+	.byte	$01
+	.byte	$02
+	.byte	$07
+	.byte	$1E
+	.byte	$01
+	.byte	$02
+	.byte	$07
+	.byte	$32
 	.byte	$01
 	.byte	$01
 	.byte	$00
@@ -6281,6 +6655,126 @@ _temple_col:
 	.byte	$14
 	.byte	$02
 	.byte	$06
+	.byte	$01
+	.byte	$FF
+_temple2_col:
+	.byte	$46
+	.byte	$01
+	.byte	$15
+	.byte	$02
+	.byte	$0B
+	.byte	$01
+	.byte	$14
+	.byte	$03
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$08
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$04
+	.byte	$01
+	.byte	$01
+	.byte	$04
+	.byte	$1A
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$08
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$00
+	.byte	$0C
+	.byte	$01
+	.byte	$14
+	.byte	$03
+	.byte	$46
 	.byte	$01
 	.byte	$FF
 _town_col:
@@ -6969,6 +7463,541 @@ _town_ruins:
 	.byte	$0A
 	.byte	$02
 	.byte	$00
+_temple2:
+	.byte	$03
+	.byte	$00
+	.byte	$03
+	.byte	$C4
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$03
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$02
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$10
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$01
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$05
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$13
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$07
+	.byte	$10
+	.byte	$03
+	.byte	$04
+	.byte	$01
+	.byte	$03
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$06
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$16
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$06
+	.byte	$01
+	.byte	$03
+	.byte	$05
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$16
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$05
+	.byte	$10
+	.byte	$01
+	.byte	$10
+	.byte	$03
+	.byte	$04
+	.byte	$01
+	.byte	$10
+	.byte	$01
+	.byte	$03
+	.byte	$04
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$06
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$81
+	.byte	$16
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$05
+	.byte	$10
+	.byte	$01
+	.byte	$01
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$01
+	.byte	$10
+	.byte	$01
+	.byte	$03
+	.byte	$04
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$16
+	.byte	$81
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$05
+	.byte	$10
+	.byte	$01
+	.byte	$01
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$01
+	.byte	$10
+	.byte	$01
+	.byte	$03
+	.byte	$04
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$06
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$16
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$05
+	.byte	$10
+	.byte	$03
+	.byte	$03
+	.byte	$01
+	.byte	$10
+	.byte	$03
+	.byte	$03
+	.byte	$01
+	.byte	$03
+	.byte	$04
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$16
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$81
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$07
+	.byte	$10
+	.byte	$03
+	.byte	$04
+	.byte	$01
+	.byte	$03
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$06
+	.byte	$81
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$16
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$08
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$07
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$16
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$06
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$13
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$06
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$80
+	.byte	$16
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$08
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$01
+	.byte	$03
+	.byte	$07
+	.byte	$10
+	.byte	$03
+	.byte	$02
+	.byte	$16
+	.byte	$80
+	.byte	$00
+	.byte	$00
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$01
+	.byte	$03
+	.byte	$13
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$00
+	.byte	$03
+	.byte	$05
+	.byte	$80
+	.byte	$01
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$10
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$14
+	.byte	$15
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$80
+	.byte	$12
+	.byte	$03
+	.byte	$13
+	.byte	$80
+	.byte	$00
+	.byte	$03
+	.byte	$09
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$03
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$82
+	.byte	$03
+	.byte	$02
+	.byte	$81
+	.byte	$00
+	.byte	$03
+	.byte	$44
+	.byte	$FF
+	.byte	$03
+	.byte	$07
+	.byte	$40
+	.byte	$50
+	.byte	$55
+	.byte	$03
+	.byte	$04
+	.byte	$01
+	.byte	$55
+	.byte	$59
+	.byte	$5A
+	.byte	$03
+	.byte	$03
+	.byte	$56
+	.byte	$50
+	.byte	$99
+	.byte	$66
+	.byte	$55
+	.byte	$03
+	.byte	$03
+	.byte	$99
+	.byte	$66
+	.byte	$99
+	.byte	$66
+	.byte	$55
+	.byte	$03
+	.byte	$03
+	.byte	$99
+	.byte	$66
+	.byte	$59
+	.byte	$56
+	.byte	$55
+	.byte	$03
+	.byte	$03
+	.byte	$59
+	.byte	$56
+	.byte	$55
+	.byte	$59
+	.byte	$5A
+	.byte	$03
+	.byte	$03
+	.byte	$56
+	.byte	$55
+	.byte	$04
+	.byte	$05
+	.byte	$03
+	.byte	$05
+	.byte	$01
+	.byte	$03
+	.byte	$00
+_villager_beard_idle1:
+	.byte	$00
+	.byte	$00
+	.byte	$94
+	.byte	$03
+	.byte	$00
+	.byte	$08
+	.byte	$A4
+	.byte	$03
+	.byte	$00
+	.byte	$10
+	.byte	$B4
+	.byte	$03
+	.byte	$80
+_villager_beard_idle2:
+	.byte	$00
+	.byte	$01
+	.byte	$94
+	.byte	$03
+	.byte	$00
+	.byte	$09
+	.byte	$A4
+	.byte	$03
+	.byte	$00
+	.byte	$11
+	.byte	$B4
+	.byte	$03
+	.byte	$80
+_villager_beard_idle3:
+	.byte	$00
+	.byte	$02
+	.byte	$94
+	.byte	$03
+	.byte	$00
+	.byte	$0A
+	.byte	$A4
+	.byte	$03
+	.byte	$00
+	.byte	$12
+	.byte	$B4
+	.byte	$03
+	.byte	$80
+_villager_beard_face:
+	.byte	$00
+	.byte	$00
+	.byte	$95
+	.byte	$03
+	.byte	$00
+	.byte	$08
+	.byte	$A5
+	.byte	$03
+	.byte	$00
+	.byte	$10
+	.byte	$B5
+	.byte	$03
+	.byte	$08
+	.byte	$00
+	.byte	$96
+	.byte	$03
+	.byte	$08
+	.byte	$08
+	.byte	$A6
+	.byte	$03
+	.byte	$08
+	.byte	$10
+	.byte	$B6
+	.byte	$03
+	.byte	$80
+_villager_animation_index:
+	.byte	$00
+	.byte	$06
+_villager_animation:
+	.addr	_villager_beard_idle1
+	.addr	_villager_beard_idle2
+	.addr	_villager_beard_idle3
+	.addr	_villager_beard_idle3
+	.addr	_villager_beard_idle2
+	.addr	_villager_beard_idle1
 _sorcerer_appear0_left:
 	.byte	$03
 	.byte	$14
@@ -7409,16 +8438,108 @@ _fireball3_right:
 	.byte	$BC
 	.byte	$40
 	.byte	$80
+_fireball_appear1:
+	.byte	$00
+	.byte	$00
+	.byte	$97
+	.byte	$00
+	.byte	$80
+_fireball_appear2:
+	.byte	$00
+	.byte	$00
+	.byte	$BD
+	.byte	$00
+	.byte	$80
 _fireball_animation_index:
 	.byte	$00
+	.byte	$01
+	.byte	$02
+	.byte	$02
+	.byte	$06
 	.byte	$03
 _fireball_animation:
+	.addr	_no_sprite
+	.addr	_no_sprite
+	.addr	_fireball_appear1
+	.addr	_fireball_appear2
+	.addr	_fireball_appear1
+	.addr	_fireball_appear2
 	.addr	_fireball1
 	.addr	_fireball2
 	.addr	_fireball3
 	.addr	_fireball1_right
 	.addr	_fireball2_right
 	.addr	_fireball3_right
+_staff:
+	.byte	$08
+	.byte	$C8
+	.byte	$9F
+	.byte	$00
+	.byte	$08
+	.byte	$D0
+	.byte	$80
+	.byte	$00
+	.byte	$16
+	.byte	$D0
+	.byte	$81
+	.byte	$00
+	.byte	$08
+	.byte	$D8
+	.byte	$82
+	.byte	$00
+	.byte	$08
+	.byte	$E0
+	.byte	$83
+	.byte	$00
+	.byte	$10
+	.byte	$D8
+	.byte	$84
+	.byte	$00
+	.byte	$03
+	.byte	$E8
+	.byte	$85
+	.byte	$00
+	.byte	$04
+	.byte	$F0
+	.byte	$86
+	.byte	$00
+	.byte	$FF
+	.byte	$F8
+	.byte	$87
+	.byte	$00
+	.byte	$FF
+	.byte	$08
+	.byte	$89
+	.byte	$00
+	.byte	$FD
+	.byte	$10
+	.byte	$8A
+	.byte	$00
+	.byte	$FC
+	.byte	$18
+	.byte	$8B
+	.byte	$00
+	.byte	$F7
+	.byte	$20
+	.byte	$8C
+	.byte	$00
+	.byte	$F7
+	.byte	$28
+	.byte	$8D
+	.byte	$00
+	.byte	$F6
+	.byte	$30
+	.byte	$8E
+	.byte	$00
+	.byte	$F2
+	.byte	$38
+	.byte	$8F
+	.byte	$00
+	.byte	$FF
+	.byte	$00
+	.byte	$88
+	.byte	$00
+	.byte	$80
 .segment	"CODE"
 
 .segment	"BSS"
@@ -7479,8 +8600,6 @@ _p1_health:
 _p1_max_health:
 	.res	1,$00
 _brick_counter:
-	.res	1,$00
-_tombstone_count:
 	.res	1,$00
 _wait_timer:
 	.res	1,$00
@@ -8822,7 +9941,7 @@ L000A:	ldy     _i
 ;
 ; }
 ;
-	jeq     L0004
+	beq     L0004
 	cmp     #$01
 	jeq     L001D
 	cmp     #$02
@@ -8830,66 +9949,8 @@ L000A:	ldy     _i
 	cmp     #$03
 	jeq     L0055
 	cmp     #$04
-	jeq     L00B6
-	cmp     #$05
-	jeq     L00B6
-	cmp     #$06
-	jeq     L00B6
-	cmp     #$07
-	jeq     L00B6
-	cmp     #$08
-	jeq     L00B6
-	cmp     #$09
-	jeq     L00B6
-	cmp     #$0A
-	jeq     L00B6
-	cmp     #$0B
-	jeq     L00B6
-	cmp     #$0C
-	jeq     L00B6
-	cmp     #$0D
-	jeq     L00B6
-	cmp     #$0E
-	jeq     L00B6
-	cmp     #$0F
-	jeq     L00B6
-	cmp     #$10
-	jeq     L00B6
-	cmp     #$11
-	jeq     L00B6
-	cmp     #$12
-	jeq     L00B6
-	cmp     #$13
-	jeq     L00B6
-	cmp     #$14
-	jeq     L00B6
-	cmp     #$15
-	jeq     L00B6
-	cmp     #$16
-	jeq     L00B6
-	cmp     #$17
-	jeq     L00B6
-	cmp     #$18
-	jeq     L00B6
-	cmp     #$19
-	jeq     L00B6
-	cmp     #$1A
-	jeq     L00B6
-	cmp     #$1B
-	jeq     L00B6
-	cmp     #$1C
-	jeq     L00B6
-	cmp     #$1D
-	jeq     L00B6
-	cmp     #$1E
-	jeq     L00B6
-	cmp     #$1F
-	jeq     L00B6
-	cmp     #$20
-	jeq     L00B6
-	cmp     #$21
-	jeq     L00B6
-	jmp     L00B6
+	jeq     L0056
+	jmp     L009A
 ;
 ; current_nametable = altar;
 ;
@@ -8998,9 +10059,9 @@ L0004:	lda     #>(_altar)
 ;
 	lda     #$07
 	sta     _i
-L00B2:	lda     _i
+L0096:	lda     _i
 	cmp     #$0B
-	bcs     L00B3
+	bcs     L0097
 ;
 ; actors.y[i] = 72;
 ;
@@ -9034,11 +10095,11 @@ L00B2:	lda     _i
 ; for (i = 7; i < 11; ++i) {
 ;
 	inc     _i
-	jmp     L00B2
+	jmp     L0096
 ;
 ; NECROMANCER = 6;
 ;
-L00B3:	lda     #$06
+L0097:	lda     #$06
 	sta     _NECROMANCER
 ;
 ; actors.x[NECROMANCER] = 120;
@@ -9107,7 +10168,7 @@ L00B3:	lda     #$06
 ;
 ; break;
 ;
-	jmp     L00B8
+	jmp     L0095
 ;
 ; current_nametable = cemetery;
 ;
@@ -9380,7 +10441,7 @@ L001D:	lda     #>(_cemetery)
 ;
 ; break;
 ;
-	jmp     L00B6
+	jmp     L009A
 ;
 ; current_nametable = temple;
 ;
@@ -9449,9 +10510,9 @@ L003B:	lda     #>(_temple)
 ;
 	lda     #$06
 	sta     _i
-L00B4:	lda     _i
+L0098:	lda     _i
 	cmp     #$09
-	bcs     L00B5
+	bcs     L0099
 ;
 ; actors.animation_delay[i] = 12;
 ;
@@ -9492,11 +10553,11 @@ L00B4:	lda     _i
 ; for (i = 6; i < 9; ++i) {
 ;
 	inc     _i
-	jmp     L00B4
+	jmp     L0098
 ;
 ; STILL_DECORATION = 10;
 ;
-L00B5:	lda     #$0A
+L0099:	lda     #$0A
 	sta     _STILL_DECORATION
 ;
 ; actors.x[STILL_DECORATION] = 184;
@@ -9593,11 +10654,73 @@ L004F:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L00B8
+	jmp     L0095
+;
+; current_nametable = temple2;
+;
+L0055:	lda     #>(_temple2)
+	sta     _current_nametable+1
+	lda     #<(_temple2)
+	sta     _current_nametable
+;
+; current_collision_map = temple2_col;
+;
+	lda     #>(_temple2_col)
+	sta     _current_collision_map+1
+	lda     #<(_temple2_col)
+	sta     _current_collision_map
+;
+; current_background_palette = pal_temple_bg;
+;
+	lda     #>(_pal_temple_bg)
+	sta     _current_background_palette+1
+	lda     #<(_pal_temple_bg)
+	sta     _current_background_palette
+;
+; current_sprite_palette = pal_temple_spr;
+;
+	lda     #>(_pal_temple_spr)
+	sta     _current_sprite_palette+1
+	lda     #<(_pal_temple_spr)
+	sta     _current_sprite_palette
+;
+; chr_4_index = 0x0A;
+;
+	lda     #$0A
+	sta     _chr_4_index
+;
+; paddle_count = 2;
+;
+	lda     #$02
+	sta     _paddle_count
+;
+; actors.x[0] = 0x70;
+;
+	lda     #$70
+	sta     _actors
+;
+; actors.y[0] = 0xC0;
+;
+	lda     #$C0
+	sta     _actors+14
+;
+; actors.x[1] = 0x70;
+;
+	lda     #$70
+	sta     _actors+1
+;
+; actors.y[1] = 0x48;
+;
+	lda     #$48
+	sta     _actors+15
+;
+; break;
+;
+	jmp     L009A
 ;
 ; current_nametable = town_ruins;
 ;
-L0055:	lda     #>(_town_ruins)
+L0056:	lda     #>(_town_ruins)
 	sta     _current_nametable+1
 	lda     #<(_town_ruins)
 	sta     _current_nametable
@@ -9979,20 +11102,20 @@ L0055:	lda     #>(_town_ruins)
 ;
 	ldy     _DEVIL
 	lda     #$06
-L00B8:	sta     _actors+280,y
+L0095:	sta     _actors+280,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
-L00B6:	lda     #$00
+L009A:	lda     #$00
 	sta     _i
-L00B7:	lda     _i
+L009B:	lda     _i
 	cmp     _paddle_count
-	bcs     L00A6
+	bcs     L0089
 ;
 ; if (i < 2) {
 ;
 	cmp     #$02
-	bcs     L00A9
+	bcs     L008C
 ;
 ; actors.width[i] = 0x20;   // 32
 ;
@@ -10014,11 +11137,11 @@ L00B7:	lda     _i
 ;
 ; } else {
 ;
-	jmp     L00AD
+	jmp     L0090
 ;
 ; actors.width[i] = 0x04;
 ;
-L00A9:	ldy     _i
+L008C:	ldy     _i
 	lda     #$04
 	sta     _actors+28,y
 ;
@@ -10036,18 +11159,18 @@ L00A9:	ldy     _i
 ;
 ; actors.maxSpeed[i] = 250;
 ;
-L00AD:	ldy     _i
+L0090:	ldy     _i
 	lda     #$FA
 	sta     _actors+210,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
 	inc     _i
-	jmp     L00B7
+	jmp     L009B
 ;
 ; }
 ;
-L00A6:	rts
+L0089:	rts
 
 .endproc
 
@@ -10772,10 +11895,6 @@ L0019:	lda     _current_collision_map
 	lda     #$00
 	sta     _brick_counter
 ;
-; tombstone_count = 0;
-;
-	sta     _tombstone_count
-;
 ; for (collision_index = 0; collision_index < 368; ++collision_index) {
 ;
 	sta     _collision_index
@@ -10786,7 +11905,7 @@ L0002:	lda     _collision_index
 	sbc     #$01
 	bvc     L0006
 	eor     #$80
-L0006:	bpl     L0003
+L0006:	bpl     L0017
 ;
 ; temp = c_map[collision_index] >> 4;
 ;
@@ -10804,32 +11923,13 @@ L0006:	bpl     L0003
 	lsr     a
 	sta     _temp
 ;
-; if (temp == 7) {
+; if (temp > 2 && temp < 8) {
 ;
-	cmp     #$07
-	bne     L0013
-;
-; ++tombstone_count;
-;
-	inc     _tombstone_count
-;
-; } else {
-;
-	jmp     L0004
-;
-; if (temp == 3) {
-;
-L0013:	lda     _temp
 	cmp     #$03
-;
-; } else {
-;
-	beq     L0015
-;
-; if (temp == 5) {
-;
-	cmp     #$05
-	bne     L000C
+	bcc     L0008
+	lda     _temp
+	cmp     #$08
+	bcs     L0008
 ;
 ; ++brick_counter;
 ;
@@ -10837,7 +11937,7 @@ L0013:	lda     _temp
 ;
 ; temp = c_map[collision_index] & 0x0F;
 ;
-L000C:	lda     _collision_index
+L0008:	lda     _collision_index
 	sta     ptr1
 	lda     _collision_index+1
 	clc
@@ -10848,17 +11948,17 @@ L000C:	lda     _collision_index
 	and     #$0F
 	sta     _temp
 ;
-; if (temp == 4 || temp == 5) {
+; if (temp > 2 && temp < 8) {
 ;
-	cmp     #$04
-	beq     L0015
+	cmp     #$03
+	bcc     L0004
 	lda     _temp
-	cmp     #$05
-	bne     L0004
+	cmp     #$08
+	bcs     L0004
 ;
 ; ++brick_counter;
 ;
-L0015:	inc     _brick_counter
+	inc     _brick_counter
 ;
 ; for (collision_index = 0; collision_index < 368; ++collision_index) {
 ;
@@ -10867,19 +11967,9 @@ L0004:	inc     _collision_index
 	inc     _collision_index+1
 	jmp     L0002
 ;
-; if (tombstone_count){
-;
-L0003:	lda     _tombstone_count
-	beq     L0016
-;
-; brick_counter = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
-;
-	lsr     a
-	sta     _brick_counter
-;
 ; set_chr_mode_4(chr_4_index);
 ;
-L0016:	lda     _chr_4_index
+L0017:	lda     _chr_4_index
 	jsr     _set_chr_mode_4
 ;
 ; set_chr_mode_5(chr_5_index);
@@ -10896,7 +11986,7 @@ L0016:	lda     _chr_4_index
 ;
 	lda     _game_state
 	cmp     #$01
-	bne     L0011
+	bne     L0010
 ;
 ; show_HUD();
 ;
@@ -10904,7 +11994,7 @@ L0016:	lda     _chr_4_index
 ;
 ; ppu_on_all();
 ;
-L0011:	jmp     _ppu_on_all
+L0010:	jmp     _ppu_on_all
 
 .endproc
 
@@ -10919,16 +12009,41 @@ L0011:	jmp     _ppu_on_all
 .segment	"CODE"
 
 ;
-; pal_bg((const char *)pal_cemetery_bg);
+; set_chr_mode_1(0x0C); // Sprite staff & lightning
 ;
-	lda     #<(_pal_cemetery_bg)
-	ldx     #>(_pal_cemetery_bg)
+	lda     #$0C
+	jsr     _set_chr_mode_1
+;
+; set_chr_mode_2(0x0E);
+;
+	lda     #$0E
+	jsr     _set_chr_mode_2
+;
+; set_chr_mode_3(0x0F);
+;
+	lda     #$0F
+	jsr     _set_chr_mode_3
+;
+; set_chr_mode_4(0x10);
+;
+	lda     #$10
+	jsr     _set_chr_mode_4
+;
+; set_chr_mode_5(0x11);
+;
+	lda     #$11
+	jsr     _set_chr_mode_5
+;
+; pal_bg((const char *)pal_title);
+;
+	lda     #<(_pal_title)
+	ldx     #>(_pal_title)
 	jsr     _pal_bg
 ;
-; pal_spr(pal_cemetery_spr);
+; pal_spr(pal_staff);
 ;
-	lda     #<(_pal_cemetery_spr)
-	ldx     #>(_pal_cemetery_spr)
+	lda     #<(_pal_staff)
+	ldx     #>(_pal_staff)
 	jsr     _pal_spr
 ;
 ; vram_adr(NAMETABLE_A);
@@ -12207,10 +13322,9 @@ L0041:	sta     ptr1
 	lda     #$01
 	sta     _actors+98,y
 ;
-; actors.state[i] = IDLE;
+; actors.state[i] = APPEARING;
 ;
 	ldy     _i
-	lda     #$00
 	sta     _actors+266,y
 ;
 ; actors.type[i] = TYPE_PARALYZER;
@@ -12458,61 +13572,6 @@ L0003:	rts
 ; }
 ;
 	cmp     #$01
-	bne     L002F
-;
-; }
-;
-	rts
-;
-; }
-;
-L002F:	cmp     #$02
-	beq     L0005
-	cmp     #$03
-	beq     L0028
-	cmp     #$04
-	bne     L0030
-;
-; }
-;
-	rts
-;
-; }
-;
-L0030:	cmp     #$05
-	jeq     L0029
-	cmp     #$06
-	jeq     L002A
-	cmp     #$07
-	jeq     L000F
-	cmp     #$08
-	bne     L0031
-;
-; }
-;
-	rts
-;
-; }
-;
-L0031:	cmp     #$09
-	bne     L0032
-;
-; }
-;
-	rts
-;
-; }
-;
-L0032:	cmp     #$0A
-	bne     L0033
-;
-; }
-;
-	rts
-;
-; }
-;
-L0033:	cmp     #$0B
 	bne     L0034
 ;
 ; }
@@ -12521,7 +13580,15 @@ L0033:	cmp     #$0B
 ;
 ; }
 ;
-L0034:	cmp     #$0C
+L0034:	cmp     #$02
+	beq     L0005
+	cmp     #$03
+	beq     L002C
+	cmp     #$04
+	jeq     L002D
+	cmp     #$05
+	jeq     L002E
+	cmp     #$06
 	bne     L0035
 ;
 ; }
@@ -12530,7 +13597,11 @@ L0034:	cmp     #$0C
 ;
 ; }
 ;
-L0035:	cmp     #$0D
+L0035:	cmp     #$07
+	jeq     L0013
+	cmp     #$08
+	jeq     L002F
+	cmp     #$09
 	bne     L0036
 ;
 ; }
@@ -12539,7 +13610,7 @@ L0035:	cmp     #$0D
 ;
 ; }
 ;
-L0036:	cmp     #$0E
+L0036:	cmp     #$0A
 	bne     L0037
 ;
 ; }
@@ -12548,7 +13619,7 @@ L0036:	cmp     #$0E
 ;
 ; }
 ;
-L0037:	cmp     #$0F
+L0037:	cmp     #$0B
 	bne     L0038
 ;
 ; }
@@ -12557,7 +13628,43 @@ L0037:	cmp     #$0F
 ;
 ; }
 ;
-L0038:	rts
+L0038:	cmp     #$0C
+	bne     L0039
+;
+; }
+;
+	rts
+;
+; }
+;
+L0039:	cmp     #$0D
+	bne     L003A
+;
+; }
+;
+	rts
+;
+; }
+;
+L003A:	cmp     #$0E
+	bne     L003B
+;
+; }
+;
+	rts
+;
+; }
+;
+L003B:	cmp     #$0F
+	bne     L003C
+;
+; }
+;
+	rts
+;
+; }
+;
+L003C:	rts
 ;
 ; if (p1_health) {
 ;
@@ -12574,7 +13681,7 @@ L0006:	jmp     _update_health
 ;
 ; remove_brick(TILE_BACK);
 ;
-L0028:	lda     #$10
+L002C:	lda     #$10
 	jsr     _remove_brick
 ;
 ; backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
@@ -12592,16 +13699,80 @@ L0028:	lda     #$10
 	sec
 	sbc     #$01
 	sta     _backup_nt_index
-	bcs     L0027
+	bcs     L002B
 	dec     _backup_nt_index+1
-	jmp     L0027
+	jmp     L002B
 L0008:	inc     _backup_nt_index
-	bne     L0027
+	bne     L002B
 	inc     _backup_nt_index+1
 ;
 ; --brick_counter;
 ;
-L0027:	dec     _brick_counter
+L002B:	dec     _brick_counter
+;
+; --brick_counter;
+;
+	dec     _brick_counter
+;
+; hit_brick(TILE_BACK);
+;
+	lda     #$10
+	jsr     _hit_brick
+;
+; add_xp(1, HUNDREDS);
+;
+	lda     #$01
+	jsr     pusha
+	lda     #$05
+	jmp     _add_xp
+;
+; remove_brick(TILE_BACK);
+;
+L002D:	lda     #$10
+	jsr     _remove_brick
+;
+; temp = backup_nt_index >> 5;
+;
+	lda     _backup_nt_index
+	ldx     _backup_nt_index+1
+	jsr     asrax4
+	jsr     asrax1
+	sta     _temp
+;
+; if (temp % 2) {
+;
+	and     #$01
+	beq     L000D
+;
+; backup_nt_index -= 32;
+;
+	lda     _backup_nt_index
+	sec
+	sbc     #$20
+	sta     _backup_nt_index
+	bcs     L0010
+	dec     _backup_nt_index+1
+;
+; } else {
+;
+	jmp     L0010
+;
+; backup_nt_index += 32;
+;
+L000D:	lda     #$20
+	clc
+	adc     _backup_nt_index
+	sta     _backup_nt_index
+	bcc     L0010
+	inc     _backup_nt_index+1
+;
+; --brick_counter;
+;
+L0010:	dec     _brick_counter
+;
+; --brick_counter;
+;
+	dec     _brick_counter
 ;
 ; hit_brick(TILE_BACK);
 ;
@@ -12617,7 +13788,7 @@ L0027:	dec     _brick_counter
 ;
 ; hit_brick(TILE_BACK);
 ;
-L0029:	lda     #$10
+L002E:	lda     #$10
 	jsr     _hit_brick
 ;
 ; add_xp(5, TENS);
@@ -12635,14 +13806,9 @@ L0029:	lda     #$10
 ;
 	rts
 ;
-; hit_brick(TILE_BACK_GRASS);
-;
-L002A:	lda     #$23
-	jmp     _hit_brick
-;
 ; c_map[backup_col_index] = 0x11;
 ;
-L000F:	lda     _backup_col_index
+L0013:	lda     _backup_col_index
 	clc
 	adc     #<(_c_map)
 	tay
@@ -12669,77 +13835,77 @@ L000F:	lda     _backup_col_index
 	lsr     a
 	sec
 	sbc     #$05
-	bcs     L0011
+	bcs     L0015
 	dex
-L0011:	jsr     pushax
+L0015:	jsr     pushax
 	ldx     #$00
 	lda     #$02
 	jsr     tosmoda0
 	stx     tmp1
 	ora     tmp1
-	beq     L0010
+	beq     L0014
 ;
 ; if (backup_col_index == 182 || backup_col_index == 185) {
 ;
 	lda     _backup_col_index+1
-	bne     L002B
+	bne     L0030
 	lda     _backup_col_index
 	cmp     #$B6
-	beq     L0014
-L002B:	lda     _backup_col_index+1
-	bne     L0012
+	beq     L0018
+L0030:	lda     _backup_col_index+1
+	bne     L0016
 	lda     _backup_col_index
 	cmp     #$B9
-	bne     L0012
+	bne     L0016
 ;
 ; temp = 0b10100101;
 ;
-L0014:	lda     #$A5
+L0018:	lda     #$A5
 	sta     _temp
 ;
 ; backup_col_index += 16;
 ;
-L0012:	lda     #$10
+L0016:	lda     #$10
 	clc
 	adc     _backup_col_index
 	sta     _backup_col_index
-	bcc     L001E
+	bcc     L0022
 	inc     _backup_col_index+1
 ;
 ; } else {
 ;
-	jmp     L001E
+	jmp     L0022
 ;
 ; if (backup_col_index == 198 || backup_col_index == 201) {
 ;
-L0010:	lda     _backup_col_index+1
-	bne     L002D
+L0014:	lda     _backup_col_index+1
+	bne     L0032
 	lda     _backup_col_index
 	cmp     #$C6
-	beq     L001B
-L002D:	lda     _backup_col_index+1
-	bne     L0019
+	beq     L001F
+L0032:	lda     _backup_col_index+1
+	bne     L001D
 	lda     _backup_col_index
 	cmp     #$C9
-	bne     L0019
+	bne     L001D
 ;
 ; temp = 0b10100101;
 ;
-L001B:	lda     #$A5
+L001F:	lda     #$A5
 	sta     _temp
 ;
 ; backup_col_index -= 16;
 ;
-L0019:	lda     _backup_col_index
+L001D:	lda     _backup_col_index
 	sec
 	sbc     #$10
 	sta     _backup_col_index
-	bcs     L001E
+	bcs     L0022
 	dec     _backup_col_index+1
 ;
 ; c_map[backup_col_index] = 0x11;
 ;
-L001E:	lda     _backup_col_index
+L0022:	lda     _backup_col_index
 	clc
 	adc     #<(_c_map)
 	sta     ptr1
@@ -12778,13 +13944,21 @@ L001E:	lda     _backup_col_index
 	ldx     ptr1+1
 	jsr     _one_vram_buffer
 ;
-; --brick_counter;
+; brick_counter -= 4; // TODO Dynamic tombstone size to allow more design ideas...
 ;
-	dec     _brick_counter
+	lda     _brick_counter
+	sec
+	sbc     #$04
+	sta     _brick_counter
 ;
 ; break;
 ;
 	rts
+;
+; hit_brick(TILE_BACK_GRASS);
+;
+L002F:	lda     #$23
+	jmp     _hit_brick
 
 .endproc
 
@@ -13171,9 +14345,9 @@ L000D:	lda     #$01
 .segment	"CODE"
 
 ;
-; for (i = 6; i < ACTOR_NUMBER; ++i) {
+; for (i = 5; i < ACTOR_NUMBER; ++i) {
 ;
-	lda     #$06
+	lda     #$05
 	sta     _i
 L0039:	lda     _i
 	cmp     #$0E
@@ -13415,7 +14589,7 @@ L003E:	lda     #$30
 	lda     #$01
 L0038:	sta     _actors+84,y
 ;
-; for (i = 6; i < ACTOR_NUMBER; ++i) {
+; for (i = 5; i < ACTOR_NUMBER; ++i) {
 ;
 L003F:	inc     _i
 	jmp     L0039
@@ -16814,6 +17988,10 @@ L0051:	jsr     _fadein
 ;
 L006D:	sta     _game_state
 ;
+; show_HUD();
+;
+	jsr     _show_HUD
+;
 ; ++story_step;
 ;
 	inc     _story_step
@@ -16942,12 +18120,6 @@ L0073:	inc     _wait_timer
 	ldx     #$20
 	jsr     _memfill
 ;
-; set_scroll_y(0xff);  // shift the bg down 1 pixel
-;
-	ldx     #$00
-	lda     #$FF
-	jsr     _set_scroll_y
-;
 ; color_emphasis(COL_EMP_NORMAL);
 ;
 	lda     #$00
@@ -16978,6 +18150,19 @@ L0073:	inc     _wait_timer
 	lda     #$01
 	jsr     _bank_spr
 ;
+; oam_meta_spr(182, 122, staff);
+;
+	jsr     decsp2
+	lda     #$B6
+	ldy     #$01
+	sta     (sp),y
+	lda     #$7A
+	dey
+	sta     (sp),y
+	lda     #<(_staff)
+	ldx     #>(_staff)
+	jsr     _oam_meta_spr
+;
 ; ppu_on_all();
 ;
 	jsr     _ppu_on_all
@@ -16998,13 +18183,29 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _get_pad_new
 	sta     _pad1_new
 ;
-; if (game_state == TITLE && pad1_new & PAD_START) {
+; if (game_state == TITLE) {
 ;
 	lda     _game_state
-	bne     L0017
+	bne     L0013
+;
+; oam_meta_spr(182, 122, staff);
+;
+	jsr     decsp2
+	lda     #$B6
+	ldy     #$01
+	sta     (sp),y
+	lda     #$7A
+	dey
+	sta     (sp),y
+	lda     #<(_staff)
+	ldx     #>(_staff)
+	jsr     _oam_meta_spr
+;
+; if (pad1_new & PAD_START) {
+;
 	lda     _pad1_new
 	and     #$10
-	beq     L0017
+	beq     L0002
 ;
 ; game_state = STORY;
 ;
@@ -17027,12 +18228,12 @@ L0002:	jsr     _ppu_wait_nmi
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
-L0017:	lda     _game_state
+L0013:	lda     _game_state
 	cmp     #$03
-	bne     L001A
+	bne     L0016
 	lda     _pad1_new
 	and     #$10
-	beq     L001A
+	beq     L0016
 ;
 ; hide_map();
 ;
@@ -17046,9 +18247,9 @@ L0017:	lda     _game_state
 ; } else if (game_state == STORY) {
 ;
 	jmp     L0002
-L001A:	lda     _game_state
+L0016:	lda     _game_state
 	cmp     #$02
-	bne     L001B
+	bne     L0017
 ;
 ; play_story();
 ;
@@ -17057,7 +18258,7 @@ L001A:	lda     _game_state
 ; } else if (game_state == MAIN) {
 ;
 	jmp     L0002
-L001B:	lda     _game_state
+L0017:	lda     _game_state
 	cmp     #$01
 	bne     L0002
 ;
@@ -17092,7 +18293,7 @@ L001B:	lda     _game_state
 ; if (brick_counter == 0) {
 ;
 	lda     _brick_counter
-	bne     L001C
+	bne     L0018
 ;
 ; game_state = STORY;
 ;
@@ -17101,17 +18302,13 @@ L001B:	lda     _game_state
 ;
 ; if (game_state == MAP) {
 ;
-L001C:	lda     _game_state
+L0018:	lda     _game_state
 	cmp     #$03
-	bne     L0014
+	jne     L0002
 ;
 ; show_map();
 ;
 	jsr     _show_map
-;
-; gray_line();
-;
-L0014:	jsr     _gray_line
 ;
 ; while (1) {
 ;

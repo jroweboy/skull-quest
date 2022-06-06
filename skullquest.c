@@ -11,9 +11,7 @@
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/map.pngE/map.h"
 #include "I-CHR/church-interior.pngE/temple.h"
-#include "Nametable/title_screen.h"
-#include "Nametable/black_level.h"
-
+#include "I-CHR/title_screen.pngE/title_screen.h"
 
 // PALETTES
 #include "palettes.h"
@@ -31,7 +29,6 @@
 #include "spr_stainedglass.h"
 #include "spr_devil.h"
 #include "spr_door.h"
-#include "spr_villagers.h"
 
 
 #pragma bss-name(push, "ZEROPAGE")
@@ -40,7 +37,7 @@ static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter, tombstone_count, wait_timer;
+static unsigned char p1_health, p1_max_health, brick_counter, wait_timer;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
 static unsigned char animation_index, frame_count, show_face, show_item, current_item;
 static unsigned char brightness = 4;
@@ -115,10 +112,14 @@ Actors actors;
 #pragma code-name("BANK0")
 
 // COLLISION
+#include "Nametable/black_level.h"
 #include "Collision/master_collision.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
+#include "I-CHR/temple-boss-room-2-paddles/temple2.h"
+#include "spr_villagers.h"
 #include "spr_sorcerer.h"
 #include "spr_fireball.h"
+#include "spr_staff.h"
 
 void reset_actors() {
     for (i = 5; i < ACTOR_NUMBER; ++i) {
@@ -454,6 +455,26 @@ void init_level_specifics() {
 
             break;
         case 3:
+            // TEMPLE 2 paddle level
+            // Achievement 1: 
+            // Achievement 2: 
+            current_nametable = temple2;
+            current_collision_map = temple2_col;
+            current_background_palette = pal_temple_bg;
+            current_sprite_palette = pal_temple_spr;
+
+            chr_4_index = 0x0A;
+
+            // Paddle
+            paddle_count = 2;
+            actors.x[0] = 0x70;
+            actors.y[0] = 0xC0;
+
+            // Paddle 2
+            actors.x[1] = 0x70;
+            actors.y[1] = 0x48;
+            break;
+        case 4:
             //  TOWN RUINS
             // Achievement 1: Door knocker
             // Achievement 2: Devil slayer
@@ -537,66 +558,6 @@ void init_level_specifics() {
             actors.animation_delay[DEVIL] = 16;
             actors.state[DEVIL] = IDLE;
             actors.type[DEVIL] = TYPE_DEVIL;
-            break;
-        case 4:
-            break;
-        case 5:
-            break;
-        case 6:
-            break;
-        case 7:
-            break;
-        case 8:
-            break;
-        case 9:
-            break;
-        case 10:
-            break;
-        case 11:
-            break;
-        case 12:
-            break;
-        case 13:
-            break;
-        case 14:
-            break;
-        case 15:
-            break;
-        case 16:
-            break;
-        case 17:
-            break;
-        case 18:
-            break;
-        case 19:
-            break;
-        case 20:
-            break;
-        case 21:
-            break;
-        case 22:
-            break;
-        case 23:
-            break;
-        case 24:
-            break;
-        case 25:
-            break;
-        case 26:
-            break;
-        case 27:
-            break;
-        case 28:
-            break;
-        case 29:
-            break;
-        case 30:
-            break;
-        case 31:
-            break;
-        case 32:
-            break;
-        case 33:
             break;
     }
 
@@ -782,37 +743,25 @@ void load_level() {
 
     load_collision();
 
+
     // Check how many tombstones or destructible brick there are
     brick_counter = 0;
-    tombstone_count = 0;
     for (collision_index = 0; collision_index < 368; ++collision_index) {
+        // collision_index contient 2 info de 4 bits
+        // First 4 bits:
         temp = c_map[collision_index] >> 4;
-        if (temp == 7) {
-            // Tombstone
-            ++tombstone_count;
-        } else {
-            if (temp == 3) {
-                ++brick_counter;
-            } else {
-                if (temp == 5) {
-                    ++brick_counter;
-                }
-                temp = c_map[collision_index] & 0x0F;
-                if (temp == 4 || temp == 5) {
-                    ++brick_counter;
-                }
-            }
+        if (temp > 2 && temp < 8) {
+            ++brick_counter;
+        }
+        // Last 4 bits:
+        temp = c_map[collision_index] & 0x0F;
+        if (temp > 2 && temp < 8) {
+            ++brick_counter;
         }
     }
 
-    if (tombstone_count){
-        brick_counter = tombstone_count >> 1;  // Divided by 2 because we only count the first 7 in the 0x77
-    }   
-
-
     set_chr_mode_4(chr_4_index);
     set_chr_mode_5(chr_5_index);
-
 
     skull_launched = FALSE;
     if (game_state == MAIN) {
@@ -823,8 +772,14 @@ void load_level() {
 }
 
 void load_title_screen() {
-    pal_bg((const char *)pal_cemetery_bg);
-    pal_spr(pal_cemetery_spr);
+    set_chr_mode_1(0x0C); // Sprite staff & lightning
+    set_chr_mode_2(0x0E);
+    set_chr_mode_3(0x0F);
+    set_chr_mode_4(0x10);
+    set_chr_mode_5(0x11);
+
+    pal_bg((const char *)pal_title);
+    pal_spr(pal_staff);
     vram_adr(NAMETABLE_A);
     vram_unrle(title_screen);
     game_state = TITLE;
@@ -1029,7 +984,7 @@ void move() {
                         actors.height[i] = 8;
                         actors.animation_delay[i] = 8;
                         actors.yDir[i] = DOWN;
-                        actors.state[i] = IDLE;
+                        actors.state[i] = APPEARING;
                         actors.type[i] = TYPE_PARALYZER;
                         actors.ySpeed[i] = 128;
 
@@ -1084,6 +1039,7 @@ void do_skull_tile_collision() {
                 --p1_health;
             }
             update_health();
+            // TODO!!!
             // Check death
             // play hurt or death sound ?
             // shake screen ??
@@ -1094,11 +1050,23 @@ void do_skull_tile_collision() {
             remove_brick(TILE_BACK);
             backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
             --brick_counter;
+            --brick_counter;
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
         case 0x04:
-            // Tall brick ??
+            // Tall brick
+            remove_brick(TILE_BACK);
+            temp = backup_nt_index >> 5;
+            if (temp % 2) {
+                backup_nt_index -= 32;
+            } else {
+                backup_nt_index += 32;
+            }
+            --brick_counter;
+            --brick_counter;
+            hit_brick(TILE_BACK);
+            add_xp(1, HUNDREDS);
             break;
         case 0x05:
             // Dot brick
@@ -1107,8 +1075,8 @@ void do_skull_tile_collision() {
             --brick_counter;
             break;
         case 0x06:
-            // Foliage
-            hit_brick(TILE_BACK_GRASS);
+            // 2-Hit Brick
+            // TODO
             break;
         case 0x07:
             // Tombstone
@@ -1128,9 +1096,11 @@ void do_skull_tile_collision() {
             c_map[backup_col_index] = 0x11;
 
             one_vram_buffer(temp, (backup_nt_index & 0x2C00) | 0x3C0 | ((backup_nt_index >> 4) & 0x38) | ((backup_nt_index >> 2) & 0x07));
-            --brick_counter;
+            brick_counter -= 4; // TODO Dynamic tombstone size to allow more design ideas...
             break;
         case 0x08:
+            // Foliage
+            hit_brick(TILE_BACK_GRASS);
             break;
         case 0x09:
             break;
@@ -1178,7 +1148,7 @@ char is_paddle_collision_skull() {
 
 
 void check_enemy_collision() {
-    for (i = 6; i < ACTOR_NUMBER; ++i) {
+    for (i = 5; i < ACTOR_NUMBER; ++i) {
         if (actors.state[i] != INACTIVE && actors.state[i] != DEAD) {
             pad_index = i;
             if (actors.state[i] != DYING && is_skull_collision_paddle()) {
@@ -2048,6 +2018,7 @@ void play_story() {
                     break;
                 case 1:
                     game_state = MAIN;
+                    show_HUD();
                     ++story_step;
                     break;
                 case 2:
@@ -2095,7 +2066,7 @@ void main() {
     // memfill(void *dst,unsigned char value,unsigned int len);
     memfill(wram_array, 0, 0x2000);
 
-    set_scroll_y(0xff);  // shift the bg down 1 pixel
+    // set_scroll_y(0xff);  // shift the bg down 1 pixel
     
     color_emphasis(COL_EMP_NORMAL);
 
@@ -2108,7 +2079,8 @@ void main() {
     banked_call(0, init_skull);
 
     bank_spr(1);
-
+    oam_meta_spr(182, 122, staff);
+    
     ppu_on_all();
 
     while (1) {
@@ -2117,18 +2089,25 @@ void main() {
         pad1 = pad_poll(0);
         pad1_new = get_pad_new(0);
 
-        if (game_state == TITLE && pad1_new & PAD_START) {
+        if (game_state == TITLE) {
+            // SHOW STAFF
+            oam_meta_spr(182, 122, staff);
+
             // PRESS START TO PLAY!
-
-            game_state = STORY;
-            current_level = 0;
-            story_step = 0;
+            if (pad1_new & PAD_START) {
+                game_state = STORY;
+                current_level = 0;
+                story_step = 0;
             
-            // DEBUG
-            // game_state = MAIN;
-            // current_level = 2;
+                // DEBUG
+                // game_state = MAIN;
+                // current_level = 3;
+                // items.sprite[current_item] = ITEM_MAGNET;
+                // items.is_active[current_item] = TRUE;
+                // items.type[current_item] = TYPE_MAGNET;
+                load_level();
+            }
 
-            load_level();
         } else if (game_state == MAP && pad1_new & PAD_START) {
             // Return to gameplay
             hide_map();
@@ -2143,7 +2122,7 @@ void main() {
 
             draw_sprites();
 
-            // Current item:
+            // CURRENT ITEM:
             oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
 
             if (brick_counter == 0) {
@@ -2154,7 +2133,7 @@ void main() {
                 show_map();
             }
             
-            gray_line();
+            // gray_line();
         }
     }
 }

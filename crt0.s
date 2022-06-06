@@ -383,10 +383,11 @@ sounds_data:
 
 
 .segment "CHARS"
-
+	 ; SPRITES
      ;mode 0 changes $1000-$17FF
      ;mode 1 changes $1800-$1FFF
      
+	 ; BACKGROUND
      ;mode 2 changes $0000-$03FF
      ;mode 3 changes $0400-$07FF
      ;mode 4 changes $0800-$0BFF
@@ -397,8 +398,10 @@ sounds_data:
 	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    3
 
 	.incbin "I-CHR/sprites01.pngE/chrblock-top1.chr"; 2kb Main TOP sprites   4  -  5
-	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces - Lightning   -  6  -  7
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces 6  -  7
 	
 	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
 	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple - Town1 A
 	.incbin "I-CHR/town-ruins.pngE/chrblock.chr" ; 1kb Town2 B
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom2-staff.chr"; 2kb Staff - Lightning C - D"
+	.incbin "I-CHR/title_screen.pngE/title_screen.chr" ; 4kb Title Screen!!! E F

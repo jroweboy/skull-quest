@@ -58,8 +58,8 @@ JUNE
 1:
     x Collision glitch fix
     x Clear sprite after cemetery
-    - ITEM magnet
-    - No HUD when loadingas temple??
+    x ITEM magnet
+    x No HUD when loadingas temple??
     - Ruin town crate bug
     - Crow collision ??
     - Town ghost NPC
