@@ -306,6 +306,7 @@
 	.export		_wait_input
 	.export		_wait
 	.export		_play_story
+	.export		_debug_start
 	.export		_main
 
 .segment	"DATA"
@@ -9108,6 +9109,8 @@ _brick_counter:
 	.res	1,$00
 _wait_timer:
 	.res	1,$00
+_magnet_force:
+	.res	1,$00
 _game_state:
 	.res	1,$00
 _current_level:
@@ -15976,7 +15979,7 @@ L0004:	inc     _pad_index
 ;
 L002A:	lda     _pad1_new
 	and     #$80
-	beq     L002C
+	beq     L002D
 ;
 ; if (skull_launched) {
 ;
@@ -16021,11 +16024,16 @@ L002B:	lda     #$01
 	lda     #$02
 	sta     _actors+270
 ;
+; magnet_force = NULL;
+;
+L002C:	lda     #$00
+L002D:	sta     _magnet_force
+;
 ; if (pad1_new & PAD_B) {
 ;
-L002C:	lda     _pad1_new
+	lda     _pad1_new
 	and     #$40
-	beq     L002E
+	beq     L002F
 ;
 ; switch (items.type[current_item]) {
 ;
@@ -16035,7 +16043,7 @@ L002C:	lda     _pad1_new
 ; }
 ;
 	cmp     #$01
-	bne     L002E
+	bne     L002F
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
@@ -16047,14 +16055,14 @@ L002C:	lda     _pad1_new
 	cmp     _actors
 	bcs     L0020
 	lda     #$01
-	jmp     L002D
+	jmp     L002E
 L0020:	lda     #$FF
-L002D:	cmp     #$80
+L002E:	cmp     #$80
 	sta     _actors+88
 ;
 ; if (pad1_new & PAD_SELECT) {
 ;
-L002E:	lda     _pad1_new
+L002F:	lda     _pad1_new
 	ldx     #$00
 	and     #$20
 	stx     tmp1
@@ -16096,7 +16104,7 @@ L0024:	rts
 ; if (skull_launched) {
 ;
 	lda     _skull_launched
-	jeq     L0046
+	jeq     L0047
 ;
 ; param1 = SKULL;
 ;
@@ -16111,12 +16119,14 @@ L0024:	rts
 	jsr     tosaddax
 	sta     _temp_x
 ;
-; temp_y = actors.y[SKULL] + get_y_speed();
+; temp_y = actors.y[SKULL] + get_y_speed() + magnet_force;
 ;
 	lda     _actors+18
 	jsr     pusha0
 	jsr     _get_y_speed
 	jsr     tosaddax
+	clc
+	adc     _magnet_force
 	sta     _temp_y
 ;
 ; ++temp_x;
@@ -16155,7 +16165,7 @@ L0024:	rts
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003B
+	beq     L003C
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16183,7 +16193,7 @@ L0008:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col += actors.width[SKULL];
 ;
-L003B:	lda     _actors+32
+L003C:	lda     _actors+32
 	clc
 	adc     _temp_x_col
 	sta     _temp_x_col
@@ -16197,7 +16207,7 @@ L003B:	lda     _actors+32
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003C
+	beq     L003D
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16225,7 +16235,7 @@ L003B:	lda     _actors+32
 ;
 ; temp_y_col += actors.height[SKULL];
 ;
-L003C:	lda     _actors+46
+L003D:	lda     _actors+46
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -16292,7 +16302,7 @@ L000F:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L004A
+	jmp     L004B
 ;
 ; temp_x_col = temp_x;
 ;
@@ -16308,7 +16318,7 @@ L0005:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003D
+	beq     L003E
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16342,7 +16352,7 @@ L0013:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
-L003D:	lda     _temp_x
+L003E:	lda     _temp_x
 	clc
 	adc     _actors+32
 	sta     _temp_x_col
@@ -16358,7 +16368,7 @@ L003D:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003E
+	beq     L003F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16386,7 +16396,7 @@ L003D:	lda     _temp_x
 ;
 ; temp_y_col = temp_y;
 ;
-L003E:	lda     _temp_y
+L003F:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -16432,7 +16442,7 @@ L003E:	lda     _temp_y
 ;
 	lda     _temp
 	cmp     _temp2
-	jne     L0044
+	jne     L0045
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
@@ -16472,7 +16482,7 @@ L0003:	lda     _actors+102
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0040
+	beq     L0041
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16500,7 +16510,7 @@ L001F:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0040:	lda     _temp_x
+L0041:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y;
@@ -16512,7 +16522,7 @@ L0040:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0041
+	beq     L0042
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16546,7 +16556,7 @@ L0040:	lda     _temp_x
 ;
 ; temp_x_col = temp_x;
 ;
-L0041:	lda     _temp_x
+L0042:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col += actors.height[SKULL];
@@ -16618,7 +16628,7 @@ L0026:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L004A
+	jmp     L004B
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
@@ -16636,7 +16646,7 @@ L001C:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0042
+	beq     L0043
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16670,7 +16680,7 @@ L002A:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0042:	lda     _temp_x
+L0043:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y + actors.height[SKULL];
@@ -16684,7 +16694,7 @@ L0042:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0043
+	beq     L0044
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -16718,7 +16728,7 @@ L0042:	lda     _temp_x
 ;
 ; temp_y_col = temp_y;
 ;
-L0043:	lda     _temp_y
+L0044:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -16764,7 +16774,7 @@ L0043:	lda     _temp_y
 ;
 	lda     _temp
 	cmp     _temp2
-	bne     L0044
+	bne     L0045
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -16782,8 +16792,8 @@ L0043:	lda     _temp_y
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
-L0044:	lda     #$01
-L004A:	sta     _actors+102
+L0045:	lda     #$01
+L004B:	sta     _actors+102
 ;
 ; temp_y = actors.y[SKULL];
 ;
@@ -16812,17 +16822,17 @@ L002E:	jsr     _check_paddle_collision
 ;
 ; } else {
 ;
-	jmp     L0047
+	jmp     L0048
 ;
 ; temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
 ;
-L0046:	lda     _actors+28
+L0047:	lda     _actors+28
 	lsr     a
 	clc
 	adc     _actors
-	bcc     L003A
+	bcc     L003B
 	inx
-L003A:	jsr     pushax
+L003B:	jsr     pushax
 	lda     _actors+32
 	lsr     a
 	jsr     tossuba0
@@ -16841,7 +16851,7 @@ L003A:	jsr     pushax
 ;
 ; actors.x[SKULL] = temp_x;
 ;
-L0047:	lda     _temp_x
+L0048:	lda     _temp_x
 	sta     _actors+4
 ;
 ; actors.y[SKULL] = temp_y;
@@ -18799,6 +18809,83 @@ L0084:	inc     _wait_timer
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ debug_start (char debuglevel)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_debug_start: near
+
+.segment	"CODE"
+
+;
+; void debug_start(char debuglevel){
+;
+	jsr     pusha
+;
+; game_state = MAIN;
+;
+	lda     #$01
+	sta     _game_state
+;
+; init_skull();
+;
+	jsr     _init_skull
+;
+; set_chr_mode_1(0x06);
+;
+	lda     #$06
+	jsr     _set_chr_mode_1
+;
+; set_chr_mode_2(0x00);
+;
+	lda     #$00
+	jsr     _set_chr_mode_2
+;
+; set_chr_mode_3(0x01);
+;
+	lda     #$01
+	jsr     _set_chr_mode_3
+;
+; pal_bright(4);
+;
+	lda     #$04
+	jsr     _pal_bright
+;
+; current_level = debuglevel;
+;
+	ldy     #$00
+	lda     (sp),y
+	sta     _current_level
+;
+; load_level();
+;
+	jsr     _load_level
+;
+; items.sprite[current_item] = ITEM_MAGNET;
+;
+	ldy     _current_item
+	lda     #$09
+	sta     _items+16,y
+;
+; items.is_active[current_item] = TRUE;
+;
+	ldy     _current_item
+	lda     #$01
+	sta     _items+8,y
+;
+; items.type[current_item] = TYPE_MAGNET;
+;
+	ldy     _current_item
+	sta     _items,y
+;
+; }
+;
+	jmp     incsp1
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ main (void)
 ; ---------------------------------------------------------------
 
@@ -18939,6 +19026,11 @@ L0002:	jsr     _ppu_wait_nmi
 	sta     _scroll_index_y
 	sta     _scroll_index_y+1
 ;
+; debug_start(1);
+;
+	lda     #$01
+	jsr     _debug_start
+;
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;
 	jmp     L0002
@@ -18974,7 +19066,7 @@ L0016:	lda     _game_state
 	jmp     L0002
 L0017:	lda     _game_state
 	cmp     #$01
-	bne     L0002
+	jne     L0002
 ;
 ; check_main_input();
 ;

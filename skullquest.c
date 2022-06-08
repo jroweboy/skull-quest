@@ -2113,6 +2113,21 @@ void play_story() {
     ++wait_timer;
 }
 
+void debug_start(char debuglevel){
+    game_state = MAIN;
+    init_skull();
+
+    set_chr_mode_1(0x06);
+    set_chr_mode_2(0x00);
+    set_chr_mode_3(0x01);
+    pal_bright(4);
+    current_level = debuglevel;
+    load_level();
+    items.sprite[current_item] = ITEM_MAGNET;
+    items.is_active[current_item] = TRUE;
+    items.type[current_item] = TYPE_MAGNET;
+}
+
 void main() {
     // famitone_init(&music_data);
     // sfx_init(&sound_data);
@@ -2164,13 +2179,10 @@ void main() {
                 current_level = 250;
                 story_step = NULL;
                 scroll_index_y = NULL;
+
                 // DEBUG
-                // game_state = MAIN;
-                // current_level = 3;
-                // items.sprite[current_item] = ITEM_MAGNET;
-                // items.is_active[current_item] = TRUE;
-                // items.type[current_item] = TYPE_MAGNET;
-                // load_level();
+                debug_start(1);
+
             }
 
         } else if (game_state == MAP && pad1_new & PAD_START) {
