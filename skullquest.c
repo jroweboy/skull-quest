@@ -46,7 +46,7 @@ static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION,
 
 unsigned char const * * animation_array;
 
-static int collision_index, backup_col_index, backup_nt_index;
+static int collision_index, backup_col_index, backup_nt_index, scroll_index_y;
 
 #pragma bss-name(pop)
 
@@ -116,6 +116,7 @@ Actors actors;
 #include "Collision/master_collision.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
 #include "I-CHR/temple-boss-room-2-paddles/temple2.h"
+#include "I-CHR/title_screen.pngE/story.h"
 #include "spr_villagers.h"
 #include "spr_sorcerer.h"
 #include "spr_fireball.h"
@@ -675,7 +676,7 @@ void show_map() {
     pal_col(0x00, 0x0f);
     pal_col(0x01, 0x28); // MAP BACK COLOR
     pal_col(0x02, 0x18);
-    set_scroll_x(0x0100);
+    set_scroll_y(0x00F0);
     ppu_wait_nmi();
     ppu_on_all();
 }
@@ -684,7 +685,7 @@ void hide_map() {
     pal_bg(current_background_palette);
     set_chr_mode_4(chr_4_index);
     set_chr_mode_5(chr_5_index);
-    set_scroll_x(0x0000);
+    set_scroll_y(0x0000);
 }
 
 void show_game_over() {
@@ -693,7 +694,7 @@ void show_game_over() {
 
 void load_black_level() {
     ppu_off();
-    set_scroll_x(0x0000);
+    // set_scroll_x(0x0000);
 
     vram_adr(NAMETABLE_A);
     vram_unrle(black_level);
@@ -780,13 +781,18 @@ void load_title_screen() {
 
     pal_bg((const char *)pal_title);
     pal_spr(pal_staff);
+    
     vram_adr(NAMETABLE_A);
     vram_unrle(title_screen);
+    
+    vram_adr(NAMETABLE_C);
+    vram_unrle(story);
+
     game_state = TITLE;
 }
 
 void load_map() {
-    vram_adr(NAMETABLE_B);
+    vram_adr(NAMETABLE_C);
     vram_unrle(map);
 }
 
@@ -1802,6 +1808,7 @@ void play_story() {
                     if (story_counter > 180) {
                         ++story_step;
                         story_counter = 0;
+                        load_map();
                     }
                     break;
                 case 4:
@@ -1819,7 +1826,7 @@ void play_story() {
                     fadein();
                     break;
                 case 7:
-                    story_counter = 56;
+                    story_counter = 56; // Skull y position
                     ++story_step;
                 case 8:
                     // Skull moving to cemetery on map 128.56 to 156.156
@@ -1841,6 +1848,7 @@ void play_story() {
                     fadeout();
                     break;
                 case 11:
+                    hide_map();
                     actors.state[SKULL] = INACTIVE;
                     reset_actors();
                     current_level = 1;
@@ -2046,6 +2054,57 @@ void play_story() {
                     break;
             }
             break;
+        case 250:
+            // INTRO STORY
+            switch (story_step) {
+                case 0:
+                    oam_meta_spr(182, 122, staff);
+                    fadeout();
+                    break;
+                case 1:
+                    wait(64);
+                    break;
+                case 2:
+                    // Erase the title screen (sad, but no choice!)
+                    oam_clear();
+                    load_black_level();
+                    ++story_step;
+                    break;
+                case 3:
+                    // Prepare the graphics
+                    set_chr_mode_1(0x06);
+                    set_chr_mode_2(0x00);
+                    set_chr_mode_3(0x01);
+                    pal_bright(4);
+                    story_counter = NULL;
+                    scroll_index_y = NULL;
+                    ++story_step;
+                    break;
+                case 4:
+                    // Scroll !!!
+                        set_scroll_y(scroll_index_y);
+                        scroll_index_y = add_scroll_y(1, scroll_index_y);
+                    if (story_counter > 10) {
+                        story_counter = NULL;
+                    }
+                    ++story_counter;
+                    if (scroll_index_y > 460) {
+                        ++story_step;
+                    }
+                    break;
+                case 5:
+                    fadeout();
+                    break;
+                case 6:
+                    story_step = 0;
+                    current_level = 0;
+                    set_scroll_y(0);
+                    load_level();
+                    pal_bright(4);
+                    break;
+            }
+            break;
+
     }
     ++story_counter;
     if (wait_timer == 127){
@@ -2068,19 +2127,19 @@ void main() {
 
     // set_scroll_y(0xff);  // shift the bg down 1 pixel
     
-    color_emphasis(COL_EMP_NORMAL);
+    // color_emphasis(COL_EMP_NORMAL);
 
+    set_mirroring(MIRROR_HORIZONTAL);
+    
     set_vram_buffer();
 
     load_title_screen();
-
-    load_map();
 
     banked_call(0, init_skull);
 
     bank_spr(1);
     oam_meta_spr(182, 122, staff);
-    
+
     ppu_on_all();
 
     while (1) {
@@ -2093,19 +2152,25 @@ void main() {
             // SHOW STAFF
             oam_meta_spr(182, 122, staff);
 
+            // TODO Show skull cursor sprite
+
+            // Player's choice
+            // TODO  Continue or New Game
+
             // PRESS START TO PLAY!
             if (pad1_new & PAD_START) {
+                oam_clear();
                 game_state = STORY;
-                current_level = 0;
-                story_step = 0;
-            
+                current_level = 250;
+                story_step = NULL;
+                scroll_index_y = NULL;
                 // DEBUG
                 // game_state = MAIN;
                 // current_level = 3;
                 // items.sprite[current_item] = ITEM_MAGNET;
                 // items.is_active[current_item] = TRUE;
                 // items.type[current_item] = TYPE_MAGNET;
-                load_level();
+                // load_level();
             }
 
         } else if (game_state == MAP && pad1_new & PAD_START) {

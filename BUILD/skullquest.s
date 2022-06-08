@@ -12,7 +12,6 @@
 	.macpack	longbranch
 	.forceimport	__STARTUP__
 	.export		_empty_line
-	.export		_story
 	.export		_dialogs
 	.export		_set_animation_info
 	.export		_get_x_speed
@@ -22,7 +21,8 @@
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
 	.import		_set_scroll_x
-	.import		_color_emphasis
+	.import		_set_scroll_y
+	.import		_add_scroll_y
 	.import		_pal_bg
 	.import		_pal_spr
 	.import		_pal_col
@@ -49,6 +49,7 @@
 	.import		_set_chr_mode_3
 	.import		_set_chr_mode_4
 	.import		_set_chr_mode_5
+	.import		_set_mirroring
 	.import		_disable_irq
 	.export		_altar
 	.export		_cemetery
@@ -218,6 +219,7 @@
 	.export		_town_col
 	.export		_town_ruins
 	.export		_temple2
+	.export		_story
 	.export		_villager_beard_idle1
 	.export		_villager_beard_idle2
 	.export		_villager_beard_idle3
@@ -318,44 +320,6 @@ _exp:
 _empty_line:
 	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
 	.byte	$20,$20,$20,$20,$20,$20,$20,$00
-_story:
-	.byte	$54,$68,$65,$20,$63,$69,$74,$79,$20,$6F,$66,$20,$58,$79,$6C,$65
-	.byte	$72,$69,$61,$20,$77,$61,$73,$20,$72,$75,$6C,$65,$64,$20,$62,$79
-	.byte	$20,$4B,$68,$61,$72,$7A,$6F,$69,$64,$2C,$20,$61,$20,$64,$61,$72
-	.byte	$6B,$20,$61,$6E,$64,$20,$70,$6F,$77,$65,$72,$66,$75,$6C,$20,$77
-	.byte	$69,$7A,$61,$72,$64,$2E,$00
-	.byte	$49,$6E,$20,$68,$69,$73,$20,$74,$77,$69,$73,$74,$65,$64,$20,$69
-	.byte	$6D,$61,$67,$69,$6E,$61,$74,$69,$6F,$6E,$2C,$20,$68,$65,$20,$63
-	.byte	$6F,$6E,$63,$65,$69,$76,$65,$64,$20,$61,$20,$64,$69,$61,$62,$6F
-	.byte	$6C,$69,$63,$61,$6C,$20,$67,$61,$6D,$65,$2C,$20,$66,$69,$6C,$6C
-	.byte	$65,$64,$20,$77,$69,$74,$68,$20,$74,$72,$61,$70,$73,$20,$61,$6E
-	.byte	$64,$20,$66,$6F,$65,$73,$2E,$00
-	.byte	$45,$61,$63,$68,$20,$79,$65,$61,$72,$2C,$20,$61,$20,$70,$72,$69
-	.byte	$73,$6F,$6E,$65,$72,$20,$77,$6F,$75,$6C,$64,$20,$67,$65,$74,$20
-	.byte	$61,$20,$63,$68,$61,$6E,$63,$65,$20,$6F,$66,$20,$72,$65,$64,$65
-	.byte	$6D,$70,$74,$69,$6F,$6E,$20,$69,$66,$20,$68,$65,$20,$63,$6F,$75
-	.byte	$6C,$64,$20,$73,$75,$63,$63,$65,$65,$64,$20,$74,$68,$65,$20,$74
-	.byte	$72,$69,$61,$6C,$2E,$00
-	.byte	$48,$69,$73,$20,$73,$6F,$75,$6C,$20,$77,$61,$73,$20,$74,$72,$61
-	.byte	$6E,$73,$66,$65,$72,$65,$64,$20,$69,$6E,$74,$6F,$20,$61,$20,$6D
-	.byte	$61,$67,$69,$63,$61,$6C,$20,$73,$6B,$75,$6C,$6C,$2E,$20,$49,$66
-	.byte	$20,$69,$74,$20,$67,$6F,$74,$20,$64,$65,$73,$74,$72,$6F,$79,$65
-	.byte	$64,$2C,$20,$68,$69,$73,$20,$73,$6F,$75,$6C,$20,$77,$61,$73,$20
-	.byte	$6C,$6F,$73,$74,$2E,$00
-	.byte	$42,$75,$74,$20,$61,$20,$62,$72,$61,$76,$65,$20,$61,$6E,$64,$20
-	.byte	$63,$6F,$75,$72,$61,$67,$65,$6F,$75,$73,$20,$6D,$61,$6E,$20,$73
-	.byte	$74,$6F,$6F,$64,$20,$75,$70,$20,$74,$6F,$20,$74,$68,$65,$20,$63
-	.byte	$68,$61,$6C,$6C,$65,$6E,$67,$65,$2E,$00
-	.res	13,$00
-	.byte	$48,$65,$20,$67,$6F,$74,$20,$70,$75,$74,$20,$69,$6E,$20,$6A,$61
-	.byte	$69,$6C,$2C,$20,$61,$6C,$74,$68,$6F,$75,$67,$68,$20,$68,$65,$20
-	.byte	$77,$61,$73,$20,$66,$61,$75,$6C,$74,$6C,$65,$73,$73,$2E,$20,$41
-	.byte	$6E,$64,$20,$77,$61,$69,$74,$65,$64,$20,$70,$61,$74,$69,$65,$6E
-	.byte	$74,$6C,$79,$20,$66,$6F,$72,$20,$74,$68,$65,$20,$64,$61,$79,$20
-	.byte	$6F,$66,$20,$74,$68,$65,$20,$54,$72,$69,$61,$6C,$2E,$00
-	.byte	$54,$68,$65,$20,$64,$61,$79,$20,$6F,$66,$20,$72,$65,$76,$65,$6E
-	.byte	$67,$65,$2E,$00
-	.res	51,$00
 _dialogs:
 	.byte	$57,$68,$65,$72,$65,$2E,$2E,$2E,$20,$00
 	.res	14,$00
@@ -7920,6 +7884,547 @@ _temple2:
 	.byte	$01
 	.byte	$03
 	.byte	$00
+_story:
+	.byte	$01
+	.byte	$00
+	.byte	$01
+	.byte	$05
+	.byte	$54
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$63
+	.byte	$69
+	.byte	$74
+	.byte	$79
+	.byte	$00
+	.byte	$6F
+	.byte	$66
+	.byte	$00
+	.byte	$58
+	.byte	$79
+	.byte	$6C
+	.byte	$65
+	.byte	$72
+	.byte	$69
+	.byte	$61
+	.byte	$00
+	.byte	$01
+	.byte	$0B
+	.byte	$77
+	.byte	$61
+	.byte	$73
+	.byte	$00
+	.byte	$72
+	.byte	$75
+	.byte	$6C
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$62
+	.byte	$79
+	.byte	$00
+	.byte	$4B
+	.byte	$68
+	.byte	$61
+	.byte	$72
+	.byte	$7A
+	.byte	$6F
+	.byte	$69
+	.byte	$64
+	.byte	$2C
+	.byte	$00
+	.byte	$01
+	.byte	$07
+	.byte	$61
+	.byte	$00
+	.byte	$64
+	.byte	$61
+	.byte	$72
+	.byte	$6B
+	.byte	$00
+	.byte	$61
+	.byte	$6E
+	.byte	$64
+	.byte	$00
+	.byte	$70
+	.byte	$6F
+	.byte	$77
+	.byte	$65
+	.byte	$72
+	.byte	$66
+	.byte	$75
+	.byte	$6C
+	.byte	$00
+	.byte	$77
+	.byte	$69
+	.byte	$7A
+	.byte	$61
+	.byte	$72
+	.byte	$64
+	.byte	$00
+	.byte	$01
+	.byte	$25
+	.byte	$49
+	.byte	$6E
+	.byte	$00
+	.byte	$68
+	.byte	$69
+	.byte	$73
+	.byte	$00
+	.byte	$74
+	.byte	$77
+	.byte	$69
+	.byte	$73
+	.byte	$74
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$69
+	.byte	$6D
+	.byte	$61
+	.byte	$67
+	.byte	$69
+	.byte	$6E
+	.byte	$61
+	.byte	$74
+	.byte	$69
+	.byte	$6F
+	.byte	$6E
+	.byte	$2C
+	.byte	$00
+	.byte	$01
+	.byte	$02
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$63
+	.byte	$6F
+	.byte	$6E
+	.byte	$63
+	.byte	$65
+	.byte	$69
+	.byte	$76
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$61
+	.byte	$00
+	.byte	$64
+	.byte	$69
+	.byte	$61
+	.byte	$62
+	.byte	$6F
+	.byte	$6C
+	.byte	$69
+	.byte	$63
+	.byte	$61
+	.byte	$6C
+	.byte	$00
+	.byte	$67
+	.byte	$61
+	.byte	$6D
+	.byte	$65
+	.byte	$00
+	.byte	$01
+	.byte	$03
+	.byte	$66
+	.byte	$69
+	.byte	$6C
+	.byte	$6C
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$77
+	.byte	$69
+	.byte	$74
+	.byte	$68
+	.byte	$00
+	.byte	$74
+	.byte	$72
+	.byte	$61
+	.byte	$70
+	.byte	$73
+	.byte	$00
+	.byte	$61
+	.byte	$6E
+	.byte	$64
+	.byte	$00
+	.byte	$66
+	.byte	$6F
+	.byte	$65
+	.byte	$73
+	.byte	$00
+	.byte	$01
+	.byte	$25
+	.byte	$45
+	.byte	$61
+	.byte	$63
+	.byte	$68
+	.byte	$00
+	.byte	$79
+	.byte	$65
+	.byte	$61
+	.byte	$72
+	.byte	$2C
+	.byte	$00
+	.byte	$61
+	.byte	$00
+	.byte	$70
+	.byte	$72
+	.byte	$69
+	.byte	$73
+	.byte	$6F
+	.byte	$6E
+	.byte	$65
+	.byte	$72
+	.byte	$00
+	.byte	$77
+	.byte	$6F
+	.byte	$75
+	.byte	$6C
+	.byte	$64
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$67
+	.byte	$65
+	.byte	$74
+	.byte	$00
+	.byte	$61
+	.byte	$00
+	.byte	$63
+	.byte	$68
+	.byte	$61
+	.byte	$6E
+	.byte	$63
+	.byte	$65
+	.byte	$00
+	.byte	$6F
+	.byte	$66
+	.byte	$00
+	.byte	$72
+	.byte	$65
+	.byte	$64
+	.byte	$65
+	.byte	$6D
+	.byte	$70
+	.byte	$74
+	.byte	$69
+	.byte	$6F
+	.byte	$6E
+	.byte	$00
+	.byte	$01
+	.byte	$04
+	.byte	$69
+	.byte	$66
+	.byte	$00
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$63
+	.byte	$6F
+	.byte	$75
+	.byte	$6C
+	.byte	$64
+	.byte	$00
+	.byte	$73
+	.byte	$75
+	.byte	$63
+	.byte	$63
+	.byte	$65
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$74
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$54
+	.byte	$72
+	.byte	$69
+	.byte	$61
+	.byte	$6C
+	.byte	$00
+	.byte	$01
+	.byte	$24
+	.byte	$48
+	.byte	$69
+	.byte	$73
+	.byte	$00
+	.byte	$73
+	.byte	$6F
+	.byte	$75
+	.byte	$6C
+	.byte	$00
+	.byte	$77
+	.byte	$61
+	.byte	$73
+	.byte	$00
+	.byte	$74
+	.byte	$72
+	.byte	$61
+	.byte	$6E
+	.byte	$73
+	.byte	$66
+	.byte	$65
+	.byte	$72
+	.byte	$72
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$01
+	.byte	$09
+	.byte	$69
+	.byte	$6E
+	.byte	$74
+	.byte	$6F
+	.byte	$00
+	.byte	$61
+	.byte	$00
+	.byte	$6D
+	.byte	$61
+	.byte	$67
+	.byte	$69
+	.byte	$63
+	.byte	$61
+	.byte	$6C
+	.byte	$00
+	.byte	$73
+	.byte	$6B
+	.byte	$75
+	.byte	$6C
+	.byte	$6C
+	.byte	$00
+	.byte	$01
+	.byte	$2B
+	.byte	$49
+	.byte	$66
+	.byte	$00
+	.byte	$69
+	.byte	$74
+	.byte	$00
+	.byte	$67
+	.byte	$6F
+	.byte	$74
+	.byte	$00
+	.byte	$64
+	.byte	$65
+	.byte	$73
+	.byte	$74
+	.byte	$72
+	.byte	$6F
+	.byte	$79
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$01
+	.byte	$0D
+	.byte	$68
+	.byte	$69
+	.byte	$73
+	.byte	$00
+	.byte	$73
+	.byte	$6F
+	.byte	$75
+	.byte	$6C
+	.byte	$00
+	.byte	$77
+	.byte	$61
+	.byte	$73
+	.byte	$00
+	.byte	$6C
+	.byte	$6F
+	.byte	$73
+	.byte	$74
+	.byte	$00
+	.byte	$01
+	.byte	$2A
+	.byte	$41
+	.byte	$00
+	.byte	$62
+	.byte	$72
+	.byte	$61
+	.byte	$76
+	.byte	$65
+	.byte	$00
+	.byte	$61
+	.byte	$6E
+	.byte	$64
+	.byte	$00
+	.byte	$63
+	.byte	$6F
+	.byte	$75
+	.byte	$72
+	.byte	$61
+	.byte	$67
+	.byte	$65
+	.byte	$6F
+	.byte	$75
+	.byte	$73
+	.byte	$00
+	.byte	$6D
+	.byte	$61
+	.byte	$6E
+	.byte	$00
+	.byte	$01
+	.byte	$05
+	.byte	$73
+	.byte	$74
+	.byte	$6F
+	.byte	$6F
+	.byte	$64
+	.byte	$00
+	.byte	$75
+	.byte	$70
+	.byte	$00
+	.byte	$74
+	.byte	$6F
+	.byte	$00
+	.byte	$74
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$63
+	.byte	$68
+	.byte	$61
+	.byte	$6C
+	.byte	$6C
+	.byte	$65
+	.byte	$6E
+	.byte	$67
+	.byte	$65
+	.byte	$00
+	.byte	$01
+	.byte	$2A
+	.byte	$48
+	.byte	$65
+	.byte	$00
+	.byte	$77
+	.byte	$61
+	.byte	$73
+	.byte	$00
+	.byte	$70
+	.byte	$75
+	.byte	$74
+	.byte	$00
+	.byte	$69
+	.byte	$6E
+	.byte	$00
+	.byte	$6A
+	.byte	$61
+	.byte	$69
+	.byte	$6C
+	.byte	$00
+	.byte	$01
+	.byte	$0A
+	.byte	$61
+	.byte	$6C
+	.byte	$74
+	.byte	$68
+	.byte	$6F
+	.byte	$75
+	.byte	$67
+	.byte	$68
+	.byte	$00
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$77
+	.byte	$61
+	.byte	$73
+	.byte	$00
+	.byte	$66
+	.byte	$61
+	.byte	$75
+	.byte	$6C
+	.byte	$74
+	.byte	$6C
+	.byte	$65
+	.byte	$73
+	.byte	$73
+	.byte	$00
+	.byte	$01
+	.byte	$29
+	.byte	$48
+	.byte	$65
+	.byte	$00
+	.byte	$77
+	.byte	$61
+	.byte	$69
+	.byte	$74
+	.byte	$65
+	.byte	$64
+	.byte	$00
+	.byte	$70
+	.byte	$61
+	.byte	$74
+	.byte	$69
+	.byte	$65
+	.byte	$6E
+	.byte	$74
+	.byte	$6C
+	.byte	$79
+	.byte	$00
+	.byte	$01
+	.byte	$09
+	.byte	$66
+	.byte	$6F
+	.byte	$72
+	.byte	$00
+	.byte	$74
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$64
+	.byte	$61
+	.byte	$79
+	.byte	$00
+	.byte	$6F
+	.byte	$66
+	.byte	$00
+	.byte	$74
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$54
+	.byte	$72
+	.byte	$69
+	.byte	$61
+	.byte	$6C
+	.byte	$00
+	.byte	$01
+	.byte	$4A
+	.byte	$54
+	.byte	$68
+	.byte	$65
+	.byte	$00
+	.byte	$64
+	.byte	$61
+	.byte	$79
+	.byte	$00
+	.byte	$6F
+	.byte	$66
+	.byte	$00
+	.byte	$72
+	.byte	$65
+	.byte	$76
+	.byte	$65
+	.byte	$6E
+	.byte	$67
+	.byte	$65
+	.byte	$00
+	.byte	$01
+	.byte	$26
+	.byte	$AA
+	.byte	$01
+	.byte	$37
+	.byte	$0A
+	.byte	$01
+	.byte	$06
+	.byte	$0A
+	.byte	$01
+	.byte	$00
 _villager_beard_idle1:
 	.byte	$00
 	.byte	$00
@@ -8666,6 +9171,8 @@ _collision_index:
 _backup_col_index:
 	.res	2,$00
 _backup_nt_index:
+	.res	2,$00
+_scroll_index_y:
 	.res	2,$00
 .segment	"XRAM"
 _wram_array:
@@ -11588,11 +12095,11 @@ L0008:	sta     ptr1
 	lda     #$18
 	jsr     _pal_col
 ;
-; set_scroll_x(0x0100);
+; set_scroll_y(0x00F0);
 ;
-	ldx     #$01
-	lda     #$00
-	jsr     _set_scroll_x
+	ldx     #$00
+	lda     #$F0
+	jsr     _set_scroll_y
 ;
 ; ppu_wait_nmi();
 ;
@@ -11631,11 +12138,11 @@ L0008:	sta     ptr1
 	lda     _chr_5_index
 	jsr     _set_chr_mode_5
 ;
-; set_scroll_x(0x0000);
+; set_scroll_y(0x0000);
 ;
 	ldx     #$00
 	txa
-	jmp     _set_scroll_x
+	jmp     _set_scroll_y
 
 .endproc
 
@@ -11670,12 +12177,6 @@ L0008:	sta     ptr1
 ; ppu_off();
 ;
 	jsr     _ppu_off
-;
-; set_scroll_x(0x0000);
-;
-	ldx     #$00
-	txa
-	jsr     _set_scroll_x
 ;
 ; vram_adr(NAMETABLE_A);
 ;
@@ -12058,6 +12559,18 @@ L0010:	jmp     _ppu_on_all
 	ldx     #>(_title_screen)
 	jsr     _vram_unrle
 ;
+; vram_adr(NAMETABLE_C);
+;
+	ldx     #$28
+	lda     #$00
+	jsr     _vram_adr
+;
+; vram_unrle(story);
+;
+	lda     #<(_story)
+	ldx     #>(_story)
+	jsr     _vram_unrle
+;
 ; game_state = TITLE;
 ;
 	lda     #$00
@@ -12080,9 +12593,9 @@ L0010:	jmp     _ppu_on_all
 .segment	"CODE"
 
 ;
-; vram_adr(NAMETABLE_B);
+; vram_adr(NAMETABLE_C);
 ;
-	ldx     #$24
+	ldx     #$28
 	lda     #$00
 	jsr     _vram_adr
 ;
@@ -16830,7 +17343,9 @@ L0002:	jmp     incsp1
 	jeq     L004E
 	cmp     #$03
 	jeq     L0056
-	jmp     L0072
+	cmp     #$FA
+	jeq     L007E
+	jmp     L0083
 ;
 ; oam_clear();
 ;
@@ -16846,11 +17361,11 @@ L0004:	jsr     _oam_clear
 ;
 ; }
 ;
-	beq     L005C
+	beq     L0069
 	cmp     #$01
-	beq     L005D
+	beq     L006A
 	cmp     #$02
-	jeq     L005F
+	jeq     L006C
 	cmp     #$03
 	jeq     L0016
 	cmp     #$04
@@ -16860,22 +17375,22 @@ L0004:	jsr     _oam_clear
 	cmp     #$06
 	jeq     L001B
 	cmp     #$07
-	jeq     L0060
+	jeq     L006D
 	cmp     #$08
-	jeq     L0061
+	jeq     L006E
 	cmp     #$09
-	jeq     L0062
+	jeq     L006F
 	cmp     #$0A
 	jeq     L0021
 	cmp     #$0B
-	jeq     L0063
-	jmp     L0072
+	jeq     L0022
+	jmp     L0083
 ;
 ; if (story_counter == 128) {
 ;
-L005C:	lda     _story_counter
+L0069:	lda     _story_counter
 	cmp     #$80
-	jne     L0072
+	jne     L0083
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -16909,13 +17424,13 @@ L0009:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; if (story_counter == 64) {
 ;
-L005D:	lda     _story_counter
+L006A:	lda     _story_counter
 	cmp     #$40
-	bne     L005E
+	bne     L006B
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -16935,9 +17450,9 @@ L000D:	sta     ptr1
 ;
 ; if (story_counter > 68) {
 ;
-L005E:	lda     _story_counter
+L006B:	lda     _story_counter
 	cmp     #$45
-	jcc     L0072
+	jcc     L0083
 ;
 ; pal_bright(6);
 ;
@@ -16976,11 +17491,11 @@ L000F:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; if (story_counter > 2) {
 ;
-L005F:	lda     _story_counter
+L006C:	lda     _story_counter
 	cmp     #$03
 	bcc     L0011
 ;
@@ -17016,7 +17531,7 @@ L0011:	ldy     _LIGHTNING
 L0012:	ldy     _LIGHTNING
 	lda     _actors+252,y
 	cmp     #$08
-	jne     L0072
+	jne     L0083
 ;
 ; pal_bright(6);
 ;
@@ -17030,7 +17545,7 @@ L0012:	ldy     _LIGHTNING
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; actors.state[HERO] = 1;
 ;
@@ -17042,7 +17557,7 @@ L0016:	ldy     _HERO
 ;
 	lda     _story_counter
 	cmp     #$B5
-	jcc     L0072
+	jcc     L0083
 ;
 ; ++story_step;
 ;
@@ -17053,9 +17568,13 @@ L0016:	ldy     _HERO
 	lda     #$00
 	sta     _story_counter
 ;
+; load_map();
+;
+	jsr     _load_map
+;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; fadeout();
 ;
@@ -17063,7 +17582,7 @@ L0019:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; reset_actors();
 ;
@@ -17097,11 +17616,11 @@ L001B:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
-; story_counter = 56;
+; story_counter = 56; // Skull y position
 ;
-L0060:	lda     #$38
+L006D:	lda     #$38
 	sta     _story_counter
 ;
 ; ++story_step;
@@ -17110,14 +17629,14 @@ L0060:	lda     #$38
 ;
 ; actors.y[SKULL] = story_counter;
 ;
-L0061:	lda     _story_counter
+L006E:	lda     _story_counter
 	sta     _actors+18
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L0072
+	jcc     L0083
 ;
 ; ++story_step;
 ;
@@ -17130,18 +17649,18 @@ L0061:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; actors.x[SKULL] = story_counter;
 ;
-L0062:	lda     _story_counter
+L006F:	lda     _story_counter
 	sta     _actors+4
 ;
 ; if (story_counter > 156) {
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L0072
+	jcc     L0083
 ;
 ; ++story_step;
 ;
@@ -17154,7 +17673,7 @@ L0062:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; fadeout();
 ;
@@ -17162,11 +17681,15 @@ L0021:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
+;
+; hide_map();
+;
+L0022:	jsr     _hide_map
 ;
 ; actors.state[SKULL] = INACTIVE;
 ;
-L0063:	lda     #$80
+	lda     #$80
 	sta     _actors+270
 ;
 ; reset_actors();
@@ -17193,7 +17716,7 @@ L0063:	lda     #$80
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; oam_clear();
 ;
@@ -17255,21 +17778,21 @@ L0026:	lda     _story_step
 ;
 	jeq     L0029
 	cmp     #$01
-	jeq     L0064
+	jeq     L0070
 	cmp     #$02
 	jeq     L002B
 	cmp     #$03
-	jeq     L0065
+	jeq     L0071
 	cmp     #$04
 	jeq     L002D
 	cmp     #$05
-	jeq     L0066
+	jeq     L0072
 	cmp     #$06
-	jeq     L0067
+	jeq     L0073
 	cmp     #$07
 	jeq     L0030
 	cmp     #$08
-	jeq     L0068
+	jeq     L0074
 	cmp     #$09
 	jeq     L0032
 	cmp     #$0A
@@ -17299,16 +17822,16 @@ L0026:	lda     _story_step
 	cmp     #$16
 	jeq     L0040
 	cmp     #$17
-	jeq     L0069
+	jeq     L0075
 	cmp     #$18
 	jeq     L0047
 	cmp     #$19
-	jeq     L006A
+	jeq     L0076
 	cmp     #$1A
 	jeq     L004C
 	cmp     #$1B
-	jeq     L006B
-	jmp     L0072
+	jeq     L0077
+	jmp     L0083
 ;
 ; load_black_level();
 ;
@@ -17331,16 +17854,16 @@ L0029:	jsr     _load_black_level
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(128);
 ;
-L0064:	lda     #$80
+L0070:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
 ;
@@ -17364,16 +17887,16 @@ L002B:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(72);
 ;
-L0065:	lda     #$48
+L0071:	lda     #$48
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
 ;
@@ -17397,20 +17920,20 @@ L002D:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(128);
 ;
-L0066:	lda     #$80
+L0072:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; pal_bright(0);
 ;
-L0067:	lda     #$00
+L0073:	lda     #$00
 	jsr     _pal_bright
 ;
 ; brightness = 0;
@@ -17448,7 +17971,7 @@ L0067:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; fadein();
 ;
@@ -17456,16 +17979,16 @@ L0030:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(128);
 ;
-L0068:	lda     #$80
+L0074:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17505,7 +18028,7 @@ L0032:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17513,7 +18036,7 @@ L0033:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17553,7 +18076,7 @@ L0034:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17561,7 +18084,7 @@ L0035:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17617,7 +18140,7 @@ L0036:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17625,7 +18148,7 @@ L0037:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17687,7 +18210,7 @@ L0039:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17695,7 +18218,7 @@ L003A:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17735,7 +18258,7 @@ L003B:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17743,7 +18266,7 @@ L003C:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -17799,7 +18322,7 @@ L003D:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait_input();
 ;
@@ -17807,7 +18330,7 @@ L003E:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; brightout();
 ;
@@ -17815,7 +18338,7 @@ L003F:	jsr     _brightout
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; actors.state[GHOST] = INACTIVE;
 ;
@@ -17874,22 +18397,22 @@ L0040:	ldy     _GHOST
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(64);
 ;
-L0069:	lda     #$40
+L0075:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; if (actors.state[CROW] != FLYING){
 ;
 L0047:	ldy     _CROW
 	lda     _actors+266,y
-	jeq     L0072
+	jeq     L0083
 ;
 ; one_vram_buffer(0x11, NTADR_A(15,9));
 ;
@@ -17919,16 +18442,16 @@ L0047:	ldy     _CROW
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(64);
 ;
-L006A:	lda     #$40
+L0076:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; fadeout();
 ;
@@ -17936,11 +18459,11 @@ L004C:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; ++current_level;
 ;
-L006B:	inc     _current_level
+L0077:	inc     _current_level
 ;
 ; load_level();
 ;
@@ -17953,7 +18476,7 @@ L006B:	inc     _current_level
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; oam_clear();
 ;
@@ -17967,14 +18490,14 @@ L004E:	jsr     _oam_clear
 ;
 	beq     L0051
 	cmp     #$01
-	beq     L006D
+	beq     L0079
 	cmp     #$02
-	beq     L006E
+	beq     L007A
 	cmp     #$03
 	beq     L0054
 	cmp     #$04
-	beq     L006F
-	jmp     L0072
+	beq     L007B
+	jmp     L0083
 ;
 ; fadein();
 ;
@@ -17982,11 +18505,11 @@ L0051:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; game_state = MAIN;
 ;
-L006D:	sta     _game_state
+L0079:	sta     _game_state
 ;
 ; show_HUD();
 ;
@@ -17998,16 +18521,16 @@ L006D:	sta     _game_state
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; wait(64);
 ;
-L006E:	lda     #$40
+L007A:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; fadeout();
 ;
@@ -18015,11 +18538,11 @@ L0054:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; ++current_level;
 ;
-L006F:	inc     _current_level
+L007B:	inc     _current_level
 ;
 ; load_level();
 ;
@@ -18032,7 +18555,7 @@ L006F:	inc     _current_level
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; oam_clear();
 ;
@@ -18046,8 +18569,8 @@ L0056:	jsr     _oam_clear
 ;
 	beq     L0059
 	cmp     #$01
-	beq     L0071
-	jmp     L0072
+	beq     L007D
+	jmp     L0083
 ;
 ; fadein();
 ;
@@ -18055,21 +18578,210 @@ L0059:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L0072
+	jmp     L0083
 ;
 ; game_state = MAIN;
 ;
-L0071:	sta     _game_state
+L007D:	sta     _game_state
+;
+; break;
+;
+	jmp     L0083
+;
+; switch (story_step) {
+;
+L007E:	lda     _story_step
+;
+; }
+;
+	beq     L005E
+	cmp     #$01
+	beq     L007F
+	cmp     #$02
+	beq     L0060
+	cmp     #$03
+	beq     L0080
+	cmp     #$04
+	beq     L0062
+	cmp     #$05
+	jeq     L0066
+	cmp     #$06
+	jeq     L0082
+	jmp     L0083
+;
+; oam_meta_spr(182, 122, staff);
+;
+L005E:	jsr     decsp2
+	lda     #$B6
+	ldy     #$01
+	sta     (sp),y
+	lda     #$7A
+	dey
+	sta     (sp),y
+	lda     #<(_staff)
+	ldx     #>(_staff)
+	jsr     _oam_meta_spr
+;
+; fadeout();
+;
+	jsr     _fadeout
+;
+; break;
+;
+	jmp     L0083
+;
+; wait(64);
+;
+L007F:	lda     #$40
+	jsr     _wait
+;
+; break;
+;
+	jmp     L0083
+;
+; oam_clear();
+;
+L0060:	jsr     _oam_clear
+;
+; load_black_level();
+;
+	jsr     _load_black_level
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0083
+;
+; set_chr_mode_1(0x06);
+;
+L0080:	lda     #$06
+	jsr     _set_chr_mode_1
+;
+; set_chr_mode_2(0x00);
+;
+	lda     #$00
+	jsr     _set_chr_mode_2
+;
+; set_chr_mode_3(0x01);
+;
+	lda     #$01
+	jsr     _set_chr_mode_3
+;
+; pal_bright(4);
+;
+	lda     #$04
+	jsr     _pal_bright
+;
+; story_counter = NULL;
+;
+	lda     #$00
+	sta     _story_counter
+;
+; scroll_index_y = NULL;
+;
+	sta     _scroll_index_y
+	sta     _scroll_index_y+1
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0083
+;
+; set_scroll_y(scroll_index_y);
+;
+L0062:	lda     _scroll_index_y
+	ldx     _scroll_index_y+1
+	jsr     _set_scroll_y
+;
+; scroll_index_y = add_scroll_y(1, scroll_index_y);
+;
+	lda     #$01
+	jsr     pusha
+	lda     _scroll_index_y
+	ldx     _scroll_index_y+1
+	jsr     _add_scroll_y
+	sta     _scroll_index_y
+	stx     _scroll_index_y+1
+;
+; if (story_counter > 10) {
+;
+	lda     _story_counter
+	cmp     #$0B
+	bcc     L0081
+;
+; story_counter = NULL;
+;
+	lda     #$00
+	sta     _story_counter
 ;
 ; ++story_counter;
 ;
-L0072:	inc     _story_counter
+L0081:	inc     _story_counter
+;
+; if (scroll_index_y > 460) {
+;
+	lda     _scroll_index_y
+	cmp     #$CD
+	lda     _scroll_index_y+1
+	sbc     #$01
+	bvs     L0065
+	eor     #$80
+L0065:	bpl     L0083
+;
+; ++story_step;
+;
+	inc     _story_step
+;
+; break;
+;
+	jmp     L0083
+;
+; fadeout();
+;
+L0066:	jsr     _fadeout
+;
+; break;
+;
+	jmp     L0083
+;
+; story_step = 0;
+;
+L0082:	lda     #$00
+	sta     _story_step
+;
+; current_level = 0;
+;
+	sta     _current_level
+;
+; set_scroll_y(0);
+;
+	tax
+	jsr     _set_scroll_y
+;
+; load_level();
+;
+	jsr     _load_level
+;
+; pal_bright(4);
+;
+	lda     #$04
+	jsr     _pal_bright
+;
+; ++story_counter;
+;
+L0083:	inc     _story_counter
 ;
 ; if (wait_timer == 127){
 ;
 	lda     _wait_timer
 	cmp     #$7F
-	bne     L0073
+	bne     L0084
 ;
 ; wait_timer = 0;
 ;
@@ -18078,7 +18790,7 @@ L0072:	inc     _story_counter
 ;
 ; ++wait_timer;
 ;
-L0073:	inc     _wait_timer
+L0084:	inc     _wait_timer
 ;
 ; }
 ;
@@ -18120,10 +18832,10 @@ L0073:	inc     _wait_timer
 	ldx     #$20
 	jsr     _memfill
 ;
-; color_emphasis(COL_EMP_NORMAL);
+; set_mirroring(MIRROR_HORIZONTAL);
 ;
-	lda     #$00
-	jsr     _color_emphasis
+	lda     #$01
+	jsr     _set_mirroring
 ;
 ; set_vram_buffer();
 ;
@@ -18132,10 +18844,6 @@ L0073:	inc     _wait_timer
 ; load_title_screen();
 ;
 	jsr     _load_title_screen
-;
-; load_map();
-;
-	jsr     _load_map
 ;
 ; banked_call(0, init_skull);
 ;
@@ -18207,23 +18915,29 @@ L0002:	jsr     _ppu_wait_nmi
 	and     #$10
 	beq     L0002
 ;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
 ; game_state = STORY;
 ;
 	lda     #$02
 	sta     _game_state
 ;
-; current_level = 0;
+; current_level = 250;
 ;
-	lda     #$00
+	lda     #$FA
 	sta     _current_level
 ;
-; story_step = 0;
+; story_step = NULL;
 ;
+	lda     #$00
 	sta     _story_step
 ;
-; load_level();
+; scroll_index_y = NULL;
 ;
-	jsr     _load_level
+	sta     _scroll_index_y
+	sta     _scroll_index_y+1
 ;
 ; } else if (game_state == MAP && pad1_new & PAD_START) {
 ;

@@ -60,6 +60,7 @@ JUNE
     x Clear sprite after cemetery
     x ITEM magnet
     x No HUD when loadingas temple??
+    x Title Screen Design
     - Ruin town crate bug
     - Crow collision ??
     - Town ghost NPC
@@ -75,6 +76,7 @@ JUNE
     - Forest boss design & AI 
 
 2:
+    - Bombable wall (in temple)...
     - Necromant tower Entrance Design
     - Necromant lower tower Design
     - Necromant higher tower Design
@@ -82,7 +84,7 @@ JUNE
     - Ennemies - Boss
     - Save state
 3:
-    - Title Screen
+    - Title Screen Logic
     - Gameover Screen
     - Trails & Particles     
 
