@@ -62,7 +62,6 @@ JUNE
     x No HUD when loadingas temple??
     x Title Screen Design
     - Ruin town crate bug
-    - Crow collision ??
     - Town ghost NPC
     - ITEM bomb
     - ITEM keys

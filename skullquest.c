@@ -665,20 +665,17 @@ void show_HUD() {
 }
 
 void show_map() {
-    ppu_off();
-
     // TODO DRAW NAME OF LEVEL
     // TODO DRAW SKULL AT CORRECT POSITION
-    oam_clear();
     // oam_spr(1, 1, 0x00, 0x00);  // Show skull TODO Change x,y to actual map position
+
+    oam_clear();
     set_chr_mode_4(8);
     set_chr_mode_5(9);
-    pal_col(0x00, 0x0f);
-    pal_col(0x01, 0x28); // MAP BACK COLOR
-    pal_col(0x02, 0x18);
-    set_scroll_y(0x00F0);
-    ppu_wait_nmi();
-    ppu_on_all();
+    pal_col(0x00, 0x0f); // BG BLACK
+    pal_col(0x01, 0x18); // MAP BACK COLOR
+    pal_col(0x02, 0x38); // INK COLOR
+    set_scroll_y(0x0100);
 }
 
 void hide_map() {
@@ -792,8 +789,10 @@ void load_title_screen() {
 }
 
 void load_map() {
+    ppu_off();
     vram_adr(NAMETABLE_C);
     vram_unrle(map);
+    ppu_on_all();
 }
 
 void remove_brick(char tile_type) {
@@ -1808,7 +1807,6 @@ void play_story() {
                     if (story_counter > 180) {
                         ++story_step;
                         story_counter = 0;
-                        load_map();
                     }
                     break;
                 case 4:
@@ -1818,7 +1816,6 @@ void play_story() {
                 case 5:
                     reset_actors();
                     show_map();
-                    init_skull();
                     actors.x[SKULL] = 128;
                     actors.y[SKULL] = 56;
                     ++story_step;
@@ -1959,6 +1956,7 @@ void play_story() {
                     // Use it
                     multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
                     multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 3));
                     ++story_step;
                     break;
                 case 18:
@@ -1966,9 +1964,9 @@ void play_story() {
                     break;
                 case 19:
                     // Hit all tombstones...
-                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 3));
+                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dialogs[15], DIALOG_LENGTH, NTADR_A(7, 3));
                     ++story_step;
                     break;
                 case 20:
@@ -2096,10 +2094,14 @@ void play_story() {
                     fadeout();
                     break;
                 case 6:
+                    wait(32);
+                    break;
+                case 7:
                     story_step = 0;
                     current_level = 0;
                     set_scroll_y(0);
                     load_level();
+                    load_map();
                     pal_bright(4);
                     break;
             }
@@ -2115,7 +2117,6 @@ void play_story() {
 
 void debug_start(char debuglevel){
     game_state = MAIN;
-    init_skull();
 
     set_chr_mode_1(0x06);
     set_chr_mode_2(0x00);
@@ -2181,7 +2182,7 @@ void main() {
                 scroll_index_y = NULL;
 
                 // DEBUG
-                debug_start(1);
+                // debug_start(1);
 
             }
 

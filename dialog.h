@@ -21,10 +21,11 @@ const unsigned char dialogs[][DIALOG_LENGTH] = {
 
     "Take this!",  // 9
 
-    "Use it if you get stuck",  // 10
-    "Just press the B button",
+    "Press the B button,",  // 10
+    "you will move toward", // 11
+    "the bottom paddle",  // 12
 
-    "Hit all the tombstones",  // 12
+    "Hit all the tombstones",  // 13
     "to get out of here",
     "We'll meet again soon!",
 
