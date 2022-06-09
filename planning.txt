@@ -61,6 +61,7 @@ JUNE
     x ITEM magnet
     x No HUD when loadingas temple??
     x Title Screen Design
+    - Map update name location
     - Ruin town crate bug
     - Town ghost NPC
     - ITEM bomb
@@ -104,7 +105,6 @@ JULY
 
 AUGUST
 1:
-    - Map update name location
 2:
     - 2 Player Pong Game
 3:

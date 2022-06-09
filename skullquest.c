@@ -40,6 +40,7 @@ static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, tem
 static unsigned char p1_health, p1_max_health, brick_counter, wait_timer;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
 static unsigned char animation_index, frame_count, show_face, show_item, current_item;
+static unsigned char map_x, map_y;
 static unsigned char brightness = 4;
 static unsigned char NECROMANCER, GHOST, LIGHTNING, DEVIL, SKELETON1, SKELETON2, DOOR1, DOOR2, DOOR3, STARS;
 static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION, SORCERER;
@@ -110,6 +111,15 @@ Actors actors;
 // ---------------------------- BANK 0  -------------------------------
 #pragma rodata-name("BANK0")
 #pragma code-name("BANK0")
+// static unsigned char current_level_name[][] ;
+
+#define MAP_LOCATION_NUMBER 120
+typedef struct {
+    unsigned char done[MAP_LOCATION_NUMBER];
+    unsigned char level_index[MAP_LOCATION_NUMBER];
+} MapLocation;
+
+MapLocation locations;
 
 // COLLISION
 #include "Nametable/black_level.h"
@@ -453,17 +463,15 @@ void init_level_specifics() {
             actors.animation_delay[SORCERER] = 12;
             actors.state[SORCERER] = DEAD;
             actors.type[SORCERER] = TYPE_SORCERER;
-
             break;
-        case 3:
-            // TEMPLE 2 paddle level
+        case LVL_TEMPLE2:
             // Achievement 1: 
             // Achievement 2: 
             current_nametable = temple2;
             current_collision_map = temple2_col;
             current_background_palette = pal_temple_bg;
             current_sprite_palette = pal_temple_spr;
-
+            // current_level_name = "Ruined temple 2";
             chr_4_index = 0x0A;
 
             // Paddle
@@ -475,8 +483,7 @@ void init_level_specifics() {
             actors.x[1] = 0x70;
             actors.y[1] = 0x48;
             break;
-        case 4:
-            //  TOWN RUINS
+        case LVL_TOWN:
             // Achievement 1: Door knocker
             // Achievement 2: Devil slayer
 
@@ -798,6 +805,7 @@ void load_map() {
 void remove_brick(char tile_type) {
     one_vram_buffer(tile_type, backup_nt_index);
     c_map[backup_col_index] &= backup_nt_index % 2 ? 0b11110000 : 0b00001111;
+    --brick_counter;
 }
 
 void hit_brick(char tile_type) {
@@ -1054,22 +1062,22 @@ void do_skull_tile_collision() {
             // Long brick
             remove_brick(TILE_BACK);
             backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
-            --brick_counter;
-            --brick_counter;
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
         case 0x04:
             // Tall brick
             remove_brick(TILE_BACK);
-            temp = backup_nt_index >> 5;
+            temp = temp_y_col >> 3;
             if (temp % 2) {
-                backup_nt_index -= 32;
+                temp -= 1;
+                backup_col_index -= 16;
             } else {
-                backup_nt_index += 32;
+                temp += 1;
+                backup_col_index += 16;
+
             }
-            --brick_counter;
-            --brick_counter;
+            backup_nt_index = NTADR_A(temp_x_col >> 3, temp);
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
@@ -1759,8 +1767,7 @@ void wait(unsigned char delay){
 
 void play_story() {
     switch (current_level) {
-        case 0:
-            // ALTAR
+        case LVL_ALTAR:
             oam_clear();
             animate_actors();          
             switch (story_step) {
@@ -1855,8 +1862,7 @@ void play_story() {
                     break;
             }
             break;
-        case 1:
-            // Cemetery
+        case LVL_CEMETERY:
             // Show story sprites
             oam_clear();
             if (story_step > 6) {                
@@ -2015,8 +2021,7 @@ void play_story() {
                     break;
             }
             break;
-        case 2:
-            // TEMPLE
+        case LVL_TEMPLE1:
             oam_clear();
             switch (story_step) {
                 case 0:
@@ -2040,8 +2045,31 @@ void play_story() {
                     break;
             }
             break;
-        case 3:
-            // TOWN
+        case LVL_TEMPLE2:
+            oam_clear();
+            switch (story_step) {
+                case 0:
+                    fadein();
+                    break;
+                case 1:
+                    game_state = MAIN;
+                    show_HUD();
+                    ++story_step;
+                    break;
+                case 2:
+                    wait(64);
+                    break;
+                case 3:
+                    fadeout();
+                    break;
+                case 4:
+                    ++current_level;
+                    load_level();
+                    story_step = 0;
+                    break;
+            }
+            break;
+        case LVL_TOWN:
             oam_clear();
             switch (story_step) {
                 case 0:
@@ -2116,14 +2144,13 @@ void play_story() {
 }
 
 void debug_start(char debuglevel){
-    game_state = MAIN;
-
     set_chr_mode_1(0x06);
     set_chr_mode_2(0x00);
     set_chr_mode_3(0x01);
     pal_bright(4);
     current_level = debuglevel;
     load_level();
+    brightness = NULL;
     items.sprite[current_item] = ITEM_MAGNET;
     items.is_active[current_item] = TRUE;
     items.type[current_item] = TYPE_MAGNET;
@@ -2182,7 +2209,7 @@ void main() {
                 scroll_index_y = NULL;
 
                 // DEBUG
-                // debug_start(1);
+                debug_start(LVL_TEMPLE2);
 
             }
 

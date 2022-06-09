@@ -94,6 +94,11 @@
 #define TYPE_MAGNET 1
 #define TYPE_BOMB 2
 
+#define LVL_ALTAR 0
+#define LVL_CEMETERY 1
+#define LVL_TEMPLE1 2
+#define LVL_TEMPLE2 3
+#define LVL_TOWN 4
 
 // index = actor index
 // array = animation index
