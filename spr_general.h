@@ -162,7 +162,6 @@ const unsigned char* const skull_pile_animation[] = {
     skull_pile};
 
 const unsigned char crate_data[] = {
-
     0, 0, 0x0d, 1,
     8, 0, 0x0e, 1,
     8, 8, 0x0f, 1,
@@ -171,3 +170,19 @@ const unsigned char crate_data[] = {
 
 const unsigned char* const crate_animation[] = {
     crate_data};
+
+const unsigned char skeleton_king[]={
+	  0,  0,0x8b,1,
+	  3,  7,0x77,1|OAM_FLIP_H,
+	  5, 15,0x77,1|OAM_FLIP_H,
+	  7, 23,0x77,1|OAM_FLIP_H,
+	  8,  1,0x8a,1,
+	  7, 13,0x7c,1,
+	 15, 13,0x7d,1,
+	  7, 21,0x8c,1,
+	 15, 21,0x8d,1,
+	128
+};
+
+const unsigned char* const skeleton_king_animation[] = {
+    skeleton_king};

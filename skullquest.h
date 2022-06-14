@@ -10,7 +10,7 @@
 
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
-#define TILE_BACK 0x10
+#define TILE_BACK 0x01
 #define TILE_BACK_GRASS 0x23
 #define TILE_HEART_FULL 0x5B
 #define TILE_HEART_EMPTY 0x5C
@@ -78,8 +78,14 @@
 #define TYPE_HERO 17
 #define TYPE_SORCERER 18
 #define TYPE_PARALYZER 19
-#define TYPE_FACE_ANGELIC 20
+#define TYPE_SKELETON_KING 20
+#define TYPE_SKULL_DOOR 21
 
+// PADDLE
+#define TYPE_PAD_HORZ 0
+#define TYPE_PAD_VERT 1
+#define PAD_SHORT 0
+#define PAD_LONG 1
 
 #define FACE_X 16
 #define FACE_Y 8
@@ -98,7 +104,10 @@
 #define LVL_CEMETERY 1
 #define LVL_TEMPLE1 2
 #define LVL_TEMPLE2 3
-#define LVL_TOWN 4
+#define LVL_TEMPLE3 4
+#define LVL_TOWN 5
+
+#define LVL_INTRO 250
 
 // index = actor index
 // array = animation index
@@ -109,3 +118,5 @@ signed char get_x_speed();
 
 // param1: actor index
 signed char get_y_speed();
+
+void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y);

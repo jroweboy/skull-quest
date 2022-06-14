@@ -11,7 +11,9 @@
         "spr_villagers": "c",
         "town_ruins.h": "c",
         "dialog.h": "c",
-        "spr_villagers.h": "c"
+        "spr_villagers.h": "c",
+        "spr_fireball.h": "c",
+        "spr_skull_door": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

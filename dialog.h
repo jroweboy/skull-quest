@@ -1,5 +1,5 @@
 // MAX LENGHT IS 23
-#define DIALOG_LENGTH 24
+#define DIALOG_LENGTH 23
 #define STORYLINE_LENGTH 
 // Empty 23 char long string
 const unsigned char empty_line[] = "                       ";

@@ -403,5 +403,5 @@ sounds_data:
 	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
 	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple - Town1 A
 	.incbin "I-CHR/town-ruins.pngE/chrblock.chr" ; 1kb Town2 B
-	.incbin "I-CHR/sprites01.pngE/chrblock-bottom2-staff.chr"; 2kb Staff - Lightning C - D"
-	.incbin "I-CHR/title_screen.pngE/title_screen.chr" ; 4kb Title Screen!!! E F
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom2-staff.chr"; 2kb Staff - Lightning C - D
+	.incbin "I-CHR/title_screen.pngE/title_screen.chr" ; 4kb Title Screen!!! E - F
