@@ -12,6 +12,16 @@ const unsigned char VerticalPaddleSpr[] = {
     0, 24, 0x06, 0,
     128};
 
+const unsigned char HorizontalPaddleSpr_short[] = {
+    0, 0, 0x05, 0,
+    8, 0, 0x05, 0,
+    128};
+
+const unsigned char VerticalPaddleSpr_short[] = {
+    0, 0, 0x06, 0,
+    0, 8, 0x06, 0,
+    128};
+
 const unsigned char tree[] = {
     -10, -33, 0x0c, 2,
     -10, -25, 0x1c, 2,
@@ -171,18 +181,17 @@ const unsigned char crate_data[] = {
 const unsigned char* const crate_animation[] = {
     crate_data};
 
-const unsigned char skeleton_king[]={
-	  0,  0,0x8b,1,
-	  3,  7,0x77,1|OAM_FLIP_H,
-	  5, 15,0x77,1|OAM_FLIP_H,
-	  7, 23,0x77,1|OAM_FLIP_H,
-	  8,  1,0x8a,1,
-	  7, 13,0x7c,1,
-	 15, 13,0x7d,1,
-	  7, 21,0x8c,1,
-	 15, 21,0x8d,1,
-	128
-};
+const unsigned char skeleton_king[] = {
+    0, 0, 0x8b, 1,
+    3, 7, 0x77, 1 | OAM_FLIP_H,
+    5, 15, 0x77, 1 | OAM_FLIP_H,
+    7, 23, 0x77, 1 | OAM_FLIP_H,
+    8, 1, 0x8a, 1,
+    7, 13, 0x7c, 1,
+    15, 13, 0x7d, 1,
+    7, 21, 0x8c, 1,
+    15, 21, 0x8d, 1,
+    128};
 
 const unsigned char* const skeleton_king_animation[] = {
     skeleton_king};

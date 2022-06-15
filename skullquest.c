@@ -42,6 +42,11 @@ static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION,
 
 unsigned char const** animation_array;
 
+static const unsigned char paddle_hit_zones[] = {
+        3, 6, 11, 14, // Short paddle
+        4, 10, 22, 28 // Long paddle
+};
+
 static int collision_index, backup_col_index, backup_nt_index, scroll_index_y;
 
 #pragma bss-name(pop)
@@ -540,7 +545,7 @@ void init_level_specifics() {
             actors.y[DOOR1] = 21;
             actors.type[DOOR1] = TYPE_SKULL_DOOR;
             actors.state[DOOR1] = IDLE;
-            actors.animation_delay[DOOR1] = 18;
+            actors.animation_delay[DOOR1] = 32;
             break;
 
             // Torches
@@ -634,14 +639,13 @@ void init_level_specifics() {
     }
 
     for (i = 0; i < paddle_count; ++i) {
-        // The first 2 paddles are horizontal, the others vertical
-        if (i < 2) {
-            actors.width[i] = 0x20;   // 32
+        if (actors.type[i] == TYPE_PAD_HORZ) {
+            actors.width[i] = actors.state[i]; // State is PAD_SHORT 16 or PAD_LONG 32
             actors.height[i] = 0x04;  // 4
             actors.bbox_y[i] = 0x02;
         } else {
             actors.width[i] = 0x04;
-            actors.height[i] = 0x20;
+            actors.height[i] = actors.state[i];
             actors.bbox_x[i] = 0x02;
         }
         actors.maxSpeed[i] = 250;
@@ -1240,7 +1244,6 @@ void check_enemy_collision() {
                             if (actors.x[SORCERER] > actors.x[0]) {
                                 actors.xDir[SORCERER] = LEFT;
                             } else {
-                                debug(0x30);
                                 actors.xDir[SORCERER] = RIGHT;
                             }
                         }
@@ -1332,75 +1335,55 @@ void move_vertical_paddle() {
 void check_paddle_collision() {
     for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
         if (is_skull_collision_paddle()) {
+            temp = actors.state[pad_index] == PAD_SHORT ? 0 : 4;
             if (actors.type[pad_index] == TYPE_PAD_HORZ) {
                 // horizontal paddle
-                if (temp_x < actors.x[pad_index] + (actors.width[pad_index] >> 1)) {
-                    // We hit left side of Paddle
-                    if (temp_x <= actors.x[pad_index] + 4) {
-                        actors.xDir[SKULL] = LEFT;
-                        actors.xSpeed[SKULL] = 140;
-                        actors.ySpeed[SKULL] = 60;
-                    } else if (temp_x <= actors.x[pad_index] + 10) {
-                        actors.xDir[SKULL] = LEFT;
-                        actors.xSpeed[SKULL] = 100;
-                        actors.ySpeed[SKULL] = 100;
-                    } else {
-                        actors.xSpeed[SKULL] = 60;
-                        actors.ySpeed[SKULL] = 140;
-                    }
+                if (temp_x <= actors.x[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.xDir[SKULL] = LEFT;
+                    actors.xSpeed[SKULL] = 140;
+                    actors.ySpeed[SKULL] = 60;
+                } else if (temp_x <= actors.x[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.xDir[SKULL] = LEFT;
+                    actors.xSpeed[SKULL] = 100;
+                    actors.ySpeed[SKULL] = 100;
+                } else if (temp_x <= actors.x[pad_index] + paddle_hit_zones[temp++]){
+                    actors.xSpeed[SKULL] = 60;
+                    actors.ySpeed[SKULL] = 140;
+                } else if (temp_x <= actors.x[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.xDir[SKULL] = RIGHT;
+                    actors.xSpeed[SKULL] = 140;
+                    actors.ySpeed[SKULL] = 60;
                 } else {
-                    // Right side of Paddle
-                    if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 4) {
-                        actors.xDir[SKULL] = RIGHT;
-                        actors.xSpeed[SKULL] = 140;
-                        actors.ySpeed[SKULL] = 60;
-                    } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 10) {
-                        actors.xDir[SKULL] = RIGHT;
-                        actors.xSpeed[SKULL] = 100;
-                        actors.ySpeed[SKULL] = 100;
-                    } else {
-                        actors.xSpeed[SKULL] = 60;
-                        actors.ySpeed[SKULL] = 140;
-                    }
+                    actors.xDir[SKULL] = RIGHT;
+                    actors.xSpeed[SKULL] = 100;
+                    actors.ySpeed[SKULL] = 100;
                 }
-
                 // Skull going up or down?
                 actors.yDir[SKULL] = actors.y[SKULL] < actors.y[pad_index] ? UP : DOWN;
             } else {
                 // vertical paddle
-                if (temp_y < actors.y[pad_index] + (actors.height[pad_index] >> 1)) {
-                    // We hit upper side of Paddle
-                    if (temp_y <= actors.y[pad_index] + 4) {
-                        actors.yDir[SKULL] = UP;
-                        actors.xSpeed[SKULL] = 60;
-                        actors.ySpeed[SKULL] = 140;
-                    } else if (temp_x <= actors.x[pad_index] + 8) {
-                        actors.yDir[SKULL] = UP;
-                        actors.xSpeed[SKULL] = 100;
-                        actors.ySpeed[SKULL] = 100;
-                    } else {
-                        actors.xSpeed[SKULL] = 140;
-                        actors.ySpeed[SKULL] = 60;
-                    }
+                if (temp_y <= actors.y[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.yDir[SKULL] = UP;
+                    actors.xSpeed[SKULL] = 60;
+                    actors.ySpeed[SKULL] = 140;
+                } else if (temp_y <= actors.y[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.yDir[SKULL] = UP;
+                    actors.xSpeed[SKULL] = 100;
+                    actors.ySpeed[SKULL] = 100;
+                } else if (temp_y <= actors.y[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.xSpeed[SKULL] = 140;
+                    actors.ySpeed[SKULL] = 60;
+                } else if (temp_y >= actors.y[pad_index] + paddle_hit_zones[temp++]) {
+                    actors.yDir[SKULL] = DOWN;
+                    actors.xSpeed[SKULL] = 60;
+                    actors.ySpeed[SKULL] = 140;
                 } else {
-                    // Lower side of Paddle
-                    if (temp_y >= actors.y[pad_index] + actors.height[pad_index] - 4) {
-                        actors.yDir[SKULL] = DOWN;
-                        actors.xSpeed[SKULL] = 60;
-                        actors.ySpeed[SKULL] = 140;
-                    } else if (temp_x >= actors.x[pad_index] + actors.width[pad_index] - 8) {
-                        actors.yDir[SKULL] = RIGHT;
-                        actors.xSpeed[SKULL] = 100;
-                        actors.ySpeed[SKULL] = 100;
-                    } else {
-                        actors.xSpeed[SKULL] = 140;
-                        actors.ySpeed[SKULL] = 60;
-                    }
+                    actors.yDir[SKULL] = DOWN;
+                    actors.xSpeed[SKULL] = 100;
+                    actors.ySpeed[SKULL] = 100;
                 }
-
                 // Skull going left or right?
                 actors.xDir[SKULL] = actors.x[SKULL] < actors.x[pad_index] ? LEFT : RIGHT;
-
             }
         }
     }
@@ -1456,6 +1439,10 @@ void check_main_input() {
     }
 
     if (pad1_new & PAD_B) {
+        // TEST THINGS
+        actors.state[DOOR1] = 1;
+        // /////////
+
         switch (items.type[current_item]) {
             case TYPE_MAGNET:
                 actors.yDir[SKULL] = DOWN;
@@ -1686,10 +1673,18 @@ void update_skull() {
 
 void draw_paddles() {
     for (i = 0; i < paddle_count; ++i) {
-        if (i < 2) {
-            oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
+        if (actors.type[i] == TYPE_PAD_HORZ) {
+            if (actors.state[i] == PAD_SHORT) {
+                oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr_short);
+            } else {
+                oam_meta_spr(actors.x[i], actors.y[i], HorizontalPaddleSpr);
+            }
         } else {
-            oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
+            if (actors.state[i] == PAD_SHORT) {
+                oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr_short);
+            } else {
+                oam_meta_spr(actors.x[i], actors.y[i], VerticalPaddleSpr);
+            }
         }
     }
 }
@@ -1786,7 +1781,6 @@ void wait(unsigned char delay) {
 }
 
 void play_normal_level() {
-    oam_clear();
     switch (story_step) {
         case 0:
             fadein();
@@ -1804,6 +1798,7 @@ void play_normal_level() {
             break;
         case 4:
             ++current_level;
+            oam_clear();
             load_level();
             story_step = 0;
             break;
@@ -2152,8 +2147,9 @@ void debug_start(char debuglevel) {
     set_chr_mode_3(0x01);
     current_level = debuglevel;
     load_level();
-    banked_call(0, load_map);
     pal_bright(NULL);
+    banked_call(0, load_map);
+    oam_clear();
     brightness = NULL;
     items.sprite[current_item] = ITEM_MAGNET;
     items.is_active[current_item] = TRUE;
@@ -2212,7 +2208,7 @@ void main() {
                 scroll_index_y = NULL;
 
                 // DEBUG
-                debug_start(LVL_TEMPLE3);
+                // debug_start(LVL_TEMPLE3);
             }
 
         } else if (game_state == MAP) {

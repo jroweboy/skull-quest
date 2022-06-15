@@ -84,8 +84,8 @@
 // PADDLE
 #define TYPE_PAD_HORZ 0
 #define TYPE_PAD_VERT 1
-#define PAD_SHORT 0
-#define PAD_LONG 1
+#define PAD_SHORT 16
+#define PAD_LONG 32
 
 #define FACE_X 16
 #define FACE_Y 8
