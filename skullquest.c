@@ -134,7 +134,7 @@ Actors actors;
 #include "map.h"
 
 void reset_actors() {
-    for (i = 5; i < ACTOR_NUMBER; ++i) {
+    for (i = 0; i < ACTOR_NUMBER; ++i) {
         actors.state[i] = INACTIVE;
         actors.x[i] = 255;
         actors.y[i] = 240;
@@ -375,7 +375,6 @@ void init_level_specifics() {
             chr_5_index = 3;
 
             // Paddle
-            paddle_count = 1;
             actors.x[0] = 0x70;
             actors.y[0] = 0xD0;
             actors.state[0] = PAD_LONG;
@@ -397,7 +396,7 @@ void init_level_specifics() {
             // Skeleton index 6 & 7
             SKELETON1 = 6;
             SKELETON2 = 7;
-            banked_call(0, init_skeletons);
+            init_skeletons();
 
             // GATE
             GATE = 8;
@@ -443,7 +442,6 @@ void init_level_specifics() {
             chr_5_index = 0x0B;
 
             // Paddles
-            paddle_count = 1;
             actors.x[0] = 0x70;  // 14
             actors.y[0] = 0xD0;  // 26
             actors.state[0] = PAD_LONG;
@@ -490,18 +488,17 @@ void init_level_specifics() {
             chr_4_index = 0x0A;
             chr_5_index = 0x0B;
 
-            paddle_count = 2;
             // Paddle 1
-            actors.x[0] = 0x70;
-            actors.y[0] = 0xC0;
+            actors.x[0] = 14 * 8;
+            actors.y[0] = 24 * 8;
             actors.state[0] = PAD_LONG;
             actors.type[0] = TYPE_PAD_HORZ;
 
             // Paddle 2
-            actors.x[1] = 0x70;
-            actors.y[1] = 0x48;
-            actors.state[0] = PAD_LONG;
-            actors.type[0] = TYPE_PAD_HORZ;
+            actors.x[1] = 14 * 8;
+            actors.y[1] = 9 * 8;
+            actors.state[1] = PAD_LONG;
+            actors.type[1] = TYPE_PAD_HORZ;
             break;
         case LVL_TEMPLE3:
             // Achievement 1:
@@ -514,7 +511,6 @@ void init_level_specifics() {
             chr_4_index = 0x0A;
             chr_5_index = 0x0B;
 
-            paddle_count = 4;
             // Paddle 1
             actors.x[0] = 15 * 8;
             actors.y[0] = 12 * 8;
@@ -546,12 +542,12 @@ void init_level_specifics() {
             actors.type[DOOR1] = TYPE_SKULL_DOOR;
             actors.state[DOOR1] = IDLE;
             actors.animation_delay[DOOR1] = 32;
-            break;
 
             // Torches
             set_torch(7, 104, 32);
             set_torch(8, 144, 32);
 
+            break;
         case LVL_TOWN:
             // Achievement 1: Door knocker
             // Achievement 2: Devil slayer
@@ -565,7 +561,6 @@ void init_level_specifics() {
             chr_5_index = 0x0b;
 
             // Paddle
-            paddle_count = 1;
             actors.x[0] = 0x70;
             actors.y[0] = 0xD0;
 
@@ -638,6 +633,10 @@ void init_level_specifics() {
             break;
     }
 
+}
+
+void init_paddles() {
+    // Init paddles
     for (i = 0; i < paddle_count; ++i) {
         if (actors.type[i] == TYPE_PAD_HORZ) {
             actors.width[i] = actors.state[i]; // State is PAD_SHORT 16 or PAD_LONG 32
@@ -665,8 +664,7 @@ void init_skull() {
     actors.maxSpeed[SKULL] = 250;
     actors.animation_delay[SKULL] = 8;
     actors.type[SKULL] = TYPE_SKULL;
-    p1_health = 3;
-    p1_max_health = 3;
+    actors.state[SKULL] = INACTIVE;
 }
 
 #pragma rodata-name("CODE")
@@ -784,7 +782,17 @@ void load_level() {
 
     banked_call(0, reset_actors);
     banked_call(0, init_level_specifics);
+    banked_call(0, init_skull);
 
+    // How many paddles?
+    paddle_count = NULL;
+    for (i = 0; i < 4; ++i){
+        if (actors.state[i] < INACTIVE) {
+            ++paddle_count;
+        }
+    }
+    banked_call(0, init_paddles);
+    
     vram_adr(NAMETABLE_A);
     vram_unrle(current_nametable);
 
@@ -1496,7 +1504,7 @@ void update_skull() {
                 temp_x_col += actors.width[SKULL];
                 temp_y_col = temp_y;
                 if (set_collision_data()) {
-                    // Check right
+                    // Check up right
                     if (backup_col_type != COL_TYPE_SOFT) {
                         actors.xDir[SKULL] = LEFT;
                         temp_x -= temp_x % 8;
@@ -1534,9 +1542,9 @@ void update_skull() {
                     }
                     do_skull_tile_collision();
                 }
-                // Check right
+                // Check down right
                 temp_x_col = temp_x + actors.width[SKULL];
-                temp_y_col += actors.height[SKULL];
+                temp_y_col = temp_y + actors.height[SKULL];
                 if (set_collision_data()) {
                     if (backup_col_type != COL_TYPE_SOFT) {
                         actors.xDir[SKULL] = LEFT;
@@ -1864,8 +1872,10 @@ void play_story() {
                     reset_actors();
                     banked_call(0, set_map);
                     set_scroll_y(0x0100);
+                    banked_call(0, init_skull);
                     actors.x[SKULL] = 128;
                     actors.y[SKULL] = 56;
+                    actors.state[SKULL] = ROTATE_H;
                     ++story_step;
                 case 6:
                     fadein();
@@ -2179,6 +2189,8 @@ void main() {
     load_title_screen();
 
     banked_call(0, init_skull);
+    p1_health = 3;
+    p1_max_health = 3;
 
     bank_spr(1);
     oam_meta_spr(182, 122, staff);

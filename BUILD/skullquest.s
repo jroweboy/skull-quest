@@ -276,6 +276,7 @@
 	.export		_reset_actors
 	.export		_init_skeletons
 	.export		_init_level_specifics
+	.export		_init_paddles
 	.export		_init_skull
 	.export		_debug
 	.export		_update_health
@@ -11285,9 +11286,9 @@ L0002:	rts
 .segment	"BANK0"
 
 ;
-; for (i = 5; i < ACTOR_NUMBER; ++i) {
+; for (i = 0; i < ACTOR_NUMBER; ++i) {
 ;
-	lda     #$05
+	lda     #$00
 	sta     _i
 L001B:	lda     _i
 	cmp     #$0E
@@ -11407,7 +11408,7 @@ L001C:	ldy     _i
 	ldy     _i
 	sta     _actors+280,y
 ;
-; for (i = 5; i < ACTOR_NUMBER; ++i) {
+; for (i = 0; i < ACTOR_NUMBER; ++i) {
 ;
 	inc     _i
 	jmp     L001B
@@ -11572,7 +11573,7 @@ L000A:	ldy     _i
 	jeq     L004D
 	cmp     #$05
 	jeq     L0053
-	jmp     L0098
+	rts
 ;
 ; current_nametable = altar;
 ;
@@ -11776,7 +11777,7 @@ L0004:	lda     #>(_altar)
 ;
 ; break;
 ;
-	jmp     L0095
+	jmp     L0085
 ;
 ; current_nametable = cemetery;
 ;
@@ -11815,11 +11816,6 @@ L0014:	lda     #>(_cemetery)
 ;
 	lda     #$03
 	sta     _chr_5_index
-;
-; paddle_count = 1;
-;
-	lda     #$01
-	sta     _paddle_count
 ;
 ; actors.x[0] = 0x70;
 ;
@@ -11915,13 +11911,9 @@ L0014:	lda     #>(_cemetery)
 	lda     #$07
 	sta     _SKELETON2
 ;
-; banked_call(0, init_skeletons);
+; init_skeletons();
 ;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_init_skeletons)
-	ldx     #>(_init_skeletons)
-	jsr     _banked_call
+	jsr     _init_skeletons
 ;
 ; GATE = 8;
 ;
@@ -12059,7 +12051,7 @@ L0014:	lda     #>(_cemetery)
 ;
 ; break;
 ;
-	jmp     L0098
+	rts
 ;
 ; current_nametable = temple;
 ;
@@ -12098,11 +12090,6 @@ L0032:	lda     #>(_temple)
 ;
 	lda     #$0B
 	sta     _chr_5_index
-;
-; paddle_count = 1;
-;
-	lda     #$01
-	sta     _paddle_count
 ;
 ; actors.x[0] = 0x70;  // 14
 ;
@@ -12143,9 +12130,9 @@ L0032:	lda     #>(_temple)
 ;
 	lda     #$06
 	sta     _i
-L0096:	lda     _i
+L0086:	lda     _i
 	cmp     #$09
-	bcs     L0097
+	bcs     L0087
 ;
 ; actors.animation_delay[i] = 12;
 ;
@@ -12186,11 +12173,11 @@ L0096:	lda     _i
 ; for (i = 6; i < 9; ++i) {
 ;
 	inc     _i
-	jmp     L0096
+	jmp     L0086
 ;
 ; STILL_DECORATION = 10;
 ;
-L0097:	lda     #$0A
+L0087:	lda     #$0A
 	sta     _STILL_DECORATION
 ;
 ; actors.x[STILL_DECORATION] = 184;
@@ -12287,7 +12274,7 @@ L0046:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L0095
+	jmp     L0085
 ;
 ; current_nametable = temple2;
 ;
@@ -12327,17 +12314,12 @@ L004C:	lda     #>(_temple2)
 	lda     #$0B
 	sta     _chr_5_index
 ;
-; paddle_count = 2;
-;
-	lda     #$02
-	sta     _paddle_count
-;
-; actors.x[0] = 0x70;
+; actors.x[0] = 14 * 8;
 ;
 	lda     #$70
 	sta     _actors
 ;
-; actors.y[0] = 0xC0;
+; actors.y[0] = 24 * 8;
 ;
 	lda     #$C0
 	sta     _actors+14
@@ -12352,29 +12334,29 @@ L004C:	lda     #>(_temple2)
 	lda     #$00
 	sta     _actors+280
 ;
-; actors.x[1] = 0x70;
+; actors.x[1] = 14 * 8;
 ;
 	lda     #$70
 	sta     _actors+1
 ;
-; actors.y[1] = 0x48;
+; actors.y[1] = 9 * 8;
 ;
 	lda     #$48
 	sta     _actors+15
 ;
-; actors.state[0] = PAD_LONG;
+; actors.state[1] = PAD_LONG;
 ;
 	lda     #$20
-	sta     _actors+266
+	sta     _actors+267
 ;
-; actors.type[0] = TYPE_PAD_HORZ;
+; actors.type[1] = TYPE_PAD_HORZ;
 ;
 	lda     #$00
-	sta     _actors+280
+	sta     _actors+281
 ;
 ; break;
 ;
-	jmp     L0099
+	rts
 ;
 ; current_nametable = temple3;
 ;
@@ -12413,11 +12395,6 @@ L004D:	lda     #>(_temple3)
 ;
 	lda     #$0B
 	sta     _chr_5_index
-;
-; paddle_count = 4;
-;
-	lda     #$04
-	sta     _paddle_count
 ;
 ; actors.x[0] = 15 * 8;
 ;
@@ -12533,9 +12510,29 @@ L004D:	lda     #>(_temple3)
 	lda     #$20
 	sta     _actors+238,y
 ;
-; break;
+; set_torch(7, 104, 32);
 ;
-	jmp     L0098
+	jsr     decsp2
+	lda     #$07
+	ldy     #$01
+	sta     (sp),y
+	lda     #$68
+	dey
+	sta     (sp),y
+	lda     #$20
+	jsr     _set_torch
+;
+; set_torch(8, 144, 32);
+;
+	jsr     decsp2
+	lda     #$08
+	ldy     #$01
+	sta     (sp),y
+	lda     #$90
+	dey
+	sta     (sp),y
+	lda     #$20
+	jmp     _set_torch
 ;
 ; current_nametable = town_ruins;
 ;
@@ -12574,11 +12571,6 @@ L0053:	lda     #>(_town_ruins)
 ;
 	lda     #$0B
 	sta     _chr_5_index
-;
-; paddle_count = 1;
-;
-	lda     #$01
-	sta     _paddle_count
 ;
 ; actors.x[0] = 0x70;
 ;
@@ -12921,21 +12913,38 @@ L0053:	lda     #>(_town_ruins)
 ;
 	ldy     _DEVIL
 	lda     #$06
-L0095:	sta     _actors+280,y
+L0085:	sta     _actors+280,y
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ init_paddles (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_init_paddles: near
+
+.segment	"BANK0"
+
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
-L0098:	lda     #$00
-L0099:	sta     _i
-L009A:	lda     _i
+	lda     #$00
+	sta     _i
+L0012:	lda     _i
 	cmp     _paddle_count
-	bcs     L0086
+	bcs     L0003
 ;
 ; if (actors.type[i] == TYPE_PAD_HORZ) {
 ;
 	ldy     _i
 	lda     _actors+280,y
-	bne     L0089
+	bne     L0006
 ;
 ; actors.width[i] = actors.state[i]; // State is PAD_SHORT 16 or PAD_LONG 32
 ;
@@ -12943,9 +12952,9 @@ L009A:	lda     _i
 	ldx     #>(_actors+28)
 	clc
 	adc     _i
-	bcc     L008B
+	bcc     L0008
 	inx
-L008B:	sta     ptr1
+L0008:	sta     ptr1
 	stx     ptr1+1
 	ldy     _i
 	lda     _actors+266,y
@@ -12966,11 +12975,11 @@ L008B:	sta     ptr1
 ;
 ; } else {
 ;
-	jmp     L008F
+	jmp     L000C
 ;
 ; actors.width[i] = 0x04;
 ;
-L0089:	ldy     _i
+L0006:	ldy     _i
 	lda     #$04
 	sta     _actors+28,y
 ;
@@ -12980,9 +12989,9 @@ L0089:	ldy     _i
 	ldx     #>(_actors+42)
 	clc
 	adc     _i
-	bcc     L0091
+	bcc     L000E
 	inx
-L0091:	sta     ptr1
+L000E:	sta     ptr1
 	stx     ptr1+1
 	ldy     _i
 	lda     _actors+266,y
@@ -12997,18 +13006,18 @@ L0091:	sta     ptr1
 ;
 ; actors.maxSpeed[i] = 250;
 ;
-L008F:	ldy     _i
+L000C:	ldy     _i
 	lda     #$FA
 	sta     _actors+210,y
 ;
 ; for (i = 0; i < paddle_count; ++i) {
 ;
 	inc     _i
-	jmp     L009A
+	jmp     L0012
 ;
 ; }
 ;
-L0086:	rts
+L0003:	rts
 
 .endproc
 
@@ -13079,14 +13088,10 @@ L0086:	rts
 	lda     #$07
 	sta     _actors+284
 ;
-; p1_health = 3;
+; actors.state[SKULL] = INACTIVE;
 ;
-	lda     #$03
-	sta     _p1_health
-;
-; p1_max_health = 3;
-;
-	sta     _p1_max_health
+	lda     #$80
+	sta     _actors+270
 ;
 ; }
 ;
@@ -13593,6 +13598,50 @@ L0019:	lda     _current_collision_map
 	ldx     #>(_init_level_specifics)
 	jsr     _banked_call
 ;
+; banked_call(0, init_skull);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_skull)
+	ldx     #>(_init_skull)
+	jsr     _banked_call
+;
+; paddle_count = NULL;
+;
+	lda     #$00
+	sta     _paddle_count
+;
+; for (i = 0; i < 4; ++i){
+;
+	sta     _i
+L0017:	lda     _i
+	cmp     #$04
+	bcs     L0019
+;
+; if (actors.state[i] < INACTIVE) {
+;
+	ldy     _i
+	lda     _actors+266,y
+	cmp     #$80
+	bcs     L0018
+;
+; ++paddle_count;
+;
+	inc     _paddle_count
+;
+; for (i = 0; i < 4; ++i){
+;
+L0018:	inc     _i
+	jmp     L0017
+;
+; banked_call(0, init_paddles);
+;
+L0019:	lda     #$00
+	jsr     pusha
+	lda     #<(_init_paddles)
+	ldx     #>(_init_paddles)
+	jsr     _banked_call
+;
 ; vram_adr(NAMETABLE_A);
 ;
 	ldx     #$20
@@ -13630,13 +13679,13 @@ L0019:	lda     _current_collision_map
 ;
 	sta     _collision_index
 	sta     _collision_index+1
-L0002:	lda     _collision_index
+L0008:	lda     _collision_index
 	cmp     #$70
 	lda     _collision_index+1
 	sbc     #$01
-	bvc     L0006
+	bvc     L000C
 	eor     #$80
-L0006:	bpl     L0017
+L000C:	bpl     L0020
 ;
 ; temp = c_map[collision_index] >> 4;
 ;
@@ -13657,10 +13706,10 @@ L0006:	bpl     L0017
 ; if (temp > 2 && temp < 8) {
 ;
 	cmp     #$03
-	bcc     L0008
+	bcc     L000E
 	lda     _temp
 	cmp     #$08
-	bcs     L0008
+	bcs     L000E
 ;
 ; ++brick_counter;
 ;
@@ -13668,7 +13717,7 @@ L0006:	bpl     L0017
 ;
 ; temp = c_map[collision_index] & 0x0F;
 ;
-L0008:	lda     _collision_index
+L000E:	lda     _collision_index
 	sta     ptr1
 	lda     _collision_index+1
 	clc
@@ -13682,10 +13731,10 @@ L0008:	lda     _collision_index
 ; if (temp > 2 && temp < 8) {
 ;
 	cmp     #$03
-	bcc     L0004
+	bcc     L000A
 	lda     _temp
 	cmp     #$08
-	bcs     L0004
+	bcs     L000A
 ;
 ; ++brick_counter;
 ;
@@ -13693,14 +13742,14 @@ L0008:	lda     _collision_index
 ;
 ; for (collision_index = 0; collision_index < 368; ++collision_index) {
 ;
-L0004:	inc     _collision_index
-	bne     L0002
+L000A:	inc     _collision_index
+	bne     L0008
 	inc     _collision_index+1
-	jmp     L0002
+	jmp     L0008
 ;
 ; set_chr_mode_4(chr_4_index);
 ;
-L0017:	lda     _chr_4_index
+L0020:	lda     _chr_4_index
 	jsr     _set_chr_mode_4
 ;
 ; set_chr_mode_5(chr_5_index);
@@ -13717,7 +13766,7 @@ L0017:	lda     _chr_4_index
 ;
 	lda     _game_state
 	cmp     #$01
-	bne     L0018
+	bne     L0021
 ;
 ; show_HUD();
 ;
@@ -13725,7 +13774,7 @@ L0017:	lda     _chr_4_index
 ;
 ; pal_bright(0);
 ;
-L0018:	lda     #$00
+L0021:	lda     #$00
 	jsr     _pal_bright
 ;
 ; ppu_on_all();
@@ -17288,7 +17337,7 @@ L0026:	rts
 ; if (skull_launched) {
 ;
 	lda     _skull_launched
-	jeq     L0046
+	jeq     L0047
 ;
 ; param1 = SKULL;
 ;
@@ -17347,7 +17396,7 @@ L0026:	rts
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003B
+	beq     L003C
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17375,7 +17424,7 @@ L0008:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col += actors.width[SKULL];
 ;
-L003B:	lda     _actors+32
+L003C:	lda     _actors+32
 	clc
 	adc     _temp_x_col
 	sta     _temp_x_col
@@ -17389,7 +17438,7 @@ L003B:	lda     _actors+32
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003C
+	beq     L003D
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17417,7 +17466,7 @@ L003B:	lda     _actors+32
 ;
 ; temp_y_col += actors.height[SKULL];
 ;
-L003C:	lda     _actors+46
+L003D:	lda     _actors+46
 	clc
 	adc     _temp_y_col
 	sta     _temp_y_col
@@ -17484,7 +17533,7 @@ L000F:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L004A
+	jmp     L004B
 ;
 ; temp_x_col = temp_x;
 ;
@@ -17500,7 +17549,7 @@ L0005:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003D
+	beq     L003E
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17534,23 +17583,23 @@ L0013:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
-L003D:	lda     _temp_x
+L003E:	lda     _temp_x
 	clc
 	adc     _actors+32
 	sta     _temp_x_col
 ;
-; temp_y_col += actors.height[SKULL];
+; temp_y_col = temp_y + actors.height[SKULL];
 ;
-	lda     _actors+46
+	lda     _temp_y
 	clc
-	adc     _temp_y_col
+	adc     _actors+46
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L003E
+	beq     L003F
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17578,7 +17627,7 @@ L003D:	lda     _temp_x
 ;
 ; temp_y_col = temp_y;
 ;
-L003E:	lda     _temp_y
+L003F:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -17624,7 +17673,7 @@ L003E:	lda     _temp_y
 ;
 	lda     _temp
 	cmp     _temp2
-	jne     L0044
+	jne     L0045
 ;
 ; actors.xDir[SKULL] = LEFT;
 ;
@@ -17664,7 +17713,7 @@ L0003:	lda     _actors+102
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0040
+	beq     L0041
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17692,7 +17741,7 @@ L001F:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0040:	lda     _temp_x
+L0041:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y;
@@ -17704,7 +17753,7 @@ L0040:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0041
+	beq     L0042
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17738,7 +17787,7 @@ L0040:	lda     _temp_x
 ;
 ; temp_x_col = temp_x;
 ;
-L0041:	lda     _temp_x
+L0042:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col += actors.height[SKULL];
@@ -17810,7 +17859,7 @@ L0026:	lda     #$FF
 ;
 ; } else {
 ;
-	jmp     L004A
+	jmp     L004B
 ;
 ; temp_x_col = temp_x + actors.width[SKULL];
 ;
@@ -17828,7 +17877,7 @@ L001C:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0042
+	beq     L0043
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17862,7 +17911,7 @@ L002A:	jsr     _do_skull_tile_collision
 ;
 ; temp_x_col = temp_x;
 ;
-L0042:	lda     _temp_x
+L0043:	lda     _temp_x
 	sta     _temp_x_col
 ;
 ; temp_y_col = temp_y + actors.height[SKULL];
@@ -17876,7 +17925,7 @@ L0042:	lda     _temp_x
 ;
 	jsr     _set_collision_data
 	tax
-	beq     L0043
+	beq     L0044
 ;
 ; if (backup_col_type != COL_TYPE_SOFT) {
 ;
@@ -17910,7 +17959,7 @@ L0042:	lda     _temp_x
 ;
 ; temp_y_col = temp_y;
 ;
-L0043:	lda     _temp_y
+L0044:	lda     _temp_y
 	sta     _temp_y_col
 ;
 ; if (set_collision_data()) {
@@ -17956,7 +18005,7 @@ L0043:	lda     _temp_y
 ;
 	lda     _temp
 	cmp     _temp2
-	bne     L0044
+	bne     L0045
 ;
 ; actors.xDir[SKULL] = RIGHT;
 ;
@@ -17974,8 +18023,8 @@ L0043:	lda     _temp_y
 ;
 ; actors.yDir[SKULL] = DOWN;
 ;
-L0044:	lda     #$01
-L004A:	sta     _actors+102
+L0045:	lda     #$01
+L004B:	sta     _actors+102
 ;
 ; temp_y = actors.y[SKULL];
 ;
@@ -18004,17 +18053,17 @@ L002E:	jsr     _check_paddle_collision
 ;
 ; } else {
 ;
-	jmp     L0047
+	jmp     L0048
 ;
 ; temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
 ;
-L0046:	lda     _actors+28
+L0047:	lda     _actors+28
 	lsr     a
 	clc
 	adc     _actors
-	bcc     L003A
+	bcc     L003B
 	inx
-L003A:	jsr     pushax
+L003B:	jsr     pushax
 	lda     _actors+32
 	lsr     a
 	jsr     tossuba0
@@ -18033,7 +18082,7 @@ L003A:	jsr     pushax
 ;
 ; actors.x[SKULL] = temp_x;
 ;
-L0047:	lda     _temp_x
+L0048:	lda     _temp_x
 	sta     _actors+4
 ;
 ; actors.y[SKULL] = temp_y;
@@ -18941,6 +18990,14 @@ L001A:	jsr     _reset_actors
 	lda     #$00
 	jsr     _set_scroll_y
 ;
+; banked_call(0,init_skull);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_init_skull)
+	ldx     #>(_init_skull)
+	jsr     _banked_call
+;
 ; actors.x[SKULL] = 128;
 ;
 	lda     #$80
@@ -18950,6 +19007,11 @@ L001A:	jsr     _reset_actors
 ;
 	lda     #$38
 	sta     _actors+18
+;
+; actors.state[SKULL] = ROTATE_H;
+;
+	lda     #$02
+	sta     _actors+270
 ;
 ; ++story_step;
 ;
@@ -20257,6 +20319,15 @@ L007A:	inc     _wait_timer
 	lda     #<(_init_skull)
 	ldx     #>(_init_skull)
 	jsr     _banked_call
+;
+; p1_health = 3;
+;
+	lda     #$03
+	sta     _p1_health
+;
+; p1_max_health = 3;
+;
+	sta     _p1_max_health
 ;
 ; bank_spr(1);
 ;

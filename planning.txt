@@ -61,21 +61,20 @@ JUNE
     x ITEM magnet
     x No HUD when loadingas temple??
     x Title Screen Design
-    - Map update name location
-    - Ruin town crate bug
-    - Town ghost NPC
+    x Map update name location
+    x Temple 2
+    x Temple 3
+
+2:
+    - Paddle bug Cemetery intro
     - ITEM bomb
     - ITEM keys
     - multiple skulls?
     - SELECT BUTTON -> Item selection (fade out background)
     - Bridge boss animation
     - Boss fight coding
-    - Temple alternate route (middle stained glass broke reveal passageway to crypte);
-    - Forest level ennemies
-    - Forest level design
-    - Forest boss design & AI 
-
-2:
+    - Town ghost NPC
+    - Ruin town crate bug
     - Bombable wall (in temple)...
     - Necromant tower Entrance Design
     - Necromant lower tower Design
@@ -83,6 +82,9 @@ JUNE
     - Tower Level design
     - Ennemies - Boss
     - Save state
+    - Forest level ennemies
+    - Forest level design
+    - Forest boss design & AI 
 3:
     - Title Screen Logic
     - Gameover Screen
