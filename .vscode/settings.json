@@ -13,7 +13,9 @@
         "dialog.h": "c",
         "spr_villagers.h": "c",
         "spr_fireball.h": "c",
-        "spr_skull_door": "c"
+        "spr_skull_door": "c",
+        "temple4.h": "c",
+        "story.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

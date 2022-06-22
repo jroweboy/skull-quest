@@ -393,15 +393,16 @@ sounds_data:
      ;mode 4 changes $0800-$0BFF
      ;mode 5 changes $0C00-$0FFF
 
-	.incbin "I-CHR/alpha-top.pngE/chrblock.chr" ; 2kb Alpha and common tiles  0  -  1
-	.incbin "I-CHR/altar.pngE/chrblock.chr"		; 1kb Altar    2
-	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    3
+	; MAX size is 256kb
+	.incbin "I-CHR/alpha-top.pngE/chrblock.chr" ; 2kb Alpha and common tiles  0x00  -  0x01
+	.incbin "I-CHR/altar.pngE/chrblock.chr"		; 1kb Altar    0x02
+	.incbin "I-CHR/cemetery.pngE/chrblock.chr"	; 1kb Graveyard    0x03
 
-	.incbin "I-CHR/sprites01.pngE/chrblock-top1.chr"; 2kb Main TOP sprites   4  -  5
-	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces 6  -  7
+	.incbin "I-CHR/sprites01.pngE/chrblock-top1.chr"; 2kb Main TOP sprites   0x04  -  0x05
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom1.chr"; 2kb Faces 0x06  -  0x07
 	
-	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   8  -  9
-	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple - Town1 A
-	.incbin "I-CHR/town-ruins.pngE/chrblock.chr" ; 1kb Town2 B
-	.incbin "I-CHR/sprites01.pngE/chrblock-bottom2-staff.chr"; 2kb Staff - Lightning C - D
-	.incbin "I-CHR/title_screen.pngE/title_screen.chr" ; 4kb Title Screen!!! E - F
+	.incbin "I-CHR/map.pngE/chrblock.chr"		; 2kb Map   0x08  -  0x09
+	.incbin "I-CHR/church-interior.pngE/chrblock-1k.chr" ; 1kb Temple - Town1 0x0A
+	.incbin "I-CHR/town-ruins.pngE/chrblock.chr" ; 1kb Town2 0x0B
+	.incbin "I-CHR/sprites01.pngE/chrblock-bottom2-staff.chr"; 2kb Staff - Lightning 0x0C - 0x0D
+	.incbin "I-CHR/title_screen.pngE/title_screen.chr" ; 4kb Title Screen!!! 0x0E - 0x0F

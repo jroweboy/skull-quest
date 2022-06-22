@@ -112,560 +112,18 @@ Actors actors;
 #pragma rodata-name("BANK0")
 #pragma code-name("BANK0")
 
-// COLLISION
-#include "Collision/master_collision.h"
-// LEVELS
-#include "I-CHR/temple2/temple2.h"
-#include "I-CHR/temple3/temple3.h"
-#include "I-CHR/title_screen.pngE/story.h"
-#include "I-CHR/town-ruins.pngE/town_ruins.h"
-#include "Nametable/black_level.h"
-// SPRITES
-#include "spr_devil.h"
-#include "spr_door.h"
-#include "spr_fireball.h"
-#include "spr_skull_door.h"
-#include "spr_sorcerer.h"
-#include "spr_staff.h"
-#include "spr_stainedglass.h"
-#include "spr_star.h"
-#include "spr_villagers.h"
-// MAP
-#include "map.h"
+#include "bank0.h"
 
-void reset_actors() {
-    for (i = 0; i < ACTOR_NUMBER; ++i) {
-        actors.state[i] = INACTIVE;
-        actors.x[i] = 255;
-        actors.y[i] = 240;
-        actors.xDir[i] = LEFT;
-        actors.yDir[i] = UP;
-        actors.width[i] = NULL;
-        actors.height[i] = NULL;
-        actors.bbox_x[i] = NULL;
-        actors.bbox_y[i] = NULL;
-        actors.xSpeed[i] = NULL;
-        actors.ySpeed[i] = NULL;
-        actors.xRemain[i] = NULL;
-        actors.yRemain[i] = NULL;
-        actors.xVelocity[i] = NULL;
-        actors.yVelocity[i] = NULL;
-        actors.minSpeed[i] = NULL;
-        actors.maxSpeed[i] = NULL;
-        actors.counter[i] = NULL;
-        actors.animation_delay[i] = NULL;
-        actors.current_frame[i] = NULL;
-        actors.type[i] = NULL;
-    }
-}
+#pragma rodata-name("BANK1")
+#pragma code-name("BANK1")
 
-void init_skeletons() {
-    temp = SKELETON1 + 2;  // TODO, replace hardcoded 2 with skel_number???
-    for (i = SKELETON1; i < temp; ++i) {
-        if (i == SKELETON1) {
-            actors.x[i] = 40;
-            actors.y[i] = 72;
-        } else {
-            actors.x[i] = 160;
-            actors.y[i] = 104;
-            actors.xDir[i] = RIGHT;
-        }
-        actors.width[i] = 0x04;
-        actors.height[i] = 0x14;
-        actors.bbox_x[i] = 0x01;
-        actors.bbox_y[i] = 0x02;
-        actors.xSpeed[i] = 10;
-        actors.maxSpeed[i] = 20;
-        actors.animation_delay[i] = 16;
-        actors.state[i] = DEAD;
-        actors.type[i] = TYPE_SKELETON;
-    }
-}
+#include "bank1.h"
 
-void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
-    actors.x[p_index] = p_x;
-    actors.y[p_index] = p_y;
-    actors.animation_delay[p_index] = 8;
-    actors.state[p_index] = IDLE;
-    actors.type[p_index] = TYPE_TORCHES;
-}
+#pragma rodata-name("BANK6")
+#pragma code-name("BANK6")
 
-void set_animation_info() {
-    j = actors.state[draw_index] << 1;
-    switch (actors.type[draw_index]) {
-        case TYPE_SKELETON:
-            animation_index = skeleton_animation_index[j];
-            ++j;
-            frame_count = skeleton_animation_index[j];
-            animation_array = skeleton_animation;
-            break;
-        case TYPE_GLASS:
-            animation_index = glass_animation_index[j];
-            ++j;
-            frame_count = glass_animation_index[j];
-            animation_array = glass_animation;
-            break;
-        case TYPE_CRATE:
-            animation_index = 0;
-            frame_count = 1;
-            animation_array = crate_animation;
-            break;
-        case TYPE_HOUSE_DOOR:
-            animation_index = house_door_animation_index[j];
-            ++j;
-            frame_count = house_door_animation_index[j];
-            animation_array = house_door_animation;
-            break;
-        case TYPE_CROW:
-            animation_index = crow_animation_index[j];
-            ++j;
-            frame_count = crow_animation_index[j];
-            animation_array = crow_animation;
-            break;
-        case TYPE_DEVIL:
-            animation_index = devil_animation_index[j];
-            ++j;
-            frame_count = devil_animation_index[j];
-            animation_array = devil_animation;
-            break;
-        case TYPE_SKULL:
-            animation_index = skull_animation_index[j];
-            ++j;
-            frame_count = skull_animation_index[j];
-            animation_array = skull_animation;
-            break;
-        case TYPE_GATE:
-            animation_index = gate_animation_index[j];
-            ++j;
-            frame_count = gate_animation_index[j];
-            animation_array = gate_animation;
-            break;
-        case TYPE_TREE:
-            animation_index = 0;
-            frame_count = 1;
-            animation_array = tree_animation;
-            break;
-        case TYPE_ANGELIC:
-            animation_index = angelic_animation_index[j];
-            ++j;
-            frame_count = angelic_animation_index[j];
-            animation_array = angelic_animation;
-            break;
-        case TYPE_SKULL_PILE:
-            animation_index = 0;
-            frame_count = 1;
-            animation_array = skull_pile_animation;
-            break;
-        case TYPE_LIGHTNING:
-            animation_index = lightning_animation_index[j];
-            ++j;
-            frame_count = lightning_animation_index[j];
-            animation_array = lightning_animation;
-            break;
-        case TYPE_NECROMANCER:
-            animation_index = necromancer_animation_index[j];
-            ++j;
-            frame_count = necromancer_animation_index[j];
-            animation_array = necromancer_animation;
-            break;
-        case TYPE_STARS:
-            animation_index = stars_animation_index[j];
-            ++j;
-            frame_count = stars_animation_index[j];
-            animation_array = stars_animation;
-            break;
-        case TYPE_VILLAGER1:
-            animation_index = villager_animation_index[j];
-            ++j;
-            frame_count = villager_animation_index[j];
-            animation_array = villager_animation;
-            break;
-        case TYPE_TORCHES:
-            animation_index = torch_animation_index[j];
-            ++j;
-            frame_count = torch_animation_index[j];
-            animation_array = torch_animation;
-            break;
-        case TYPE_HERO:
-            animation_index = hero_animation_index[j];
-            ++j;
-            frame_count = hero_animation_index[j];
-            animation_array = hero_animation;
-            break;
-        case TYPE_SORCERER:
-            animation_index = sorcerer_animation_index[j];
-            ++j;
-            frame_count = sorcerer_animation_index[j];
-            animation_array = sorcerer_animation;
-            break;
-        case TYPE_PARALYZER:
-            animation_index = fireball_animation_index[j];
-            ++j;
-            frame_count = fireball_animation_index[j];
-            animation_array = fireball_animation;
-            break;
-        case TYPE_SKELETON_KING:
-            animation_index = 0;
-            frame_count = 1;
-            animation_array = skeleton_king_animation;
-            break;
-        case TYPE_SKULL_DOOR:
-            animation_index = skull_door_animation_index[j];
-            ++j;
-            frame_count = skull_door_animation_index[j];
-            animation_array = skull_door_animation;
-            break;
-    }
-}
+#include "bank6.h"
 
-void init_level_specifics() {
-    switch (current_level) {
-        case LVL_ALTAR:
-            current_nametable = altar;
-            current_collision_map = cemetery_col;
-            current_background_palette = pal_altar_bg;
-            current_sprite_palette = pal_altar_spr;
-            chr_4_index = 2;
-
-            // Skull doesn't appear immediately
-            actors.x[SKULL] = 125;
-            actors.y[SKULL] = 130;
-            actors.state[SKULL] = INACTIVE;
-
-            // Lightning
-            LIGHTNING = 12;
-            actors.x[LIGHTNING] = 128;
-            actors.y[LIGHTNING] = 108;
-            actors.animation_delay[LIGHTNING] = 8;
-            actors.type[LIGHTNING] = TYPE_LIGHTNING;
-            actors.state[LIGHTNING] = IDLE;
-
-            // Torches:
-            set_torch(7, 64, 72);
-            set_torch(8, 88, 72);
-            set_torch(9, 160, 72);
-            set_torch(10, 184, 72);
-
-            // Necromancer:
-            NECROMANCER = 6;
-            actors.x[NECROMANCER] = 120;
-            actors.y[NECROMANCER] = 142;
-            actors.animation_delay[NECROMANCER] = 20;
-            actors.state[NECROMANCER] = IDLE;
-            actors.type[NECROMANCER] = TYPE_NECROMANCER;
-
-            // Hero
-            HERO = 11;
-            actors.animation_delay[HERO] = 1;
-            actors.x[HERO] = 120;
-            actors.y[HERO] = 72;
-            actors.state[HERO] = IDLE;
-            actors.type[HERO] = TYPE_HERO;
-            break;
-        case LVL_CEMETERY:
-            // Achievement 1 : Scarecrow
-            // Achievement 2 : Skeleton buster
-
-            current_nametable = cemetery;
-            current_collision_map = cemetery_col;
-            current_background_palette = pal_cemetery_bg;
-            current_sprite_palette = pal_cemetery_spr;
-
-            chr_4_index = 2;
-            chr_5_index = 3;
-
-            // Paddle
-            actors.x[0] = 0x70;
-            actors.y[0] = 0xD0;
-            actors.state[0] = PAD_LONG;
-            actors.type[0] = TYPE_PAD_HORZ;
-
-            // CROW
-            CROW = 5;
-            actors.x[CROW] = 207;
-            actors.y[CROW] = 117;
-            actors.state[CROW] = 2;  // IDLE state of crow is 2... don't ask!
-            actors.animation_delay[CROW] = 64;
-            actors.xSpeed[CROW] = 128;
-            actors.ySpeed[CROW] = 32;
-            actors.type[CROW] = TYPE_CROW;
-            actors.bbox_y[CROW] = 4;
-            actors.width[CROW] = 16;
-            actors.height[CROW] = 16;
-
-            // Skeleton index 6 & 7
-            SKELETON1 = 6;
-            SKELETON2 = 7;
-            init_skeletons();
-
-            // GATE
-            GATE = 8;
-            actors.x[GATE] = 120;
-            actors.y[GATE] = 48;
-            actors.animation_delay[GATE] = 16;
-            actors.type[GATE] = TYPE_GATE;
-            actors.state[GATE] = IDLE;
-
-            // TREE
-            STILL_DECORATION = 9;
-            actors.x[STILL_DECORATION] = 219;
-            actors.y[STILL_DECORATION] = 61;
-            actors.state[STILL_DECORATION] = IDLE;
-            actors.type[STILL_DECORATION] = TYPE_TREE;
-
-            // ANGELIC
-            GHOST = 10;
-            actors.x[GHOST] = 120;
-            actors.y[GHOST] = 92;
-            actors.animation_delay[GHOST] = 16;
-            actors.state[GHOST] = IDLE;
-            actors.type[GHOST] = TYPE_ANGELIC;
-
-            // STARS
-            STARS = 11;
-            actors.x[STARS] = 127;
-            actors.y[STARS] = 136;
-            actors.state[STARS] = IDLE;
-            actors.type[STARS] = TYPE_STARS;
-            actors.animation_delay[STARS] = 8;
-            break;
-        case LVL_TEMPLE1:
-            // Achievement 1: Glass Hash (break 3 stained glasses)
-            // Achievement 2: Paralyzed by Death (waking the sorcerer by hiting pile of skulls)
-
-            current_nametable = temple;
-            current_collision_map = temple_col;
-            current_background_palette = pal_temple_bg;
-            current_sprite_palette = pal_temple_spr;
-
-            chr_4_index = 0x0A;
-            chr_5_index = 0x0B;
-
-            // Paddles
-            actors.x[0] = 0x70;  // 14
-            actors.y[0] = 0xD0;  // 26
-            actors.state[0] = PAD_LONG;
-            actors.type[0] = TYPE_PAD_HORZ;
-
-            // Stained glasses
-            actors.x[6] = 96;
-            actors.x[7] = 120;
-            actors.x[8] = 144;
-            for (i = 6; i < 9; ++i) {
-                actors.animation_delay[i] = 12;
-                actors.y[i] = 32;
-                actors.type[i] = TYPE_GLASS;
-                actors.width[i] = 16;
-                actors.height[i] = 50;
-                actors.state[i] = IDLE;
-            }
-
-            // Pile of skulls
-            STILL_DECORATION = 10;
-            actors.x[STILL_DECORATION] = 184;
-            actors.y[STILL_DECORATION] = 82;
-            actors.width[STILL_DECORATION] = 16;
-            actors.height[STILL_DECORATION] = 8;
-            actors.state[STILL_DECORATION] = IDLE;
-            actors.type[STILL_DECORATION] = TYPE_SKULL_PILE;
-
-            // Sorcerer
-            SORCERER = 9;
-            actors.x[SORCERER] = actors.x[STILL_DECORATION] + 8;
-            actors.y[SORCERER] = actors.y[STILL_DECORATION] - 20;
-            actors.animation_delay[SORCERER] = 12;
-            actors.state[SORCERER] = DEAD;
-            actors.type[SORCERER] = TYPE_SORCERER;
-            break;
-        case LVL_TEMPLE2:
-            // Achievement 1:
-            // Achievement 2:
-            current_nametable = temple2;
-            current_collision_map = temple2_col;
-            current_background_palette = pal_temple_bg;
-            current_sprite_palette = pal_temple_spr;
-
-            chr_4_index = 0x0A;
-            chr_5_index = 0x0B;
-
-            // Paddle 1
-            actors.x[0] = 14 * 8;
-            actors.y[0] = 24 * 8;
-            actors.state[0] = PAD_LONG;
-            actors.type[0] = TYPE_PAD_HORZ;
-
-            // Paddle 2
-            actors.x[1] = 14 * 8;
-            actors.y[1] = 9 * 8;
-            actors.state[1] = PAD_LONG;
-            actors.type[1] = TYPE_PAD_HORZ;
-            break;
-        case LVL_TEMPLE3:
-            // Achievement 1:
-            // Achievement 2:
-            current_nametable = temple3;
-            current_collision_map = temple3_col;
-            current_background_palette = pal_temple_bg;
-            current_sprite_palette = pal_temple_spr;
-
-            chr_4_index = 0x0A;
-            chr_5_index = 0x0B;
-
-            // Paddle 1
-            actors.x[0] = 15 * 8;
-            actors.y[0] = 12 * 8;
-            actors.state[0] = PAD_SHORT;
-            actors.type[0] = TYPE_PAD_HORZ;
-
-            // Paddle up
-            actors.x[1] = 15 * 8;
-            actors.y[1] = 21 * 8;
-            actors.state[1] = PAD_SHORT;
-            actors.type[1] = TYPE_PAD_HORZ;
-
-            // Paddle left
-            actors.x[2] = 8 * 8;
-            actors.y[2] = 16 * 8;
-            actors.state[2] = PAD_SHORT;
-            actors.type[2] = TYPE_PAD_VERT;
-
-            // Paddle right
-            actors.x[3] = 23 * 8;
-            actors.y[3] = 16 * 8;
-            actors.state[3] = PAD_SHORT;
-            actors.type[3] = TYPE_PAD_VERT;
-
-            // Skull Door
-            DOOR1 = 6;
-            actors.x[DOOR1] = 120;
-            actors.y[DOOR1] = 21;
-            actors.type[DOOR1] = TYPE_SKULL_DOOR;
-            actors.state[DOOR1] = IDLE;
-            actors.animation_delay[DOOR1] = 32;
-
-            // Torches
-            set_torch(7, 104, 32);
-            set_torch(8, 144, 32);
-
-            break;
-        case LVL_TOWN:
-            // Achievement 1: Door knocker
-            // Achievement 2: Devil slayer
-
-            current_nametable = town_ruins;
-            current_collision_map = town_col;
-            current_background_palette = pal_town_bg;
-            current_sprite_palette = pal_town_spr;
-
-            chr_4_index = 0x0a;
-            chr_5_index = 0x0b;
-
-            // Paddle
-            actors.x[0] = 0x70;
-            actors.y[0] = 0xD0;
-
-            // Doors
-            DOOR1 = 6;
-            DOOR2 = 7;
-            DOOR3 = 8;
-            actors.x[DOOR1] = 30;
-            actors.y[DOOR1] = 87;
-            actors.width[DOOR1] = 16;
-            actors.height[DOOR1] = 50;
-            actors.state[DOOR1] = IDLE;
-            actors.type[DOOR1] = TYPE_HOUSE_DOOR;
-
-            actors.x[DOOR2] = 110;
-            actors.y[DOOR2] = 71;
-            actors.width[DOOR2] = 16;
-            actors.height[DOOR2] = 50;
-            actors.state[DOOR2] = IDLE;
-            actors.type[DOOR2] = TYPE_HOUSE_DOOR;
-
-            actors.x[DOOR3] = 182;
-            actors.y[DOOR3] = 87;
-            actors.width[DOOR3] = 16;
-            actors.height[DOOR3] = 50;
-            actors.state[DOOR3] = IDLE;
-            actors.type[DOOR3] = TYPE_HOUSE_DOOR;
-
-            // Crates
-            CRATE1 = 9;
-            CRATE2 = 10;
-            CRATE3 = 11;
-
-            actors.x[CRATE1] = 16;
-            actors.y[CRATE1] = 112;
-            actors.x[CRATE2] = 48;
-            actors.y[CRATE2] = 112;
-            actors.x[CRATE3] = 224;
-            actors.y[CRATE3] = 112;
-            temp = 15;
-            actors.width[CRATE1] = temp;
-            actors.width[CRATE2] = temp;
-            actors.width[CRATE3] = temp;
-            actors.height[CRATE1] = temp;
-            actors.height[CRATE2] = temp;
-            actors.height[CRATE3] = temp;
-            temp = 1;
-            actors.bbox_x[CRATE1] = temp;
-            actors.bbox_y[CRATE1] = temp;
-            actors.bbox_x[CRATE2] = temp;
-            actors.bbox_y[CRATE2] = temp;
-            actors.bbox_x[CRATE3] = temp;
-            actors.bbox_y[CRATE3] = temp;
-            actors.state[CRATE1] = IDLE;
-            actors.state[CRATE2] = IDLE;
-            actors.state[CRATE3] = IDLE;
-            actors.type[CRATE1] = TYPE_CRATE;
-            actors.type[CRATE2] = TYPE_CRATE;
-            actors.type[CRATE3] = TYPE_CRATE;
-
-            // DEVIL
-            DEVIL = 12;
-            actors.x[DEVIL] = 12;
-            actors.y[DEVIL] = 152;
-            actors.width[DEVIL] = 15;
-            actors.height[DEVIL] = 15;
-            actors.animation_delay[DEVIL] = 16;
-            actors.state[DEVIL] = IDLE;
-            actors.type[DEVIL] = TYPE_DEVIL;
-            break;
-    }
-
-}
-
-void init_paddles() {
-    // Init paddles
-    for (i = 0; i < paddle_count; ++i) {
-        if (actors.type[i] == TYPE_PAD_HORZ) {
-            actors.width[i] = actors.state[i]; // State is PAD_SHORT 16 or PAD_LONG 32
-            actors.height[i] = 0x04;  // 4
-            actors.bbox_y[i] = 0x02;
-        } else {
-            actors.width[i] = 0x04;
-            actors.height[i] = actors.state[i];
-            actors.bbox_x[i] = 0x02;
-        }
-        actors.maxSpeed[i] = 250;
-    }
-}
-
-void init_skull() {
-    actors.width[SKULL] = 6;
-    actors.height[SKULL] = 6;
-    actors.bbox_x[SKULL] = 1;
-    actors.bbox_y[SKULL] = 1;
-    actors.xDir[SKULL] = RIGHT;
-    actors.yDir[SKULL] = UP;
-    actors.xSpeed[SKULL] = 100;
-    actors.ySpeed[SKULL] = 100;
-    actors.minSpeed[SKULL] = 64;
-    actors.maxSpeed[SKULL] = 250;
-    actors.animation_delay[SKULL] = 8;
-    actors.type[SKULL] = TYPE_SKULL;
-    actors.state[SKULL] = INACTIVE;
-}
 
 #pragma rodata-name("CODE")
 #pragma code-name("CODE")
@@ -750,6 +208,7 @@ void load_black_level() {
 }
 
 // We assume there will never be a col type value greater than 15;
+// And current_collision_map length < 255
 void load_collision() {
     collision_index = 0;
     is_first = TRUE;
@@ -780,8 +239,8 @@ void load_level() {
     ppu_off();
     set_scroll_x(0x0000);
 
-    banked_call(0, reset_actors);
-    banked_call(0, init_level_specifics);
+    banked_call(1, reset_actors);
+    banked_call(6, init_level_specifics);
     banked_call(0, init_skull);
 
     // How many paddles?
@@ -807,12 +266,12 @@ void load_level() {
         // collision_index contient 2 info de 4 bits
         // First 4 bits:
         temp = c_map[collision_index] >> 4;
-        if (temp > 2 && temp < 8) {
+        if (temp > 2 && temp < 10) {
             ++brick_counter;
         }
         // Last 4 bits:
         temp = c_map[collision_index] & 0x0F;
-        if (temp > 2 && temp < 8) {
+        if (temp > 2 && temp < 10) {
             ++brick_counter;
         }
     }
@@ -857,6 +316,16 @@ void remove_brick(char tile_type) {
     one_vram_buffer(tile_type, backup_nt_index);
     c_map[backup_col_index] &= backup_nt_index % 2 ? 0b11110000 : 0b00001111;
     --brick_counter;
+}
+
+void first_hit() {
+    if (backup_nt_index % 2) {
+        --backup_nt_index;
+    }
+    one_vram_buffer(0x0a, backup_nt_index);
+    ++backup_nt_index;
+    one_vram_buffer(0x0b, backup_nt_index);
+    c_map[backup_col_index] = 0b00110011;
 }
 
 void hit_brick(char tile_type) {
@@ -991,6 +460,16 @@ void animate() {
     oam_meta_spr(actors.x[draw_index], actors.y[draw_index], animation_array[animation_index]);
 }
 
+unsigned char get_inactive_actor_index() {
+    for (i = 6; i < ACTOR_NUMBER; ++i) {
+        if (actors.state[i] == INACTIVE) {
+            return i;
+        }
+    }
+    
+    return FALSE;
+}
+
 void move() {
     switch (actors.type[draw_index]) {
         case TYPE_SKELETON:
@@ -1038,28 +517,25 @@ void move() {
         case TYPE_SORCERER:
             if (actors.state[SORCERER] == ATTACKING) {
                 ++actors.state[SORCERER];
-                // Find empty actor slot
-                for (i = 6; i < ACTOR_NUMBER; ++i) {
-                    if (actors.state[i] == INACTIVE) {
-                        actors.x[i] = actors.x[SORCERER] + 8;
-                        actors.y[i] = actors.y[SORCERER] + 16;
-                        actors.width[i] = 8;
-                        actors.height[i] = 8;
-                        actors.animation_delay[i] = 8;
-                        actors.yDir[i] = DOWN;
-                        actors.state[i] = APPEARING;
-                        actors.type[i] = TYPE_PARALYZER;
-                        actors.ySpeed[i] = 128;
+                temp = get_inactive_actor_index();
+                if (temp) {
+                    actors.x[temp] = actors.x[SORCERER] + 8;
+                    actors.y[temp] = actors.y[SORCERER] + 16;
+                    actors.width[temp] = 8;
+                    actors.height[temp] = 8;
+                    actors.animation_delay[temp] = 8;
+                    actors.yDir[temp] = DOWN;
+                    actors.state[temp] = APPEARING;
+                    actors.type[temp] = TYPE_PARALYZER;
+                    actors.ySpeed[temp] = 128;
 
-                        // Get the right direction and speed for PARALYZER
-                        if (actors.x[i] > actors.x[0]) {
-                            actors.xDir[i] = LEFT;
-                            actors.xSpeed[i] = actors.x[i] - actors.x[0];
-                        } else {
-                            actors.xDir[i] = RIGHT;
-                            actors.xSpeed[i] = actors.x[0] - actors.x[i];
-                        }
-                        break;
+                    // Get the right direction and speed for PARALYZER
+                    if (actors.x[temp] > actors.x[0]) {
+                        actors.xDir[temp] = LEFT;
+                        actors.xSpeed[temp] = actors.x[temp] - actors.x[0];
+                    } else {
+                        actors.xDir[temp] = RIGHT;
+                        actors.xSpeed[temp] = actors.x[0] - actors.x[temp];
                     }
                 }
             }
@@ -1079,6 +555,32 @@ void move() {
                 actors.state[pad_index] = PARALYZED;
             }
             break;
+        case TYPE_BOMB:
+            ++actors.width[draw_index];
+            if (actors.width[draw_index] == BOMB_DELAY) {
+                actors.counter[draw_index] = 0;
+                actors.state[draw_index] = APPEARING;
+            }
+            if (actors.state[draw_index] == 2) {
+                temp_x_col = actors.x[draw_index];
+                temp_y_col = actors.y[draw_index];
+                
+                for (i = 0; i < 3; i += 8) {
+                    for (j = 0; j < 3; j += 8) {
+                        temp_x_col += i;
+                        temp_y_col += j;
+                        if (set_collision_data()) {
+                            if (backup_col_type == COL_TYPE_BOMBABLE) {
+                                do_skull_tile_collision();
+                            }
+                        }
+                    }
+                }
+                actors.counter[draw_index] = NULL;
+                actors.width[draw_index] = NULL;
+                actors.state[draw_index] = INACTIVE;
+            }
+            break;
     }
 }
 
@@ -1093,11 +595,9 @@ void animate_actors() {
 
 void do_skull_tile_collision() {
     switch (backup_col_type) {
-        case 0x01:
-            // Just solid
+        case COL_TYPE_SOLID:
             break;
-        case 0x02:
-            // Hurt
+        case COL_TYPE_HURT:
             if (p1_health) {
                 --p1_health;
             }
@@ -1108,15 +608,13 @@ void do_skull_tile_collision() {
             // shake screen ??
             // invincible for a few frames ??
             break;
-        case 0x03:
-            // Long brick
+        case COL_TYPE_LONG:
             remove_brick(TILE_BACK);
             backup_nt_index % 2 ? --backup_nt_index : ++backup_nt_index;
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
-        case 0x04:
-            // Tall brick
+        case COL_TYPE_TALL:
             remove_brick(TILE_BACK);
             temp = temp_y_col >> 3;
             if (temp % 2) {
@@ -1130,16 +628,15 @@ void do_skull_tile_collision() {
             hit_brick(TILE_BACK);
             add_xp(1, HUNDREDS);
             break;
-        case 0x05:
-            // Dot brick
+        case COL_TYPE_SMALL:
             hit_brick(TILE_BACK);
             add_xp(5, TENS);
             break;
-        case 0x06:
-            // 2-Hit Brick
-            // TODO
+        case COL_TYPE_SOFT:
+            // Foliage
+            hit_brick(TILE_BACK_GRASS);
             break;
-        case 0x07:
+        case COL_TYPE_TOMBSTONE:
             // Tombstone
             c_map[backup_col_index] = 0x11;
             temp = 0b01010101;
@@ -1159,11 +656,17 @@ void do_skull_tile_collision() {
             one_vram_buffer(temp, (backup_nt_index & 0x2C00) | 0x3C0 | ((backup_nt_index >> 4) & 0x38) | ((backup_nt_index >> 2) & 0x07));
             brick_counter -= 4;  // TODO Dynamic tombstone size to allow more design ideas...
             break;
-        case 0x08:
-            // Foliage
-            hit_brick(TILE_BACK_GRASS);
+        case COL_TYPE_BOMBABLE:
+            if (actors.counter) {
+                temp = TILE_BACK;
+            } else {
+                temp = TILE_BACK_GRASS;
+            }
+            hit_brick(temp);
             break;
-        case 0x09:
+        case COL_TYPE_2HIT:
+            first_hit();
+            add_xp(1, HUNDREDS);
             break;
         case 0x0A:
             break;
@@ -1435,11 +938,10 @@ void check_main_input() {
 
     if (pad1_new & PAD_A) {
         if (skull_launched) {
-            temp = 80;
-            actors.xVelocity[0] = temp;
-            actors.xVelocity[1] = temp;
-            actors.yVelocity[2] = temp;
-            actors.yVelocity[3] = temp;
+            actors.xVelocity[0] = PAD_VELOCITY;
+            actors.xVelocity[1] = PAD_VELOCITY;
+            actors.yVelocity[2] = PAD_VELOCITY;
+            actors.yVelocity[3] = PAD_VELOCITY;
         } else {
             skull_launched = TRUE;
             actors.state[SKULL] = ROTATE_H;
@@ -1448,13 +950,24 @@ void check_main_input() {
 
     if (pad1_new & PAD_B) {
         // TEST THINGS
-        actors.state[DOOR1] = 1;
+
         // /////////
 
         switch (items.type[current_item]) {
             case TYPE_MAGNET:
                 actors.yDir[SKULL] = DOWN;
                 actors.xDir[SKULL] = actors.x[SKULL] < actors.x[0] ? RIGHT : LEFT;
+                break;
+            case TYPE_BOMB:
+                temp = get_inactive_actor_index();
+                if (temp) {
+                    actors.x[temp] = actors.x[SKULL];
+                    actors.y[temp] = actors.y[SKULL];
+                    actors.animation_delay[temp] = 8;
+                    actors.width[temp] = NULL; // -> width serves as timer before bomb explodes!!!
+                    actors.state[temp] = IDLE;
+                    actors.type[temp] = TYPE_BOMB;
+                }
                 break;
         }
     }
@@ -1869,7 +1382,7 @@ void play_story() {
                     fadeout();
                     break;
                 case 5:
-                    reset_actors();
+                    banked_call(1, reset_actors);
                     banked_call(0, set_map);
                     set_scroll_y(0x0100);
                     banked_call(0, init_skull);
@@ -1909,7 +1422,7 @@ void play_story() {
                 case 12:
                     banked_call(0, hide_map);
                     actors.state[SKULL] = INACTIVE;
-                    reset_actors();
+                    banked_call(1, reset_actors);
                     set_chr_mode_1(0x06);  // Angelic sprite
                     current_level = LVL_CEMETERY;
                     story_step = NULL;
@@ -2005,10 +1518,10 @@ void play_story() {
                     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
                     ++actors.state[STARS];
                     show_item = TRUE;
-                    items.type[0] = TYPE_MAGNET;
-                    items.is_active[0] = TRUE;
-                    items.sprite[0] = ITEM_MAGNET;
                     current_item = 0;
+                    items.type[current_item] = TYPE_MAGNET;
+                    items.is_active[current_item] = TRUE;
+                    items.sprite[current_item] = ITEM_MAGNET;
                     ++story_step;
                     break;
                 case 16:
@@ -2086,7 +1599,13 @@ void play_story() {
         case LVL_TEMPLE3:
             play_normal_level();
             break;
+        case LVL_TEMPLE4:
+            play_normal_level();
+            break;
         case LVL_TOWN:
+            play_normal_level();
+            break;
+        case LVL_TEST:
             play_normal_level();
             break;
         case LVL_INTRO:
@@ -2157,13 +1676,22 @@ void debug_start(char debuglevel) {
     set_chr_mode_3(0x01);
     current_level = debuglevel;
     load_level();
+    actors.state[SKULL] = IDLE;
     pal_bright(NULL);
     banked_call(0, load_map);
     oam_clear();
     brightness = NULL;
+    current_item = 0;
     items.sprite[current_item] = ITEM_MAGNET;
-    items.is_active[current_item] = TRUE;
     items.type[current_item] = TYPE_MAGNET;
+    items.is_active[current_item] = TRUE;
+
+    current_item = 1;
+    items.sprite[current_item] = ITEM_BOMB;
+    items.type[current_item] = TYPE_BOMB;
+    items.is_active[current_item] = TRUE;
+
+    current_item = 0;
 }
 
 void main() {
@@ -2178,7 +1706,7 @@ void main() {
     // memfill(void *dst,unsigned char value,unsigned int len);
     memfill(wram_array, 0, 0x2000);
 
-    // set_scroll_y(0xff);  // shift the bg down 1 pixel
+    set_scroll_y(0xff);  // shift the bg down 1 pixel
 
     // color_emphasis(COL_EMP_NORMAL);
 
@@ -2220,7 +1748,7 @@ void main() {
                 scroll_index_y = NULL;
 
                 // DEBUG
-                // debug_start(LVL_TEMPLE3);
+                debug_start(LVL_TEMPLE4);
             }
 
         } else if (game_state == MAP) {

@@ -11,11 +11,25 @@
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
 #define TILE_BACK 0x01
-#define TILE_BACK_GRASS 0x23
+#define TILE_BACK_GRASS 0x07
 #define TILE_HEART_FULL 0x5B
 #define TILE_HEART_EMPTY 0x5C
+
+#define COL_TYPE_SOLID 0x01
+#define COL_TYPE_HURT 0x02
+#define COL_TYPE_LONG 0x03
+#define COL_TYPE_TALL 0x04
+#define COL_TYPE_SMALL 0x05
 #define COL_TYPE_SOFT 0x06
-#define COL_OFFSET 3
+#define COL_TYPE_TOMBSTONE 0x07
+#define COL_TYPE_BOMBABLE 0x08
+#define COL_TYPE_2HIT 0x09
+#define COL_TYPE_0A 0x0a
+#define COL_TYPE_0B 0x0b
+#define COL_TYPE_0C 0x0c
+#define COL_TYPE_0D 0x0d
+#define COL_TYPE_0E 0x0e
+#define COL_TYPE_0F 0x0f
 
 // Fade speed
 #define FADE_SPEED 24
@@ -80,32 +94,38 @@
 #define TYPE_PARALYZER 19
 #define TYPE_SKELETON_KING 20
 #define TYPE_SKULL_DOOR 21
+#define TYPE_MAGNET 22
+#define TYPE_BOMB 23
+
 
 // PADDLE
 #define TYPE_PAD_HORZ 0
 #define TYPE_PAD_VERT 1
 #define PAD_SHORT 16
 #define PAD_LONG 32
-
+#define PAD_VELOCITY 80
 #define FACE_X 16
 #define FACE_Y 8
 #define ITEM_X 188
 #define ITEM_Y 21
 
-// ITEMS CHAR 
+// ITEMS TILE INDEX
 #define ITEM_MAGNET 0x09
-#define ITEM_BOMB 0x0A
+#define ITEM_BOMB 0x20
 
-// ITEMS TYPE
-#define TYPE_MAGNET 1
-#define TYPE_BOMB 2
+// ITEMS
+#define BOMB_DELAY 0x20
 
+// LEVELS
 #define LVL_ALTAR 0
 #define LVL_CEMETERY 1
 #define LVL_TEMPLE1 2
 #define LVL_TEMPLE2 3
 #define LVL_TEMPLE3 4
-#define LVL_TOWN 5
+#define LVL_TEMPLE4 5
+#define LVL_TOWN 6
+
+#define LVL_TEST 240
 
 #define LVL_INTRO 250
 
@@ -120,3 +140,5 @@ signed char get_x_speed();
 signed char get_y_speed();
 
 void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y);
+
+void do_skull_tile_collision();

@@ -66,11 +66,13 @@ JUNE
     x Temple 3
 
 2:
-    - Paddle bug Cemetery intro
+    - Paddle bug Cemetery intro (too much sprites??)
     - ITEM bomb
     - ITEM keys
     - multiple skulls?
     - SELECT BUTTON -> Item selection (fade out background)
+
+3:
     - Bridge boss animation
     - Boss fight coding
     - Town ghost NPC
@@ -85,10 +87,9 @@ JUNE
     - Forest level ennemies
     - Forest level design
     - Forest boss design & AI 
-3:
     - Title Screen Logic
     - Gameover Screen
-    - Trails & Particles     
+    - Trails & Particles  (hit brick)
 
 4:  - Story music
     - Ruin music
