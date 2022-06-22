@@ -6,7 +6,6 @@
 #include "I-CHR/temple4/temple4.h"
 #include "I-CHR/title_screen.pngE/story.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
-#include "Nametable/black_level.h"
 
 // TEST
 #include "I-CHR/test/bombable.h"
@@ -19,7 +18,6 @@
 #include "spr_sorcerer.h"
 #include "spr_staff.h"
 #include "spr_stainedglass.h"
-#include "spr_star.h"
 #include "spr_villagers.h"
 #include "spr_bomb.h"
 // MAP
@@ -103,12 +101,12 @@ void set_animation_info() {
             frame_count = necromancer_animation_index[j];
             animation_array = necromancer_animation;
             break;
-        case TYPE_STARS:
-            animation_index = stars_animation_index[j];
-            ++j;
-            frame_count = stars_animation_index[j];
-            animation_array = stars_animation;
-            break;
+        // case TYPE_STARS:
+        //     animation_index = stars_animation_index[j];
+        //     ++j;
+        //     frame_count = stars_animation_index[j];
+        //     animation_array = stars_animation;
+        //     break;
         case TYPE_VILLAGER1:
             animation_index = villager_animation_index[j];
             ++j;

@@ -15,7 +15,8 @@
         "spr_fireball.h": "c",
         "spr_skull_door": "c",
         "temple4.h": "c",
-        "story.h": "c"
+        "story.h": "c",
+        "cemetery.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

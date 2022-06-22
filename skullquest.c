@@ -7,6 +7,7 @@
 #include "dialog.h"
 
 // NAMETABLES
+#include "Nametable/black_level.h"
 #include "I-CHR/altar.pngE/altar.h"
 #include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/church-interior.pngE/temple.h"
@@ -200,8 +201,6 @@ void show_game_over() {
 
 void load_black_level() {
     ppu_off();
-    // set_scroll_x(0x0000);
-
     vram_adr(NAMETABLE_A);
     vram_unrle(black_level);
     ppu_on_all();
@@ -657,7 +656,7 @@ void do_skull_tile_collision() {
             brick_counter -= 4;  // TODO Dynamic tombstone size to allow more design ideas...
             break;
         case COL_TYPE_BOMBABLE:
-            if (actors.counter) {
+            if (actors.counter[SKULL]) {
                 temp = TILE_BACK;
             } else {
                 temp = TILE_BACK_GRASS;
@@ -1516,7 +1515,7 @@ void play_story() {
                 case 15:
                     // Take this!
                     multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
-                    ++actors.state[STARS];
+                    // ++actors.state[STARS];
                     show_item = TRUE;
                     current_item = 0;
                     items.type[current_item] = TYPE_MAGNET;
@@ -1586,6 +1585,7 @@ void play_story() {
                 case 27:
                     ++current_level;
                     load_level();
+                    oam_clear();
                     story_step = 0;
                     break;
             }
@@ -1638,11 +1638,11 @@ void play_story() {
                     // Scroll !!!
                     set_scroll_y(scroll_index_y);
                     scroll_index_y = add_scroll_y(1, scroll_index_y);
-                    if (story_counter > 10) {
-                        story_counter = NULL;
-                    }
-                    ++story_counter;
-                    if (scroll_index_y > 460) {
+                    // if (story_counter > 10) {
+                    //     story_counter = NULL;
+                    // }
+                    // ++story_counter;
+                    if (scroll_index_y > 488) {
                         ++story_step;
                     }
                     break;
@@ -1748,7 +1748,7 @@ void main() {
                 scroll_index_y = NULL;
 
                 // DEBUG
-                debug_start(LVL_TEMPLE4);
+                // debug_start(LVL_TEMPLE4);
             }
 
         } else if (game_state == MAP) {

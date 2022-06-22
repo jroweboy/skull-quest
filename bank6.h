@@ -126,13 +126,6 @@ void init_level_specifics() {
             actors.state[GHOST] = IDLE;
             actors.type[GHOST] = TYPE_ANGELIC;
 
-            // STARS
-            STARS = 11;
-            actors.x[STARS] = 127;
-            actors.y[STARS] = 136;
-            actors.state[STARS] = IDLE;
-            actors.type[STARS] = TYPE_STARS;
-            actors.animation_delay[STARS] = 8;
             break;
         case LVL_TEMPLE1:
             // Achievement 1: Glass Hash (break 3 stained glasses)

@@ -66,11 +66,12 @@ JUNE
     x Temple 3
 
 2:
-    - Paddle bug Cemetery intro (too much sprites??)
-    - ITEM bomb
+    x Temple 4
+    x Paddle bug Cemetery intro (too much sprites??)
+    x ITEM bomb
+    - SELECT BUTTON -> Item selection (fade out background)
     - ITEM keys
     - multiple skulls?
-    - SELECT BUTTON -> Item selection (fade out background)
 
 3:
     - Bridge boss animation
