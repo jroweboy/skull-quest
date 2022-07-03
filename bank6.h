@@ -83,7 +83,7 @@ void init_level_specifics() {
             actors.type[0] = TYPE_PAD_HORZ;
 
             // CROW
-            CROW = 5;
+            CROW = 6;
             actors.x[CROW] = 207;
             actors.y[CROW] = 117;
             actors.state[CROW] = 2;  // IDLE state of crow is 2... don't ask!
@@ -96,15 +96,15 @@ void init_level_specifics() {
             actors.height[CROW] = 16;
 
             // Skeleton index 6 & 7
-            SKELETON1 = 6;
-            SKELETON2 = 7;
+            SKELETON1 = 7;
+            SKELETON2 = 8;
             set_skeleton(SKELETON1, 40, 72);
             actors.xDir[SKELETON1] = LEFT;
             set_skeleton(SKELETON2, 160, 104);
             actors.xDir[SKELETON2] = RIGHT;
         
             // GATE
-            GATE = 8;
+            GATE = 9;
             actors.x[GATE] = 120;
             actors.y[GATE] = 48;
             actors.animation_delay[GATE] = 16;
@@ -112,14 +112,14 @@ void init_level_specifics() {
             actors.state[GATE] = IDLE;
 
             // TREE
-            STILL_DECORATION = 9;
+            STILL_DECORATION = 10;
             actors.x[STILL_DECORATION] = 219;
             actors.y[STILL_DECORATION] = 61;
             actors.state[STILL_DECORATION] = IDLE;
             actors.type[STILL_DECORATION] = TYPE_TREE;
 
             // ANGELIC
-            GHOST = 10;
+            GHOST = 11;
             actors.x[GHOST] = 120;
             actors.y[GHOST] = 92;
             actors.animation_delay[GHOST] = 16;

@@ -20,7 +20,6 @@
 	.import		_one_vram_buffer
 	.import		_multi_vram_buffer_horz
 	.import		_get_pad_new
-	.import		_set_scroll_x
 	.import		_set_scroll_y
 	.import		_add_scroll_y
 	.import		_pal_bg
@@ -59,6 +58,7 @@
 	.export		_temple
 	.export		_map
 	.export		_title_screen
+	.export		_pal_map
 	.export		_pal_title
 	.export		_pal_cemetery_bg
 	.export		_pal_cemetery_spr
@@ -198,6 +198,7 @@
 	.export		_temple4
 	.export		_story
 	.export		_town_ruins
+	.export		_inventory
 	.export		_bombable
 	.export		_devil_8_data
 	.export		_devil_9_data
@@ -272,10 +273,17 @@
 	.export		_bomb_5_data
 	.export		_bomb_animation_index
 	.export		_bomb_animation
-	.export		_set_map
+	.export		_cursor_0_data
+	.export		_cursor_1_data
+	.export		_cursor_2_data
+	.export		_cursor_3_data
+	.export		_cursor_animation_index
+	.export		_cursor_animation
 	.export		_show_map
 	.export		_hide_map
 	.export		_load_map
+	.export		_load_inventory
+	.export		_manage_inventory
 	.export		_init_paddles
 	.export		_init_skull
 	.export		_reset_actors
@@ -316,7 +324,6 @@
 	.export		_check_main_input
 	.export		_update_skull
 	.export		_draw_paddles
-	.export		_draw_sprites
 	.export		_move_skull_map
 	.export		_fadeout
 	.export		_fadein
@@ -330,17 +337,20 @@
 
 .segment	"DATA"
 
+_exit_inventory:
+	.byte	$00
 _brightness:
 	.byte	$04
 _exp:
 	.byte	$30,$30,$30,$30,$30,$30,$30,$30,$00
 _level_names:
-	.byte	$20,$20,$20,$20,$20,$41,$4C,$54,$41,$52,$20,$20,$20,$20,$20,$00
-	.byte	$20,$20,$4F,$6C,$64,$20,$63,$65,$6D,$65,$74,$65,$72,$79,$20,$00
-	.byte	$20,$20,$54,$65,$6D,$70,$6C,$65,$20,$72,$75,$69,$6E,$73,$20,$00
-	.byte	$20,$54,$65,$6D,$70,$6C,$65,$20,$63,$72,$79,$70,$74,$65,$20,$00
-	.byte	$20,$54,$65,$6D,$70,$6C,$65,$20,$6D,$61,$64,$6E,$65,$73,$73,$00
+	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$00
+	.byte	$20,$20,$4F,$6C,$64,$20,$43,$65,$6D,$65,$74,$65,$72,$79,$20,$00
+	.byte	$20,$20,$54,$65,$6D,$70,$6C,$65,$20,$52,$75,$69,$6E,$73,$20,$00
+	.byte	$20,$54,$65,$6D,$70,$6C,$65,$20,$43,$72,$79,$70,$74,$65,$20,$00
+	.byte	$20,$54,$65,$6D,$70,$6C,$65,$20,$4D,$61,$64,$6E,$65,$73,$73,$00
 	.byte	$20,$20,$48,$61,$75,$6E,$74,$65,$64,$20,$74,$6F,$77,$6E,$20,$00
+	.byte	$20,$54,$68,$61,$72,$73,$68,$20,$42,$72,$69,$64,$67,$65,$20,$00
 
 .segment	"RODATA"
 
@@ -1559,14 +1569,13 @@ _temple:
 	.byte	$B5
 	.byte	$90
 	.byte	$91
+	.byte	$02
+	.byte	$02
+	.byte	$F8
+	.byte	$F9
 	.byte	$91
-	.byte	$90
-	.byte	$90
-	.byte	$91
-	.byte	$90
-	.byte	$91
-	.byte	$90
-	.byte	$91
+	.byte	$02
+	.byte	$03
 	.byte	$B5
 	.byte	$90
 	.byte	$91
@@ -1643,10 +1652,10 @@ _temple:
 	.byte	$02
 	.byte	$09
 	.byte	$04
-	.byte	$96
+	.byte	$86
 	.byte	$11
 	.byte	$11
-	.byte	$97
+	.byte	$87
 	.byte	$04
 	.byte	$01
 	.byte	$02
@@ -1657,8 +1666,11 @@ _temple:
 	.byte	$03
 	.byte	$80
 	.byte	$01
+	.byte	$0C
+	.byte	$0D
+	.byte	$01
 	.byte	$02
-	.byte	$0B
+	.byte	$08
 	.byte	$86
 	.byte	$87
 	.byte	$01
@@ -1674,8 +1686,10 @@ _temple:
 	.byte	$03
 	.byte	$81
 	.byte	$01
-	.byte	$02
-	.byte	$04
+	.byte	$1C
+	.byte	$1D
+	.byte	$01
+	.byte	$01
 	.byte	$07
 	.byte	$01
 	.byte	$02
@@ -1900,8 +1914,12 @@ _temple:
 	.byte	$08
 	.byte	$07
 	.byte	$01
+	.byte	$01
+	.byte	$86
+	.byte	$87
+	.byte	$01
 	.byte	$02
-	.byte	$0F
+	.byte	$0B
 	.byte	$80
 	.byte	$00
 	.byte	$02
@@ -1909,7 +1927,12 @@ _temple:
 	.byte	$80
 	.byte	$01
 	.byte	$02
-	.byte	$19
+	.byte	$0B
+	.byte	$86
+	.byte	$87
+	.byte	$01
+	.byte	$02
+	.byte	$0B
 	.byte	$80
 	.byte	$00
 	.byte	$02
@@ -1929,7 +1952,14 @@ _temple:
 	.byte	$81
 	.byte	$B0
 	.byte	$02
-	.byte	$13
+	.byte	$07
+	.byte	$81
+	.byte	$01
+	.byte	$01
+	.byte	$81
+	.byte	$B0
+	.byte	$02
+	.byte	$07
 	.byte	$81
 	.byte	$82
 	.byte	$82
@@ -1942,10 +1972,10 @@ _temple:
 	.byte	$82
 	.byte	$02
 	.byte	$06
-	.byte	$81
-	.byte	$82
-	.byte	$82
-	.byte	$81
+	.byte	$80
+	.byte	$01
+	.byte	$01
+	.byte	$80
 	.byte	$82
 	.byte	$02
 	.byte	$06
@@ -1967,7 +1997,7 @@ _temple:
 	.byte	$03
 	.byte	$55
 	.byte	$55
-	.byte	$AA
+	.byte	$9A
 	.byte	$9A
 	.byte	$AA
 	.byte	$02
@@ -2263,8 +2293,8 @@ _map:
 	.byte	$E3
 	.byte	$E0
 	.byte	$EC
-	.byte	$92
-	.byte	$92
+	.byte	$93
+	.byte	$93
 	.byte	$EC
 	.byte	$97
 	.byte	$10
@@ -2338,7 +2368,7 @@ _map:
 	.byte	$10
 	.byte	$02
 	.byte	$05
-	.byte	$93
+	.byte	$89
 	.byte	$8A
 	.byte	$10
 	.byte	$8E
@@ -2447,7 +2477,7 @@ _map:
 	.byte	$10
 	.byte	$02
 	.byte	$08
-	.byte	$ED
+	.byte	$92
 	.byte	$00
 	.byte	$02
 	.byte	$E0
@@ -2886,6 +2916,23 @@ _title_screen:
 	.byte	$00
 	.byte	$0E
 	.byte	$00
+_pal_map:
+	.byte	$0F
+	.byte	$18
+	.byte	$16
+	.byte	$38
+	.byte	$0F
+	.byte	$04
+	.byte	$16
+	.byte	$28
+	.byte	$0F
+	.byte	$30
+	.byte	$17
+	.byte	$28
+	.byte	$0F
+	.byte	$00
+	.byte	$22
+	.byte	$2A
 _pal_title:
 	.byte	$0F
 	.byte	$37
@@ -2957,7 +3004,7 @@ _pal_altar_bg:
 _pal_altar_spr:
 	.byte	$10
 	.byte	$30
-	.byte	$15
+	.byte	$17
 	.byte	$11
 	.byte	$10
 	.byte	$05
@@ -3008,7 +3055,7 @@ _pal_temple_bg:
 _pal_temple_spr:
 	.byte	$10
 	.byte	$30
-	.byte	$15
+	.byte	$17
 	.byte	$11
 	.byte	$10
 	.byte	$01
@@ -3025,7 +3072,7 @@ _pal_temple_spr:
 _pal_temple_spr2:
 	.byte	$10
 	.byte	$30
-	.byte	$15
+	.byte	$17
 	.byte	$11
 	.byte	$10
 	.byte	$05
@@ -3059,7 +3106,7 @@ _pal_town_bg:
 _pal_town_spr:
 	.byte	$38
 	.byte	$30
-	.byte	$15
+	.byte	$17
 	.byte	$11
 	.byte	$38
 	.byte	$0F
@@ -9406,6 +9453,269 @@ _town_ruins:
 	.byte	$0A
 	.byte	$02
 	.byte	$00
+_inventory:
+	.byte	$02
+	.byte	$00
+	.byte	$02
+	.byte	$27
+	.byte	$F6
+	.byte	$F1
+	.byte	$02
+	.byte	$0E
+	.byte	$F3
+	.byte	$00
+	.byte	$02
+	.byte	$09
+	.byte	$F0
+	.byte	$F2
+	.byte	$02
+	.byte	$03
+	.byte	$F8
+	.byte	$00
+	.byte	$4F
+	.byte	$72
+	.byte	$62
+	.byte	$69
+	.byte	$73
+	.byte	$00
+	.byte	$4D
+	.byte	$61
+	.byte	$67
+	.byte	$69
+	.byte	$63
+	.byte	$61
+	.byte	$65
+	.byte	$00
+	.byte	$F5
+	.byte	$F2
+	.byte	$02
+	.byte	$02
+	.byte	$F0
+	.byte	$00
+	.byte	$02
+	.byte	$0A
+	.byte	$F7
+	.byte	$F1
+	.byte	$02
+	.byte	$0E
+	.byte	$F4
+	.byte	$00
+	.byte	$02
+	.byte	$2E
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$EE
+	.byte	$EF
+	.byte	$00
+	.byte	$02
+	.byte	$0E
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$FE
+	.byte	$FF
+	.byte	$00
+	.byte	$02
+	.byte	$29
+	.byte	$F0
+	.byte	$F2
+	.byte	$02
+	.byte	$17
+	.byte	$F0
+	.byte	$00
+	.byte	$02
+	.byte	$31
+	.byte	$10
+	.byte	$02
+	.byte	$02
+	.byte	$81
+	.byte	$10
+	.byte	$02
+	.byte	$07
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$0A
+	.byte	$10
+	.byte	$10
+	.byte	$81
+	.byte	$10
+	.byte	$02
+	.byte	$02
+	.byte	$00
+	.byte	$02
+	.byte	$02
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$0A
+	.byte	$90
+	.byte	$F9
+	.byte	$FA
+	.byte	$FB
+	.byte	$FC
+	.byte	$80
+	.byte	$00
+	.byte	$02
+	.byte	$02
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$0A
+	.byte	$10
+	.byte	$02
+	.byte	$04
+	.byte	$92
+	.byte	$00
+	.byte	$02
+	.byte	$02
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$0B
+	.byte	$00
+	.byte	$02
+	.byte	$13
+	.byte	$10
+	.byte	$02
+	.byte	$08
+	.byte	$91
+	.byte	$10
+	.byte	$10
+	.byte	$00
+	.byte	$02
+	.byte	$27
+	.byte	$F0
+	.byte	$F2
+	.byte	$02
+	.byte	$17
+	.byte	$F0
+	.byte	$00
+	.byte	$02
+	.byte	$2C
+	.byte	$41
+	.byte	$63
+	.byte	$68
+	.byte	$69
+	.byte	$65
+	.byte	$76
+	.byte	$65
+	.byte	$6D
+	.byte	$65
+	.byte	$6E
+	.byte	$74
+	.byte	$73
+	.byte	$00
+	.byte	$02
+	.byte	$2F
+	.byte	$FD
+	.byte	$00
+	.byte	$02
+	.byte	$1E
+	.byte	$FD
+	.byte	$00
+	.byte	$02
+	.byte	$58
+	.byte	$40
+	.byte	$55
+	.byte	$02
+	.byte	$05
+	.byte	$13
+	.byte	$40
+	.byte	$80
+	.byte	$AA
+	.byte	$02
+	.byte	$03
+	.byte	$22
+	.byte	$00
+	.byte	$04
+	.byte	$05
+	.byte	$02
+	.byte	$05
+	.byte	$01
+	.byte	$00
+	.byte	$02
+	.byte	$0F
+	.byte	$40
+	.byte	$50
+	.byte	$02
+	.byte	$05
+	.byte	$10
+	.byte	$00
+	.byte	$C0
+	.byte	$05
+	.byte	$02
+	.byte	$03
+	.byte	$01
+	.byte	$00
+	.byte	$02
+	.byte	$07
+	.byte	$00
+	.byte	$02
+	.byte	$00
 _bombable:
 	.byte	$03
 	.byte	$00
@@ -11208,6 +11518,90 @@ _bomb_animation:
 	.addr	_bomb_4_data
 	.addr	_bomb_5_data
 	.addr	_no_sprite
+_cursor_0_data:
+	.byte	$05
+	.byte	$04
+	.byte	$08
+	.byte	$00
+	.byte	$14
+	.byte	$04
+	.byte	$08
+	.byte	$40
+	.byte	$05
+	.byte	$14
+	.byte	$08
+	.byte	$80
+	.byte	$14
+	.byte	$14
+	.byte	$08
+	.byte	$C0
+	.byte	$80
+_cursor_1_data:
+	.byte	$06
+	.byte	$05
+	.byte	$08
+	.byte	$00
+	.byte	$13
+	.byte	$05
+	.byte	$08
+	.byte	$40
+	.byte	$06
+	.byte	$13
+	.byte	$08
+	.byte	$80
+	.byte	$13
+	.byte	$13
+	.byte	$08
+	.byte	$C0
+	.byte	$80
+_cursor_2_data:
+	.byte	$03
+	.byte	$03
+	.byte	$08
+	.byte	$00
+	.byte	$35
+	.byte	$03
+	.byte	$08
+	.byte	$40
+	.byte	$03
+	.byte	$1D
+	.byte	$08
+	.byte	$80
+	.byte	$35
+	.byte	$1D
+	.byte	$08
+	.byte	$C0
+	.byte	$80
+_cursor_3_data:
+	.byte	$04
+	.byte	$04
+	.byte	$08
+	.byte	$00
+	.byte	$34
+	.byte	$04
+	.byte	$08
+	.byte	$40
+	.byte	$04
+	.byte	$1C
+	.byte	$08
+	.byte	$80
+	.byte	$34
+	.byte	$1C
+	.byte	$08
+	.byte	$C0
+	.byte	$80
+_cursor_animation_index:
+	.byte	$00
+	.byte	$02
+	.byte	$00
+	.byte	$02
+	.byte	$02
+	.byte	$02
+_cursor_animation:
+	.addr	_cursor_0_data
+	.addr	_cursor_1_data
+	.addr	_cursor_2_data
+	.addr	_cursor_3_data
 .segment	"BANK1"
 .segment	"BANK6"
 .segment	"CODE"
@@ -11293,6 +11687,8 @@ _show_item:
 	.res	1,$00
 _current_item:
 	.res	1,$00
+_current_selection:
+	.res	1,$00
 _map_x:
 	.res	1,$00
 _map_y:
@@ -11362,7 +11758,7 @@ _current_background_palette:
 _current_sprite_palette:
 	.res	2,$00
 _items:
-	.res	24,$00
+	.res	18,$00
 _actors:
 	.res	294,$00
 
@@ -11396,7 +11792,7 @@ _actors:
 	cmp     #$02
 	jeq     L0009
 	cmp     #$03
-	jeq     L003E
+	jeq     L0041
 	cmp     #$04
 	jeq     L000D
 	cmp     #$05
@@ -11408,11 +11804,11 @@ _actors:
 	cmp     #$08
 	jeq     L0019
 	cmp     #$09
-	jeq     L003F
+	jeq     L0042
 	cmp     #$0A
 	jeq     L001D
 	cmp     #$0B
-	jeq     L0040
+	jeq     L0043
 	cmp     #$0C
 	jeq     L0021
 	cmp     #$0D
@@ -11428,11 +11824,13 @@ _actors:
 	cmp     #$13
 	jeq     L0033
 	cmp     #$14
-	jeq     L0041
+	jeq     L0044
 	cmp     #$15
 	jeq     L0037
 	cmp     #$17
 	jeq     L003A
+	cmp     #$1C
+	jeq     L003D
 	rts
 ;
 ; animation_index = skeleton_animation_index[j];
@@ -11459,7 +11857,7 @@ L0006:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = glass_animation_index[j];
 ;
@@ -11485,11 +11883,11 @@ L0009:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = 0;
 ;
-L003E:	lda     #$00
+L0041:	lda     #$00
 	sta     _animation_index
 ;
 ; frame_count = 1;
@@ -11505,7 +11903,7 @@ L003E:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = house_door_animation_index[j];
 ;
@@ -11531,7 +11929,7 @@ L000D:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = crow_animation_index[j];
 ;
@@ -11557,7 +11955,7 @@ L0010:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = devil_animation_index[j];
 ;
@@ -11583,7 +11981,7 @@ L0013:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = skull_animation_index[j];
 ;
@@ -11609,7 +12007,7 @@ L0016:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = gate_animation_index[j];
 ;
@@ -11635,11 +12033,11 @@ L0019:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = 0;
 ;
-L003F:	lda     #$00
+L0042:	lda     #$00
 	sta     _animation_index
 ;
 ; frame_count = 1;
@@ -11655,7 +12053,7 @@ L003F:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = angelic_animation_index[j];
 ;
@@ -11681,11 +12079,11 @@ L001D:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = 0;
 ;
-L0040:	lda     #$00
+L0043:	lda     #$00
 	sta     _animation_index
 ;
 ; frame_count = 1;
@@ -11701,7 +12099,7 @@ L0040:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = lightning_animation_index[j];
 ;
@@ -11727,7 +12125,7 @@ L0021:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = necromancer_animation_index[j];
 ;
@@ -11753,7 +12151,7 @@ L0024:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = villager_animation_index[j];
 ;
@@ -11779,7 +12177,7 @@ L0027:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = torch_animation_index[j];
 ;
@@ -11805,7 +12203,7 @@ L002A:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = hero_animation_index[j];
 ;
@@ -11831,7 +12229,7 @@ L002D:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = sorcerer_animation_index[j];
 ;
@@ -11857,7 +12255,7 @@ L0030:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = fireball_animation_index[j];
 ;
@@ -11883,11 +12281,11 @@ L0033:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = 0;
 ;
-L0041:	lda     #$00
+L0044:	lda     #$00
 	sta     _animation_index
 ;
 ; frame_count = 1;
@@ -11903,7 +12301,7 @@ L0041:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = skull_door_animation_index[j];
 ;
@@ -11929,7 +12327,7 @@ L0037:	ldy     _j
 ;
 ; break;
 ;
-	jmp     L003D
+	jmp     L0040
 ;
 ; animation_index = bomb_animation_index[j];
 ;
@@ -11952,7 +12350,33 @@ L003A:	ldy     _j
 	lda     #>(_bomb_animation)
 	sta     _animation_array+1
 	lda     #<(_bomb_animation)
-L003D:	sta     _animation_array
+;
+; break;
+;
+	jmp     L0040
+;
+; animation_index = cursor_animation_index[j];
+;
+L003D:	ldy     _j
+	lda     _cursor_animation_index,y
+	sta     _animation_index
+;
+; ++j;
+;
+	inc     _j
+;
+; frame_count = cursor_animation_index[j];
+;
+	ldy     _j
+	lda     _cursor_animation_index,y
+	sta     _frame_count
+;
+; animation_array = cursor_animation;
+;
+	lda     #>(_cursor_animation)
+	sta     _animation_array+1
+	lda     #<(_cursor_animation)
+L0040:	sta     _animation_array
 ;
 ; }
 ;
@@ -12880,61 +13304,6 @@ L0002:	rts
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ set_map (void)
-; ---------------------------------------------------------------
-
-.segment	"BANK0"
-
-.proc	_set_map: near
-
-.segment	"BANK0"
-
-;
-; oam_clear();
-;
-	jsr     _oam_clear
-;
-; set_chr_mode_4(8);
-;
-	lda     #$08
-	jsr     _set_chr_mode_4
-;
-; set_chr_mode_5(9);
-;
-	lda     #$09
-	jsr     _set_chr_mode_5
-;
-; pal_col(0x00, 0x0f); // BG BLACK
-;
-	lda     #$00
-	jsr     pusha
-	lda     #$0F
-	jsr     _pal_col
-;
-; pal_col(0x01, 0x18); // MAP BACK COLOR
-;
-	lda     #$01
-	jsr     pusha
-	lda     #$18
-	jsr     _pal_col
-;
-; pal_col(0x02, 0x16); // TEXT
-;
-	lda     #$02
-	jsr     pusha
-	lda     #$16
-	jsr     _pal_col
-;
-; pal_col(0x03, 0x38); // INK COLOR
-;
-	lda     #$03
-	jsr     pusha
-	lda     #$38
-	jmp     _pal_col
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ show_map (void)
 ; ---------------------------------------------------------------
 
@@ -12945,40 +13314,9 @@ L0002:	rts
 .segment	"BANK0"
 
 ;
-; multi_vram_buffer_horz(level_names[current_level], sizeof(level_names[current_level]), NTADR_C(8, 26));
+; oam_clear();
 ;
-	jsr     decsp3
-	ldx     #$00
-	lda     _current_level
-	jsr     aslax4
-	clc
-	adc     #<(_level_names)
-	tay
-	txa
-	adc     #>(_level_names)
-	tax
-	tya
-	ldy     #$01
-	sta     (sp),y
-	iny
-	txa
-	sta     (sp),y
-	lda     #$10
-	ldy     #$00
-	sta     (sp),y
-	ldx     #$2B
-	lda     #$48
-	jsr     _multi_vram_buffer_horz
-;
-; set_map();
-;
-	jsr     _set_map
-;
-; set_scroll_y(0x0100);    
-;
-	ldx     #$01
-	lda     #$00
-	jmp     _set_scroll_y
+	jmp     _oam_clear
 
 .endproc
 
@@ -13009,10 +13347,10 @@ L0002:	rts
 	lda     _chr_5_index
 	jsr     _set_chr_mode_5
 ;
-; set_scroll_y(0x0000);
+; set_scroll_y(255);
 ;
 	ldx     #$00
-	txa
+	lda     #$FF
 	jmp     _set_scroll_y
 
 .endproc
@@ -13044,9 +13382,359 @@ L0002:	rts
 	ldx     #>(_map)
 	jsr     _vram_unrle
 ;
+; multi_vram_buffer_horz(level_names[current_level], sizeof(level_names[current_level]), NTADR_C(8, 26));
+;
+	jsr     decsp3
+	ldx     #$00
+	lda     _current_level
+	jsr     aslax4
+	clc
+	adc     #<(_level_names)
+	tay
+	txa
+	adc     #>(_level_names)
+	tax
+	tya
+	ldy     #$01
+	sta     (sp),y
+	iny
+	txa
+	sta     (sp),y
+	lda     #$10
+	ldy     #$00
+	sta     (sp),y
+	ldx     #$2B
+	lda     #$48
+	jsr     _multi_vram_buffer_horz
+;
+; set_chr_mode_4(8);
+;
+	lda     #$08
+	jsr     _set_chr_mode_4
+;
+; set_chr_mode_5(9);
+;
+	lda     #$09
+	jsr     _set_chr_mode_5
+;
+; pal_bg(pal_map);
+;
+	lda     #<(_pal_map)
+	ldx     #>(_pal_map)
+	jsr     _pal_bg
+;
+; set_scroll_y(239);    
+;
+	ldx     #$00
+	lda     #$EF
+	jsr     _set_scroll_y
+;
 ; ppu_on_all();
 ;
 	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ load_inventory (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_load_inventory: near
+
+.segment	"BANK0"
+
+;
+; ppu_off();
+;
+	jsr     _ppu_off
+;
+; vram_adr(NAMETABLE_C);
+;
+	ldx     #$28
+	lda     #$00
+	jsr     _vram_adr
+;
+; vram_unrle(inventory);
+;
+	lda     #<(_inventory)
+	ldx     #>(_inventory)
+	jsr     _vram_unrle
+;
+; set_chr_mode_4(8);
+;
+	lda     #$08
+	jsr     _set_chr_mode_4
+;
+; set_chr_mode_5(9);
+;
+	lda     #$09
+	jsr     _set_chr_mode_5
+;
+; pal_bg(pal_map);
+;
+	lda     #<(_pal_map)
+	ldx     #>(_pal_map)
+	jsr     _pal_bg
+;
+; set_scroll_y(239);    
+;
+	ldx     #$00
+	lda     #$EF
+	jsr     _set_scroll_y
+;
+; ppu_on_all();
+;
+	jmp     _ppu_on_all
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ manage_inventory (void)
+; ---------------------------------------------------------------
+
+.segment	"BANK0"
+
+.proc	_manage_inventory: near
+
+.segment	"BANK0"
+
+;
+; for (i = 0; i < ITEM_NUMBER; ++i) {
+;
+	lda     #$00
+	sta     _i
+	tax
+L001A:	lda     _i
+	cmp     #$06
+	bcs     L001B
+;
+; temp3 = 69 + i * 24;
+;
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumula0
+	clc
+	adc     #$45
+	sta     _temp3
+;
+; oam_spr(temp3, 44, items.sprite[i], 0x00);
+;
+	jsr     decsp3
+	lda     _temp3
+	ldy     #$02
+	sta     (sp),y
+	lda     #$2C
+	dey
+	sta     (sp),y
+	ldy     _i
+	lda     _items+12,y
+	ldy     #$00
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; for (i = 0; i < ITEM_NUMBER; ++i) {
+;
+	ldx     #$00
+	inc     _i
+	jmp     L001A
+;
+; if (actors.y[CURSOR] == SAVE_BUTTON_Y) {
+;
+L001B:	lda     _actors+19
+	cmp     #$68
+	bne     L001C
+;
+; if (pad1_new & PAD_A) {
+;
+	lda     _pad1_new
+	and     #$80
+	stx     tmp1
+	ora     tmp1
+;
+; if (pad1_new & PAD_UP) {
+;
+	lda     _pad1_new
+	and     #$08
+	jeq     L0023
+;
+; actors.state[CURSOR] = CURSOR_SMALL;
+;
+	stx     _actors+271
+;
+; temp3 = current_selection * 24;
+;
+	lda     _current_selection
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumula0
+	sta     _temp3
+;
+; actors.x[CURSOR] = 56 + temp3;
+;
+	clc
+	adc     #$38
+	sta     _actors+5
+;
+; actors.y[CURSOR] = INVENTORY_ITEM_Y;
+;
+	lda     #$20
+	sta     _actors+19
+;
+; } else {
+;
+	jmp     L0023
+;
+; temp3 = current_selection * 24;
+;
+L001C:	lda     _current_selection
+	jsr     pusha0
+	lda     #$18
+	jsr     tosumula0
+	sta     _temp3
+;
+; actors.x[CURSOR] = 56 + temp3;
+;
+	clc
+	adc     #$38
+	sta     _actors+5
+;
+; if (pad1_new & PAD_LEFT) {
+;
+	lda     _pad1_new
+	and     #$02
+	beq     L001E
+;
+; if (current_selection == 0) {
+;
+	lda     _current_selection
+	bne     L001D
+;
+; current_selection = 5;
+;
+	lda     #$05
+	sta     _current_selection
+;
+; } else {
+;
+	jmp     L001E
+;
+; --current_selection;
+;
+L001D:	dec     _current_selection
+;
+; if (pad1_new & PAD_RIGHT) {
+;
+L001E:	lda     _pad1_new
+	and     #$01
+	beq     L0020
+;
+; if (current_selection == 5) {
+;
+	lda     _current_selection
+	cmp     #$05
+	bne     L001F
+;
+; current_selection = 0;
+;
+	lda     #$00
+	sta     _current_selection
+;
+; } else {
+;
+	jmp     L0020
+;
+; ++current_selection;
+;
+L001F:	inc     _current_selection
+;
+; if (pad1_new & PAD_A) {
+;
+L0020:	lda     _pad1_new
+	and     #$80
+	beq     L0021
+;
+; current_item = current_selection;
+;
+	lda     _current_selection
+	sta     _current_item
+;
+; exit_inventory = TRUE;
+;
+	lda     #$01
+	sta     _exit_inventory
+;
+; if (pad1_new & PAD_B) {
+;
+L0021:	lda     _pad1_new
+	and     #$40
+	beq     L0022
+;
+; exit_inventory = TRUE;
+;
+	lda     #$01
+	sta     _exit_inventory
+;
+; if (pad1_new & PAD_DOWN) {
+;
+L0022:	lda     _pad1_new
+	and     #$04
+	beq     L0023
+;
+; actors.x[CURSOR] = SAVE_BUTTON_X;
+;
+	lda     #$28
+	sta     _actors+5
+;
+; actors.y[CURSOR] = SAVE_BUTTON_Y;
+;
+	lda     #$68
+	sta     _actors+19
+;
+; actors.state[CURSOR] = CURSOR_LARGE;
+;
+	lda     #$02
+	sta     _actors+271
+;
+; if (pad1_new & PAD_SELECT) {
+;
+L0023:	lda     _pad1_new
+	and     #$20
+	beq     L0018
+;
+; exit_inventory = TRUE;
+;
+	lda     #$01
+	sta     _exit_inventory
+;
+; if (exit_inventory) {
+;
+L0018:	lda     _exit_inventory
+	beq     L0019
+;
+; hide_map();
+;
+	jsr     _hide_map
+;
+; actors.state[CURSOR] = INACTIVE;
+;
+	lda     #$80
+	sta     _actors+271
+;
+; exit_inventory = FALSE;
+;
+	lda     #$00
+	sta     _exit_inventory
+;
+; game_state = MAIN;
+;
+	sta     _game_state
+;
+; }
+;
+L0019:	rts
 
 .endproc
 
@@ -13776,9 +14464,9 @@ L0014:	lda     #>(_cemetery)
 	lda     #$00
 	sta     _actors+280
 ;
-; CROW = 5;
+; CROW = 6;
 ;
-	lda     #$05
+	lda     #$06
 	sta     _CROW
 ;
 ; actors.x[CROW] = 207;
@@ -13840,14 +14528,14 @@ L0014:	lda     #>(_cemetery)
 	ldy     _CROW
 	sta     _actors+42,y
 ;
-; SKELETON1 = 6;
-;
-	lda     #$06
-	sta     _SKELETON1
-;
-; SKELETON2 = 7;
+; SKELETON1 = 7;
 ;
 	lda     #$07
+	sta     _SKELETON1
+;
+; SKELETON2 = 8;
+;
+	lda     #$08
 	sta     _SKELETON2
 ;
 ; set_skeleton(SKELETON1, 40, 72);
@@ -13886,9 +14574,9 @@ L0014:	lda     #>(_cemetery)
 	lda     #$01
 	sta     _actors+84,y
 ;
-; GATE = 8;
+; GATE = 9;
 ;
-	lda     #$08
+	lda     #$09
 	sta     _GATE
 ;
 ; actors.x[GATE] = 120;
@@ -13921,9 +14609,9 @@ L0014:	lda     #>(_cemetery)
 	lda     #$00
 	sta     _actors+266,y
 ;
-; STILL_DECORATION = 9;
+; STILL_DECORATION = 10;
 ;
-	lda     #$09
+	lda     #$0A
 	sta     _STILL_DECORATION
 ;
 ; actors.x[STILL_DECORATION] = 219;
@@ -13950,9 +14638,9 @@ L0014:	lda     #>(_cemetery)
 	lda     #$09
 	sta     _actors+280,y
 ;
-; GHOST = 10;
+; GHOST = 11;
 ;
-	lda     #$0A
+	lda     #$0B
 	sta     _GHOST
 ;
 ; actors.x[GHOST] = 120;
@@ -15562,12 +16250,6 @@ L0019:	lda     _current_collision_map
 ;
 	jsr     _ppu_off
 ;
-; set_scroll_x(0x0000);
-;
-	ldx     #$00
-	txa
-	jsr     _set_scroll_x
-;
 ; banked_call(1, reset_actors);
 ;
 	lda     #$01
@@ -15751,7 +16433,6 @@ L0020:	lda     _chr_4_index
 ; if (game_state == MAIN) {
 ;
 	lda     _game_state
-	cmp     #$01
 	bne     L0021
 ;
 ; show_HUD();
@@ -15858,7 +16539,7 @@ L0021:	lda     #$00
 ;
 ; game_state = TITLE;
 ;
-	lda     #$00
+	lda     #$05
 	sta     _game_state
 ;
 ; }
@@ -16886,7 +17567,7 @@ L0079:	lda     _draw_index
 ; if (game_state != STORY && actors.counter[draw_index] == 254) {
 ;
 	lda     _game_state
-	cmp     #$02
+	cmp     #$03
 	beq     L0008
 	ldy     _draw_index
 	lda     _actors+224,y
@@ -17962,9 +18643,9 @@ L000D:	lda     #$01
 .segment	"CODE"
 
 ;
-; for (i = 5; i < ACTOR_NUMBER; ++i) {
+; for (i = 6; i < ACTOR_NUMBER; ++i) {
 ;
-	lda     #$05
+	lda     #$06
 	sta     _i
 L0039:	lda     _i
 	cmp     #$0E
@@ -18201,7 +18882,7 @@ L0033:	ldy     _SORCERER
 	lda     #$01
 L0038:	sta     _actors+84,y
 ;
-; for (i = 5; i < ACTOR_NUMBER; ++i) {
+; for (i = 6; i < ACTOR_NUMBER; ++i) {
 ;
 L003E:	inc     _i
 	jmp     L0039
@@ -19148,7 +19829,7 @@ L0024:	jsr     _get_inactive_actor_index
 	ldy     _temp
 	sta     _actors+266,y
 ;
-; actors.type[temp] = TYPE_BOMB;
+; actors.type[temp] = TYPE_ITEM_BOMB;
 ;
 	ldy     _temp
 	lda     #$17
@@ -19157,20 +19838,23 @@ L0024:	jsr     _get_inactive_actor_index
 ; if (pad1_new & PAD_SELECT) {
 ;
 L0038:	lda     _pad1_new
-	ldx     #$00
 	and     #$20
-	stx     tmp1
-	ora     tmp1
+	beq     L0039
+;
+; game_state = INVENTORY;
+;
+	lda     #$01
+	sta     _game_state
 ;
 ; if (pad1_new & PAD_START) {
 ;
-	lda     _pad1_new
+L0039:	lda     _pad1_new
 	and     #$10
 	beq     L002D
 ;
 ; game_state = MAP;
 ;
-	lda     #$03
+	lda     #$02
 	sta     _game_state
 ;
 ; }
@@ -20077,31 +20761,6 @@ L0017:	jsr     _oam_meta_spr
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_sprites (void)
-; ---------------------------------------------------------------
-
-.segment	"CODE"
-
-.proc	_draw_sprites: near
-
-.segment	"CODE"
-
-;
-; oam_clear();
-;
-	jsr     _oam_clear
-;
-; draw_paddles();
-;
-	jsr     _draw_paddles
-;
-; animate_actors();
-;
-	jmp     _animate_actors
-
-.endproc
-
-; ---------------------------------------------------------------
 ; void __near__ move_skull_map (void)
 ; ---------------------------------------------------------------
 
@@ -20500,13 +21159,13 @@ L0002:	jmp     incsp1
 ;
 	beq     L0004
 	cmp     #$01
-	beq     L000A
+	beq     L0009
 	cmp     #$02
-	beq     L000B
+	beq     L000A
 	cmp     #$03
 	beq     L0007
 	cmp     #$04
-	beq     L000C
+	beq     L000B
 	rts
 ;
 ; fadein();
@@ -20515,7 +21174,8 @@ L0004:	jmp     _fadein
 ;
 ; game_state = MAIN;
 ;
-L000A:	sta     _game_state
+L0009:	lda     #$00
+	sta     _game_state
 ;
 ; show_HUD();
 ;
@@ -20531,7 +21191,7 @@ L000A:	sta     _game_state
 ;
 ; wait(64);
 ;
-L000B:	lda     #$40
+L000A:	lda     #$40
 	jmp     _wait
 ;
 ; fadeout();
@@ -20540,11 +21200,7 @@ L0007:	jmp     _fadeout
 ;
 ; ++current_level;
 ;
-L000C:	inc     _current_level
-;
-; oam_clear();
-;
-	jsr     _oam_clear
+L000B:	inc     _current_level
 ;
 ; load_level();
 ;
@@ -20580,7 +21236,7 @@ L000C:	inc     _current_level
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0024
+	jeq     L006F
 	cmp     #$02
 	jeq     L0051
 	cmp     #$03
@@ -20594,16 +21250,12 @@ L000C:	inc     _current_level
 	cmp     #$F0
 	jeq     L0056
 	cmp     #$FA
-	jeq     L0077
-	jmp     L007C
-;
-; oam_clear();
-;
-L0004:	jsr     _oam_clear
+	jeq     L0078
+	jmp     L007D
 ;
 ; animate_actors();
 ;
-	jsr     _animate_actors
+L0004:	jsr     _animate_actors
 ;
 ; switch (story_step) {
 ;
@@ -20636,13 +21288,13 @@ L0004:	jsr     _oam_clear
 	jeq     L0022
 	cmp     #$0C
 	jeq     L006E
-	jmp     L007C
+	jmp     L007D
 ;
 ; if (story_counter == 128) {
 ;
 L0065:	lda     _story_counter
 	cmp     #$80
-	jne     L007C
+	jne     L007D
 ;
 ; ++actors.state[NECROMANCER];
 ;
@@ -20681,7 +21333,7 @@ L0009:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; if (story_counter == 64) {
 ;
@@ -20709,7 +21361,7 @@ L000D:	sta     ptr1
 ;
 L0067:	lda     _story_counter
 	cmp     #$45
-	jcc     L007C
+	jcc     L007D
 ;
 ; pal_bright(6);
 ;
@@ -20748,7 +21400,7 @@ L000F:	sta     ptr1
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; if (story_counter > 2) {
 ;
@@ -20788,7 +21440,7 @@ L0011:	ldy     _LIGHTNING
 L0012:	ldy     _LIGHTNING
 	lda     _actors+252,y
 	cmp     #$08
-	jne     L007C
+	jne     L007D
 ;
 ; pal_bright(6);
 ;
@@ -20802,7 +21454,7 @@ L0012:	ldy     _LIGHTNING
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; actors.state[HERO] = 1;
 ;
@@ -20814,7 +21466,7 @@ L0016:	ldy     _HERO
 ;
 	lda     _story_counter
 	cmp     #$B5
-	jcc     L007C
+	jcc     L007D
 ;
 ; ++story_step;
 ;
@@ -20827,7 +21479,7 @@ L0016:	ldy     _HERO
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; fadeout();
 ;
@@ -20835,7 +21487,7 @@ L0019:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; banked_call(1, reset_actors);
 ;
@@ -20845,19 +21497,13 @@ L0069:	lda     #$01
 	ldx     #>(_reset_actors)
 	jsr     _banked_call
 ;
-; banked_call(0, set_map);
+; banked_call(0, load_map);
 ;
 	lda     #$00
 	jsr     pusha
-	lda     #<(_set_map)
-	ldx     #>(_set_map)
+	lda     #<(_load_map)
+	ldx     #>(_load_map)
 	jsr     _banked_call
-;
-; set_scroll_y(0x0100);
-;
-	ldx     #$01
-	lda     #$00
-	jsr     _set_scroll_y
 ;
 ; banked_call(0, init_skull);
 ;
@@ -20892,7 +21538,7 @@ L001B:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; story_counter = 56;  // Skull y position
 ;
@@ -20912,7 +21558,7 @@ L006B:	lda     _story_counter
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L007C
+	jcc     L007D
 ;
 ; ++story_step;
 ;
@@ -20925,7 +21571,7 @@ L006B:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; actors.x[SKULL] = story_counter;
 ;
@@ -20936,7 +21582,7 @@ L006C:	lda     _story_counter
 ;
 	lda     _story_counter
 	cmp     #$9D
-	jcc     L007C
+	jcc     L007D
 ;
 ; ++story_step;
 ;
@@ -20954,7 +21600,7 @@ L006C:	lda     _story_counter
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(24);
 ;
@@ -20963,7 +21609,7 @@ L006D:	lda     #$18
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; fadeout();
 ;
@@ -20971,7 +21617,7 @@ L0022:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; banked_call(0, hide_map);
 ;
@@ -21019,21 +21665,21 @@ L006E:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L007C
-;
-; oam_clear();
-;
-L0024:	jsr     _oam_clear
+	jmp     L007D
 ;
 ; if (story_step > 6) {
 ;
-	lda     _story_step
+L006F:	lda     _story_step
 	cmp     #$07
 	bcc     L0025
 ;
-; draw_sprites();
+; draw_paddles();
 ;
-	jsr     _draw_sprites
+	jsr     _draw_paddles
+;
+; animate_actors();
+;
+	jsr     _animate_actors
 ;
 ; if (show_face) {
 ;
@@ -21081,21 +21727,21 @@ L0027:	lda     _story_step
 ;
 	jeq     L002A
 	cmp     #$01
-	jeq     L006F
+	jeq     L0070
 	cmp     #$02
 	jeq     L002C
 	cmp     #$03
-	jeq     L0070
+	jeq     L0071
 	cmp     #$04
 	jeq     L002E
 	cmp     #$05
-	jeq     L0071
-	cmp     #$06
 	jeq     L0072
+	cmp     #$06
+	jeq     L0073
 	cmp     #$07
 	jeq     L0031
 	cmp     #$08
-	jeq     L0073
+	jeq     L0074
 	cmp     #$09
 	jeq     L0033
 	cmp     #$0A
@@ -21125,16 +21771,16 @@ L0027:	lda     _story_step
 	cmp     #$16
 	jeq     L0043
 	cmp     #$17
-	jeq     L0074
+	jeq     L0075
 	cmp     #$18
 	jeq     L004A
 	cmp     #$19
-	jeq     L0075
+	jeq     L0076
 	cmp     #$1A
 	jeq     L004F
 	cmp     #$1B
-	jeq     L0076
-	jmp     L007C
+	jeq     L0077
+	jmp     L007D
 ;
 ; load_black_level();
 ;
@@ -21157,16 +21803,16 @@ L002A:	jsr     _load_black_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(128);
 ;
-L006F:	lda     #$80
+L0070:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
 ;
@@ -21190,16 +21836,16 @@ L002C:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(72);
 ;
-L0070:	lda     #$48
+L0071:	lda     #$48
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
 ;
@@ -21223,20 +21869,20 @@ L002E:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(128);
 ;
-L0071:	lda     #$80
+L0072:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; pal_bright(0);
 ;
-L0072:	lda     #$00
+L0073:	lda     #$00
 	jsr     _pal_bright
 ;
 ; brightness = 0;
@@ -21274,7 +21920,7 @@ L0072:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; fadein();
 ;
@@ -21282,16 +21928,16 @@ L0031:	jsr     _fadein
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(128);
 ;
-L0073:	lda     #$80
+L0074:	lda     #$80
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21331,7 +21977,7 @@ L0033:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21339,7 +21985,7 @@ L0034:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21379,7 +22025,7 @@ L0035:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21387,7 +22033,7 @@ L0036:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21443,7 +22089,7 @@ L0037:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21451,7 +22097,7 @@ L0038:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21479,7 +22125,7 @@ L0039:	jsr     decsp3
 	lda     #$00
 	sta     _current_item
 ;
-; items.type[current_item] = TYPE_MAGNET;
+; items.type[current_item] = TYPE_ITEM_MAGNET;
 ;
 	ldy     _current_item
 	lda     #$16
@@ -21489,13 +22135,13 @@ L0039:	jsr     decsp3
 ;
 	ldy     _current_item
 	lda     #$01
-	sta     _items+8,y
+	sta     _items+6,y
 ;
 ; items.sprite[current_item] = ITEM_MAGNET;
 ;
 	ldy     _current_item
 	lda     #$09
-	sta     _items+16,y
+	sta     _items+12,y
 ;
 ; ++story_step;
 ;
@@ -21503,7 +22149,7 @@ L0039:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21511,7 +22157,7 @@ L003D:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21567,7 +22213,7 @@ L003E:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21575,7 +22221,7 @@ L003F:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 1));
 ;
@@ -21631,7 +22277,7 @@ L0040:	jsr     decsp3
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait_input();
 ;
@@ -21639,7 +22285,7 @@ L0041:	jsr     _wait_input
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; brightout();
 ;
@@ -21647,7 +22293,7 @@ L0042:	jsr     _brightout
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; actors.state[GHOST] = INACTIVE;
 ;
@@ -21683,12 +22329,11 @@ L0043:	ldy     _GHOST
 ;
 ; game_state = MAIN;
 ;
-	lda     #$01
+	lda     #$00
 	sta     _game_state
 ;
 ; show_face = FALSE;
 ;
-	lda     #$00
 	sta     _show_face
 ;
 ; show_item = FALSE;
@@ -21706,22 +22351,22 @@ L0043:	ldy     _GHOST
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(64);
 ;
-L0074:	lda     #$40
+L0075:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; if (actors.state[CROW] != FLYING) {
 ;
 L004A:	ldy     _CROW
 	lda     _actors+266,y
-	jeq     L007C
+	jeq     L007D
 ;
 ; one_vram_buffer(0x11, NTADR_A(15, 9));
 ;
@@ -21751,16 +22396,16 @@ L004A:	ldy     _CROW
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(64);
 ;
-L0075:	lda     #$40
+L0076:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; fadeout();
 ;
@@ -21768,19 +22413,15 @@ L004F:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; ++current_level;
 ;
-L0076:	inc     _current_level
+L0077:	inc     _current_level
 ;
 ; load_level();
 ;
 	jsr     _load_level
-;
-; oam_clear();
-;
-	jsr     _oam_clear
 ;
 ; story_step = 0;
 ;
@@ -21789,7 +22430,7 @@ L0076:	inc     _current_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21797,7 +22438,7 @@ L0051:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21805,7 +22446,7 @@ L0052:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21813,7 +22454,7 @@ L0053:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21821,7 +22462,7 @@ L0054:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21829,7 +22470,7 @@ L0055:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; play_normal_level();
 ;
@@ -21837,30 +22478,30 @@ L0056:	jsr     _play_normal_level
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; switch (story_step) {
 ;
-L0077:	lda     _story_step
+L0078:	lda     _story_step
 ;
 ; }
 ;
 	beq     L005A
 	cmp     #$01
-	beq     L0078
+	beq     L0079
 	cmp     #$02
 	beq     L005C
 	cmp     #$03
-	beq     L0079
+	beq     L007A
 	cmp     #$04
 	beq     L005E
 	cmp     #$05
 	jeq     L0061
 	cmp     #$06
-	jeq     L007A
-	cmp     #$07
 	jeq     L007B
-	jmp     L007C
+	cmp     #$07
+	jeq     L007C
+	jmp     L007D
 ;
 ; oam_meta_spr(182, 122, staff);
 ;
@@ -21881,24 +22522,20 @@ L005A:	jsr     decsp2
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(64);
 ;
-L0078:	lda     #$40
+L0079:	lda     #$40
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
-;
-; oam_clear();
-;
-L005C:	jsr     _oam_clear
+	jmp     L007D
 ;
 ; load_black_level();
 ;
-	jsr     _load_black_level
+L005C:	jsr     _load_black_level
 ;
 ; ++story_step;
 ;
@@ -21906,11 +22543,11 @@ L005C:	jsr     _oam_clear
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; set_chr_mode_2(0x00);
 ;
-L0079:	lda     #$00
+L007A:	lda     #$00
 	jsr     _set_chr_mode_2
 ;
 ; set_chr_mode_3(0x01);
@@ -21939,7 +22576,7 @@ L0079:	lda     #$00
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; set_scroll_y(scroll_index_y);
 ;
@@ -21957,14 +22594,14 @@ L005E:	lda     _scroll_index_y
 	sta     _scroll_index_y
 	stx     _scroll_index_y+1
 ;
-; if (scroll_index_y > 472) {
+; if (scroll_index_y > 488) {
 ;
-	cmp     #$D9
+	cmp     #$E9
 	txa
 	sbc     #$01
 	bvs     L0060
 	eor     #$80
-L0060:	bpl     L007C
+L0060:	bpl     L007D
 ;
 ; ++story_step;
 ;
@@ -21972,7 +22609,7 @@ L0060:	bpl     L007C
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; fadeout();
 ;
@@ -21980,20 +22617,20 @@ L0061:	jsr     _fadeout
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; wait(32);
 ;
-L007A:	lda     #$20
+L007B:	lda     #$20
 	jsr     _wait
 ;
 ; break;
 ;
-	jmp     L007C
+	jmp     L007D
 ;
 ; story_step = 0;
 ;
-L007B:	lda     #$00
+L007C:	lda     #$00
 	sta     _story_step
 ;
 ; current_level = 0;
@@ -22009,14 +22646,6 @@ L007B:	lda     #$00
 ;
 	jsr     _load_level
 ;
-; banked_call(0, load_map);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_load_map)
-	ldx     #>(_load_map)
-	jsr     _banked_call
-;
 ; pal_bright(4);
 ;
 	lda     #$04
@@ -22024,13 +22653,13 @@ L007B:	lda     #$00
 ;
 ; ++story_counter;
 ;
-L007C:	inc     _story_counter
+L007D:	inc     _story_counter
 ;
 ; if (wait_timer == 127) {
 ;
 	lda     _wait_timer
 	cmp     #$7F
-	bne     L007D
+	bne     L007E
 ;
 ; wait_timer = 0;
 ;
@@ -22039,7 +22668,7 @@ L007C:	inc     _story_counter
 ;
 ; ++wait_timer;
 ;
-L007D:	inc     _wait_timer
+L007E:	inc     _wait_timer
 ;
 ; }
 ;
@@ -22092,48 +22721,105 @@ L007D:	inc     _wait_timer
 	lda     #$00
 	sta     _actors+270
 ;
-; pal_bright(NULL);
+; brightness = NULL;
+;
+	sta     _brightness
+;
+; pal_bright(brightness);
 ;
 	jsr     _pal_bright
 ;
-; banked_call(0, load_map);
+; current_item = 5;
 ;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_load_map)
-	ldx     #>(_load_map)
-	jsr     _banked_call
-;
-; oam_clear();
-;
-	jsr     _oam_clear
-;
-; brightness = NULL;
-;
-	lda     #$00
-	sta     _brightness
-;
-; current_item = 0;
-;
+	lda     #$05
 	sta     _current_item
 ;
-; items.sprite[current_item] = ITEM_MAGNET;
+; items.sprite[current_item] = ITEM_HEAL;
 ;
 	ldy     _current_item
-	lda     #$09
-	sta     _items+16,y
+	lda     #$19
+	sta     _items+12,y
 ;
-; items.type[current_item] = TYPE_MAGNET;
+; items.type[current_item] = TYPE_ITEM_HEAL;
 ;
 	ldy     _current_item
-	lda     #$16
+	lda     #$1B
 	sta     _items,y
 ;
 ; items.is_active[current_item] = TRUE;
 ;
 	ldy     _current_item
 	lda     #$01
-	sta     _items+8,y
+	sta     _items+6,y
+;
+; current_item = 4;
+;
+	lda     #$04
+	sta     _current_item
+;
+; items.sprite[current_item] = ITEM_VOLT;
+;
+	ldy     _current_item
+	lda     #$18
+	sta     _items+12,y
+;
+; items.type[current_item] = TYPE_ITEM_VOLT;
+;
+	ldy     _current_item
+	lda     #$1A
+	sta     _items,y
+;
+; items.is_active[current_item] = TRUE;
+;
+	ldy     _current_item
+	lda     #$01
+	sta     _items+6,y
+;
+; current_item = 3;
+;
+	lda     #$03
+	sta     _current_item
+;
+; items.sprite[current_item] = ITEM_BIG;
+;
+	ldy     _current_item
+	lda     #$17
+	sta     _items+12,y
+;
+; items.type[current_item] = TYPE_ITEM_BIG;
+;
+	ldy     _current_item
+	lda     #$19
+	sta     _items,y
+;
+; items.is_active[current_item] = TRUE;
+;
+	ldy     _current_item
+	lda     #$01
+	sta     _items+6,y
+;
+; current_item = 2;
+;
+	lda     #$02
+	sta     _current_item
+;
+; items.sprite[current_item] = ITEM_HOOK;
+;
+	ldy     _current_item
+	lda     #$0B
+	sta     _items+12,y
+;
+; items.type[current_item] = TYPE_ITEM_HOOK;
+;
+	ldy     _current_item
+	lda     #$18
+	sta     _items,y
+;
+; items.is_active[current_item] = TRUE;
+;
+	ldy     _current_item
+	lda     #$01
+	sta     _items+6,y
 ;
 ; current_item = 1;
 ;
@@ -22142,10 +22828,10 @@ L007D:	inc     _wait_timer
 ; items.sprite[current_item] = ITEM_BOMB;
 ;
 	ldy     _current_item
-	lda     #$20
-	sta     _items+16,y
+	lda     #$0A
+	sta     _items+12,y
 ;
-; items.type[current_item] = TYPE_BOMB;
+; items.type[current_item] = TYPE_ITEM_BOMB;
 ;
 	ldy     _current_item
 	lda     #$17
@@ -22155,12 +22841,30 @@ L007D:	inc     _wait_timer
 ;
 	ldy     _current_item
 	lda     #$01
-	sta     _items+8,y
+	sta     _items+6,y
 ;
 ; current_item = 0;
 ;
 	lda     #$00
 	sta     _current_item
+;
+; items.sprite[current_item] = ITEM_MAGNET;
+;
+	ldy     _current_item
+	lda     #$09
+	sta     _items+12,y
+;
+; items.type[current_item] = TYPE_ITEM_MAGNET;
+;
+	ldy     _current_item
+	lda     #$16
+	sta     _items,y
+;
+; items.is_active[current_item] = TRUE;
+;
+	ldy     _current_item
+	lda     #$01
+	sta     _items+6,y
 ;
 ; }
 ;
@@ -22264,6 +22968,10 @@ L007D:	inc     _wait_timer
 ;
 L0002:	jsr     _ppu_wait_nmi
 ;
+; oam_clear();
+;
+	jsr     _oam_clear
+;
 ; pad1 = pad_poll(0);
 ;
 	lda     #$00
@@ -22276,14 +22984,191 @@ L0002:	jsr     _ppu_wait_nmi
 	jsr     _get_pad_new
 	sta     _pad1_new
 ;
-; if (game_state == TITLE) {
+; switch (game_state) {
 ;
 	lda     _game_state
-	bne     L0011
+;
+; }
+;
+	beq     L0007
+	cmp     #$01
+	jeq     L0015
+	cmp     #$02
+	jeq     L000D
+	cmp     #$03
+	jeq     L000F
+	cmp     #$04
+	beq     L0002
+	cmp     #$05
+	jeq     L0010
+	jmp     L0002
+;
+; check_main_input();
+;
+L0007:	jsr     _check_main_input
+;
+; update_skull();
+;
+	jsr     _update_skull
+;
+; draw_paddles();
+;
+	jsr     _draw_paddles
+;
+; animate_actors();
+;
+	jsr     _animate_actors
+;
+; oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
+;
+	jsr     decsp3
+	lda     #$BC
+	ldy     #$02
+	sta     (sp),y
+	lda     #$15
+	dey
+	sta     (sp),y
+	ldy     _current_item
+	lda     _items+12,y
+	ldy     #$00
+	sta     (sp),y
+	tya
+	jsr     _oam_spr
+;
+; if (brick_counter == 0) {
+;
+	lda     _brick_counter
+	bne     L0013
+;
+; game_state = STORY;
+;
+	lda     #$03
+	sta     _game_state
+;
+; if (game_state == MAP) {
+;
+L0013:	lda     _game_state
+	cmp     #$02
+	bne     L0014
+;
+; banked_call(0, load_map);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_load_map)
+	ldx     #>(_load_map)
+	jsr     _banked_call
+;
+; if (game_state == INVENTORY) {
+;
+L0014:	lda     _game_state
+	cmp     #$01
+	jne     L0002
+;
+; banked_call(0, load_inventory);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_load_inventory)
+	ldx     #>(_load_inventory)
+	jsr     _banked_call
+;
+; draw_index = CURSOR;
+;
+	lda     #$05
+	sta     _draw_index
+;
+; actors.y[CURSOR] = INVENTORY_ITEM_Y;
+;
+	lda     #$20
+	sta     _actors+19
+;
+; actors.animation_delay[CURSOR] = 32;
+;
+	sta     _actors+243
+;
+; actors.type[CURSOR] = TYPE_CURSOR;
+;
+	lda     #$1C
+	sta     _actors+285
+;
+; actors.state[CURSOR] = CURSOR_SMALL;
+;
+	lda     #$00
+	sta     _actors+271
+;
+; current_selection = current_item;
+;
+	lda     _current_item
+	sta     _current_selection
+;
+; break;
+;
+	jmp     L0002
+;
+; banked_call(0, manage_inventory);
+;
+L0015:	lda     #$00
+	jsr     pusha
+	lda     #<(_manage_inventory)
+	ldx     #>(_manage_inventory)
+	jsr     _banked_call
+;
+; animate();
+;
+	jsr     _animate
+;
+; break;
+;
+	jmp     L0002
+;
+; oam_spr(1, 1, 0x00, 0x00);
+;
+L000D:	jsr     decsp3
+	lda     #$01
+	ldy     #$02
+	sta     (sp),y
+	dey
+	sta     (sp),y
+	lda     #$00
+	dey
+	sta     (sp),y
+	jsr     _oam_spr
+;
+; if (pad1_new & PAD_START) {
+;
+	lda     _pad1_new
+	and     #$10
+	jeq     L0002
+;
+; banked_call(0, hide_map);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_hide_map)
+	ldx     #>(_hide_map)
+	jsr     _banked_call
+;
+; game_state = MAIN;
+;
+	lda     #$00
+	sta     _game_state
+;
+; break;
+;
+	jmp     L0002
+;
+; play_story();
+;
+L000F:	jsr     _play_story
+;
+; break;
+;
+	jmp     L0002
 ;
 ; oam_meta_spr(182, 122, staff);
 ;
-	jsr     decsp2
+L0010:	jsr     decsp2
 	lda     #$B6
 	ldy     #$01
 	sta     (sp),y
@@ -22298,11 +23183,11 @@ L0002:	jsr     _ppu_wait_nmi
 ;
 	lda     _pad1_new
 	and     #$10
-	beq     L0002
+	jeq     L0002
 ;
 ; game_state = STORY;
 ;
-	lda     #$02
+	lda     #$03
 	sta     _game_state
 ;
 ; current_level = LVL_INTRO;
@@ -22320,116 +23205,12 @@ L0002:	jsr     _ppu_wait_nmi
 	sta     _scroll_index_y
 	sta     _scroll_index_y+1
 ;
-; } else if (game_state == MAP) {
+; debug_start(LVL_TEMPLE4);
 ;
-	jmp     L0002
-L0011:	lda     _game_state
-	cmp     #$03
-	bne     L0012
+	lda     #$05
+	jsr     _debug_start
 ;
-; oam_spr(1, 1, 0x00, 0x00);
-;
-	jsr     decsp3
-	lda     #$01
-	ldy     #$02
-	sta     (sp),y
-	dey
-	sta     (sp),y
-	lda     #$00
-	dey
-	sta     (sp),y
-	jsr     _oam_spr
-;
-; if (pad1_new & PAD_START) {
-;
-	lda     _pad1_new
-	and     #$10
-	beq     L0002
-;
-; banked_call(0, hide_map);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_hide_map)
-	ldx     #>(_hide_map)
-	jsr     _banked_call
-;
-; game_state = MAIN;
-;
-	lda     #$01
-	sta     _game_state
-;
-; } else if (game_state == STORY) {
-;
-	jmp     L0002
-L0012:	lda     _game_state
-	cmp     #$02
-	bne     L0013
-;
-; play_story();
-;
-	jsr     _play_story
-;
-; } else if (game_state == MAIN) {
-;
-	jmp     L0002
-L0013:	lda     _game_state
-	cmp     #$01
-	jne     L0002
-;
-; check_main_input();
-;
-	jsr     _check_main_input
-;
-; update_skull();
-;
-	jsr     _update_skull
-;
-; draw_sprites();
-;
-	jsr     _draw_sprites
-;
-; oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
-;
-	jsr     decsp3
-	lda     #$BC
-	ldy     #$02
-	sta     (sp),y
-	lda     #$15
-	dey
-	sta     (sp),y
-	ldy     _current_item
-	lda     _items+16,y
-	ldy     #$00
-	sta     (sp),y
-	tya
-	jsr     _oam_spr
-;
-; if (brick_counter == 0) {
-;
-	lda     _brick_counter
-	bne     L0014
-;
-; game_state = STORY;
-;
-	lda     #$02
-	sta     _game_state
-;
-; if (game_state == MAP) {
-;
-L0014:	lda     _game_state
-	cmp     #$03
-	jne     L0002
-;
-; banked_call(0, show_map);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_show_map)
-	ldx     #>(_show_map)
-	jsr     _banked_call
-;
-; while (1) {
+; break;
 ;
 	jmp     L0002
 

@@ -6,6 +6,7 @@
 #include "I-CHR/temple4/temple4.h"
 #include "I-CHR/title_screen.pngE/story.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
+#include "I-CHR/map.pngE/inventory.h"
 
 // TEST
 #include "I-CHR/test/bombable.h"
@@ -20,8 +21,10 @@
 #include "spr_stainedglass.h"
 #include "spr_villagers.h"
 #include "spr_bomb.h"
-// MAP
-#include "map.h"
+#include "spr_cursor.h"
+
+// MAP Logic
+#include "map_logic.h"
 
 void set_animation_info() {
     j = actors.state[draw_index] << 1;
@@ -148,11 +151,17 @@ void set_animation_info() {
             frame_count = skull_door_animation_index[j];
             animation_array = skull_door_animation;
             break;
-        case TYPE_BOMB:
+        case TYPE_ITEM_BOMB:
             animation_index = bomb_animation_index[j];
             ++j;
             frame_count = bomb_animation_index[j];
             animation_array = bomb_animation;
+            break;
+        case TYPE_CURSOR:
+            animation_index = cursor_animation_index[j];
+            ++j;
+            frame_count = cursor_animation_index[j];
+            animation_array = cursor_animation;
             break;
     }
 }

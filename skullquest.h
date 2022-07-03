@@ -39,17 +39,23 @@
 #define LEFT -1
 #define RIGHT 1
 
-#define TITLE 0
-#define MAIN 1
-#define STORY 2
-#define MAP 3
+#define MAIN 0
+#define INVENTORY 1
+#define MAP 2
+#define STORY 3
 #define GAME_OVER 4
+#define TITLE 5
 
 // ACTOR INDEX
 #define SKULL 4
-#define SKULL2 5
+#define CURSOR 5
 #define PADDLE 0
 
+#define CURSOR_SMALL 0
+#define CURSOR_LARGE 2
+#define SAVE_BUTTON_X 40
+#define SAVE_BUTTON_Y 104
+#define INVENTORY_ITEM_Y 32
 
 // Actor STATES!
 // Always putting temporary before the next (ex DYING -> DEAD)
@@ -94,8 +100,15 @@
 #define TYPE_PARALYZER 19
 #define TYPE_SKELETON_KING 20
 #define TYPE_SKULL_DOOR 21
-#define TYPE_MAGNET 22
-#define TYPE_BOMB 23
+// ITEMS
+#define TYPE_ITEM_MAGNET 22
+#define TYPE_ITEM_BOMB 23
+#define TYPE_ITEM_HOOK 24
+#define TYPE_ITEM_BIG 25
+#define TYPE_ITEM_VOLT 26
+#define TYPE_ITEM_HEAL 27
+// 
+#define TYPE_CURSOR 28
 
 
 // PADDLE
@@ -111,7 +124,11 @@
 
 // ITEMS TILE INDEX
 #define ITEM_MAGNET 0x09
-#define ITEM_BOMB 0x20
+#define ITEM_BOMB 0x0a
+#define ITEM_HOOK 0x0b
+#define ITEM_BIG 0x17
+#define ITEM_VOLT 0x18
+#define ITEM_HEAL 0x19
 
 // ITEMS
 #define BOMB_DELAY 0x20

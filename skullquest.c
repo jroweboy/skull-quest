@@ -35,7 +35,7 @@ static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index
 static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, wait_timer;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
-static unsigned char animation_index, frame_count, show_face, show_item, current_item;
+static unsigned char animation_index, frame_count, show_face, show_item, current_item, current_selection, exit_inventory = FALSE;
 static unsigned char map_x, map_y, map_lvl_name_x, map_lvl_name_y;
 static unsigned char brightness = 4;
 static unsigned char NECROMANCER, GHOST, LIGHTNING, DEVIL, SKELETON1, SKELETON2, DOOR1, DOOR2, DOOR3, STARS;
@@ -65,7 +65,7 @@ const unsigned char* current_collision_map;
 const unsigned char* current_background_palette;
 const char* current_sprite_palette;
 
-#define ITEM_NUMBER 8
+#define ITEM_NUMBER 6
 typedef struct {
     unsigned char type[ITEM_NUMBER];
     unsigned char is_active[ITEM_NUMBER];
@@ -103,10 +103,8 @@ typedef struct
 
 // index 0-3 paddles
 // index 4 skull
-// index 5 necromancer / angelica / extra skull?
-// index 6-7-8-9 ennemies
-// index 10 STARS animation for item reveal
-// index 11-12-13 Breakables like crates...
+// index 5 inventory cursor
+
 Actors actors;
 
 // ---------------------------- BANK 0  -------------------------------
@@ -124,7 +122,6 @@ Actors actors;
 #pragma code-name("BANK6")
 
 #include "bank6.h"
-
 
 #pragma rodata-name("CODE")
 #pragma code-name("CODE")
@@ -236,7 +233,7 @@ void load_collision() {
 
 void load_level() {
     ppu_off();
-    set_scroll_x(0x0000);
+    // set_scroll_x(0x0000);
 
     banked_call(1, reset_actors);
     banked_call(6, init_level_specifics);
@@ -554,7 +551,7 @@ void move() {
                 actors.state[pad_index] = PARALYZED;
             }
             break;
-        case TYPE_BOMB:
+        case TYPE_ITEM_BOMB:
             ++actors.width[draw_index];
             if (actors.width[draw_index] == BOMB_DELAY) {
                 actors.counter[draw_index] = 0;
@@ -709,7 +706,7 @@ char is_paddle_collision_skull() {
 }
 
 void check_enemy_collision() {
-    for (i = 5; i < ACTOR_NUMBER; ++i) {
+    for (i = 6; i < ACTOR_NUMBER; ++i) {
         if (actors.state[i] != INACTIVE && actors.state[i] != DEAD) {
             pad_index = i;
             if (actors.state[i] != DYING && is_skull_collision_paddle()) {
@@ -953,11 +950,11 @@ void check_main_input() {
         // /////////
 
         switch (items.type[current_item]) {
-            case TYPE_MAGNET:
+            case TYPE_ITEM_MAGNET:
                 actors.yDir[SKULL] = DOWN;
                 actors.xDir[SKULL] = actors.x[SKULL] < actors.x[0] ? RIGHT : LEFT;
                 break;
-            case TYPE_BOMB:
+            case TYPE_ITEM_BOMB:
                 temp = get_inactive_actor_index();
                 if (temp) {
                     actors.x[temp] = actors.x[SKULL];
@@ -965,19 +962,14 @@ void check_main_input() {
                     actors.animation_delay[temp] = 8;
                     actors.width[temp] = NULL; // -> width serves as timer before bomb explodes!!!
                     actors.state[temp] = IDLE;
-                    actors.type[temp] = TYPE_BOMB;
+                    actors.type[temp] = TYPE_ITEM_BOMB;
                 }
                 break;
         }
     }
 
     if (pad1_new & PAD_SELECT) {
-        // TODO ITEM SELECTION...
-        // stop music (or lower volume?)
-        // palette fade
-        // write PAUSE
-        // while (on pause)
-        // if already on pause resume gameplay
+        game_state = INVENTORY;
     }
 
     if (pad1_new & PAD_START) {
@@ -1209,14 +1201,6 @@ void draw_paddles() {
     }
 }
 
-void draw_sprites(void) {
-    oam_clear();
-
-    draw_paddles();
-
-    animate_actors();
-}
-
 // param1 param2: from x y
 // param3 param4: to x y
 void move_skull_map() {
@@ -1318,7 +1302,7 @@ void play_normal_level() {
             break;
         case 4:
             ++current_level;
-            oam_clear();
+            // oam_clear();
             load_level();
             story_step = 0;
             break;
@@ -1328,7 +1312,7 @@ void play_normal_level() {
 void play_story() {
     switch (current_level) {
         case LVL_ALTAR:
-            oam_clear();
+            // oam_clear();
             animate_actors();
             switch (story_step) {
                 case 0:
@@ -1382,8 +1366,7 @@ void play_story() {
                     break;
                 case 5:
                     banked_call(1, reset_actors);
-                    banked_call(0, set_map);
-                    set_scroll_y(0x0100);
+                    banked_call(0, load_map);
                     banked_call(0, init_skull);
                     actors.x[SKULL] = 128;
                     actors.y[SKULL] = 56;
@@ -1394,6 +1377,7 @@ void play_story() {
                     break;
                 case 7:
                     story_counter = 56;  // Skull y position
+                    // banked_call(0, show_map);
                     ++story_step;
                 case 8:
                     // Skull moving to cemetery on map 128.56 to 156.156
@@ -1432,9 +1416,10 @@ void play_story() {
             break;
         case LVL_CEMETERY:
             // Show story sprites
-            oam_clear();
+            // oam_clear();
             if (story_step > 6) {
-                draw_sprites();
+                draw_paddles();
+                animate_actors();
             }
             if (show_face) {
                 oam_meta_spr(FACE_X, FACE_Y, angelic_face);
@@ -1518,7 +1503,7 @@ void play_story() {
                     // ++actors.state[STARS];
                     show_item = TRUE;
                     current_item = 0;
-                    items.type[current_item] = TYPE_MAGNET;
+                    items.type[current_item] = TYPE_ITEM_MAGNET;
                     items.is_active[current_item] = TRUE;
                     items.sprite[current_item] = ITEM_MAGNET;
                     ++story_step;
@@ -1585,7 +1570,7 @@ void play_story() {
                 case 27:
                     ++current_level;
                     load_level();
-                    oam_clear();
+                    // oam_clear();
                     story_step = 0;
                     break;
             }
@@ -1620,7 +1605,7 @@ void play_story() {
                     break;
                 case 2:
                     // Erase the title screen (sad, but no choice!)
-                    oam_clear();
+                    // oam_clear();
                     load_black_level();
                     ++story_step;
                     break;
@@ -1657,7 +1642,6 @@ void play_story() {
                     current_level = 0;
                     set_scroll_y(0);
                     load_level();
-                    banked_call(0, load_map);
                     pal_bright(4);
                     break;
             }
@@ -1677,21 +1661,38 @@ void debug_start(char debuglevel) {
     current_level = debuglevel;
     load_level();
     actors.state[SKULL] = IDLE;
-    pal_bright(NULL);
-    banked_call(0, load_map);
-    oam_clear();
     brightness = NULL;
-    current_item = 0;
-    items.sprite[current_item] = ITEM_MAGNET;
-    items.type[current_item] = TYPE_MAGNET;
-    items.is_active[current_item] = TRUE;
+    pal_bright(brightness);
 
+    current_item = 5;
+    items.sprite[current_item] = ITEM_HEAL;
+    items.type[current_item] = TYPE_ITEM_HEAL;
+    items.is_active[current_item] = TRUE;
+    
+    current_item = 4;
+    items.sprite[current_item] = ITEM_VOLT;
+    items.type[current_item] = TYPE_ITEM_VOLT;
+    items.is_active[current_item] = TRUE;
+    
+    current_item = 3;
+    items.sprite[current_item] = ITEM_BIG;
+    items.type[current_item] = TYPE_ITEM_BIG;
+    items.is_active[current_item] = TRUE;
+    
+    current_item = 2;
+    items.sprite[current_item] = ITEM_HOOK;
+    items.type[current_item] = TYPE_ITEM_HOOK;
+    items.is_active[current_item] = TRUE;
+    
     current_item = 1;
     items.sprite[current_item] = ITEM_BOMB;
-    items.type[current_item] = TYPE_BOMB;
+    items.type[current_item] = TYPE_ITEM_BOMB;
     items.is_active[current_item] = TRUE;
-
+    
     current_item = 0;
+    items.sprite[current_item] = ITEM_MAGNET;
+    items.type[current_item] = TYPE_ITEM_MAGNET;
+    items.is_active[current_item] = TRUE;
 }
 
 void main() {
@@ -1727,60 +1728,82 @@ void main() {
 
     while (1) {
         ppu_wait_nmi();
-
+        oam_clear();
         pad1 = pad_poll(0);
         pad1_new = get_pad_new(0);
 
-        if (game_state == TITLE) {
-            // SHOW STAFF
-            oam_meta_spr(182, 122, staff);
+        switch (game_state) {
+            case MAIN:
+                check_main_input();
+                update_skull();
+                draw_paddles();
+                animate_actors();
 
-            // TODO Show skull cursor sprite
+                // CURRENT ITEM:
+                oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
 
-            // Player's choice
-            // TODO  Continue or New Game
+                if (brick_counter == 0) {
+                    game_state = STORY;
+                }
 
-            // PRESS START TO PLAY!
-            if (pad1_new & PAD_START) {
-                game_state = STORY;
-                current_level = LVL_INTRO;
-                story_step = NULL;
-                scroll_index_y = NULL;
+                // Check is status changed, if so prepare data
+                if (game_state == MAP) {
+                    banked_call(0, load_map);
+                }
+                
+                if (game_state == INVENTORY) {
+                    banked_call(0, load_inventory);
+                    draw_index = CURSOR;
+                    
+                    actors.y[CURSOR] = INVENTORY_ITEM_Y;
+                    actors.animation_delay[CURSOR] = 32;
+                    actors.type[CURSOR] = TYPE_CURSOR;
+                    actors.state[CURSOR] = CURSOR_SMALL;
+                    
+                    current_selection = current_item;
+                    // TODO: Play sound ?
+                }
+                ///////////////////////////////////////////////////
 
-                // DEBUG
-                // debug_start(LVL_TEMPLE4);
-            }
+                // gray_line();
+                break;
+            case INVENTORY:
+                banked_call(0, manage_inventory);
+                animate();
+                break;
+            case MAP:
+                // TODO DRAW SKULL AT CORRECT POSITION
+                oam_spr(1, 1, 0x00, 0x00);
+                if (pad1_new & PAD_START) {
+                    // Return to gameplay
+                    banked_call(0, hide_map);
+                    game_state = MAIN;
+                }
+                break;
+            case STORY:
+                play_story();
+                break;
+            case TITLE:
+                // SHOW STAFF
+                oam_meta_spr(182, 122, staff);
+                // TODO Show skull cursor sprite
 
-        } else if (game_state == MAP) {
-            // DRAW SKULL AT CORRECT POSITION
-            oam_spr(1, 1, 0x00, 0x00);
-            if (pad1_new & PAD_START) {
-                // Return to gameplay
-                banked_call(0, hide_map);
-                game_state = MAIN;
-            }
-        } else if (game_state == STORY) {
-            // STORY TIME!!!
-            play_story();
-        } else if (game_state == MAIN) {
-            check_main_input();
+                // Player's choice
+                // TODO  Continue or New Game
 
-            update_skull();
+                // PRESS START TO PLAY!
+                if (pad1_new & PAD_START) {
+                    game_state = STORY;
+                    current_level = LVL_INTRO;
+                    story_step = NULL;
+                    scroll_index_y = NULL;
 
-            draw_sprites();
-
-            // CURRENT ITEM:
-            oam_spr(ITEM_X, ITEM_Y, items.sprite[current_item], 0);
-
-            if (brick_counter == 0) {
-                game_state = STORY;
-            }
-
-            if (game_state == MAP) {
-                banked_call(0, show_map);
-            }
-
-            // gray_line();
+                    // DEBUG
+                    debug_start(LVL_TEMPLE4);
+                }
+                break;
+            case GAME_OVER:
+                break;
         }
     }
 }

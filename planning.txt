@@ -69,16 +69,21 @@ JUNE
     x Temple 4
     x Paddle bug Cemetery intro (too much sprites??)
     x ITEM bomb
-    - SELECT BUTTON -> Item selection (fade out background)
-    - ITEM keys
-    - multiple skulls?
-
 3:
+    x Inventory screen design
+    x SELECT BUTTON -> Item selection screen
+
+4:  
+    x Inventory screen logic
+
+JULY
+1:
+    - Bombable wall (in temple)...
+    - multiple skulls?
     - Bridge boss animation
     - Boss fight coding
     - Town ghost NPC
     - Ruin town crate bug
-    - Bombable wall (in temple)...
     - Necromant tower Entrance Design
     - Necromant lower tower Design
     - Necromant higher tower Design
@@ -92,11 +97,9 @@ JUNE
     - Gameover Screen
     - Trails & Particles  (hit brick)
 
-4:  - Story music
+    - Story music
     - Ruin music
 
-JULY
-1:
     - Title screen music
     - Forest music
     - Tower music
