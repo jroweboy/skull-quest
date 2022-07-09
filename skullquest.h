@@ -11,7 +11,7 @@
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
 #define TILE_BACK 0x01
-#define TILE_BACK_GRASS 0x07
+#define TILE_BACK_GRASS 0x18
 #define TILE_HEART_FULL 0x5B
 #define TILE_HEART_EMPTY 0x5C
 
@@ -23,8 +23,8 @@
 #define COL_TYPE_SOFT 0x06
 #define COL_TYPE_TOMBSTONE 0x07
 #define COL_TYPE_BOMBABLE 0x08
-#define COL_TYPE_2HIT 0x09
-#define COL_TYPE_0A 0x0a
+#define COL_TYPE_2HIT_LONG 0x09
+#define COL_TYPE_2HIT_SMALL 0x0a
 #define COL_TYPE_0B 0x0b
 #define COL_TYPE_0C 0x0c
 #define COL_TYPE_0D 0x0d
@@ -47,8 +47,8 @@
 #define TITLE 5
 
 // ACTOR INDEX
-#define SKULL 4
-#define CURSOR 5
+#define SKULL 5
+#define CURSOR 13
 #define PADDLE 0
 
 #define CURSOR_SMALL 0
@@ -69,8 +69,11 @@
 #define WALKING 2
 #define IDLE2 2
 #define DISAPPEARING 3
+#define CHASING 4
 #define RISING 5
 #define PARALYZED 5
+#define KIDNAPPING 6
+#define RETURNING 8
 #define INACTIVE 128
 
 #define ROTATE_H 2
@@ -109,7 +112,14 @@
 #define TYPE_ITEM_HEAL 27
 // 
 #define TYPE_CURSOR 28
+#define TYPE_SCARECROW 29
+#define TYPE_PUMPKIN 30
+#define TYPE_TRIGGER 31
 
+
+// ACHIEVEMENTS CHECKBOX COORD
+// CHECKBOX1 6, 26
+// CHECKBOX2 6, 27
 
 // PADDLE
 #define TYPE_PAD_HORZ 0
@@ -141,6 +151,7 @@
 #define LVL_TEMPLE3 4
 #define LVL_TEMPLE4 5
 #define LVL_TOWN 6
+#define LVL_FARM 7
 
 #define LVL_TEST 240
 

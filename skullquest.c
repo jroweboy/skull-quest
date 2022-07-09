@@ -262,12 +262,12 @@ void load_level() {
         // collision_index contient 2 info de 4 bits
         // First 4 bits:
         temp = c_map[collision_index] >> 4;
-        if (temp > 2 && temp < 10) {
+        if (temp > 2 && temp < 11) {
             ++brick_counter;
         }
         // Last 4 bits:
         temp = c_map[collision_index] & 0x0F;
-        if (temp > 2 && temp < 10) {
+        if (temp > 2 && temp < 11) {
             ++brick_counter;
         }
     }
@@ -314,7 +314,7 @@ void remove_brick(char tile_type) {
     --brick_counter;
 }
 
-void first_hit() {
+void first_hit_long() {
     if (backup_nt_index % 2) {
         --backup_nt_index;
     }
@@ -322,6 +322,18 @@ void first_hit() {
     ++backup_nt_index;
     one_vram_buffer(0x0b, backup_nt_index);
     c_map[backup_col_index] = 0b00110011;
+}
+
+void first_hit_small() {
+    one_vram_buffer(0x17, backup_nt_index);
+    if (backup_nt_index % 2) {
+        temp = c_map[backup_col_index] & 0b11110000;
+        c_map[backup_col_index] = temp + 0b00000101;
+
+    } else {
+        temp = c_map[backup_col_index] & 0b00001111;
+        c_map[backup_col_index] = temp + 0b01010000;
+    }
 }
 
 void hit_brick(char tile_type) {
@@ -465,6 +477,25 @@ unsigned char get_inactive_actor_index() {
     
     return FALSE;
 }
+// param1: projectile index
+// param2: actor target index
+// Get the right direction and speed for a projectile to follow a target
+void set_projectile_dir_speed() {
+    if (actors.x[param1] > actors.x[param2]) {
+        actors.xDir[param1] = LEFT;
+        actors.xSpeed[param1] = actors.x[param1] - actors.x[param2];
+    } else {
+        actors.xDir[param1] = RIGHT;
+        actors.xSpeed[param1] = actors.x[param2] - actors.x[param1];
+    }
+    if (actors.y[param1] > actors.y[param2]) {
+        actors.yDir[param1] = UP;
+        actors.ySpeed[param1] = actors.y[param1] - actors.y[param2];
+    } else {
+        actors.yDir[param1] = DOWN;
+        actors.ySpeed[param1] = actors.y[param2] - actors.y[param1];
+    }
+}
 
 void move() {
     switch (actors.type[draw_index]) {
@@ -498,16 +529,56 @@ void move() {
             }
             break;
         case TYPE_CROW:
-            // CROW
-            if (actors.state[CROW] == FLYING) {
-                param1 = CROW;
+            param1 = CROW;
+            switch (actors.state[CROW]) {
+                case FLYING:
+                    if (actors.x[CROW] < 6) {
+                        actors.state[CROW] = INACTIVE;
+                    }
+                    break;
+                case CHASING:
+                    param2 = SKULL;
+                    set_projectile_dir_speed();
+                    actors.xVelocity[CROW] = 64;
+                    actors.yVelocity[CROW] = 64;
+                    break;
+                case KIDNAPPING:
+                    actors.x[SKULL] = actors.x[CROW] + 8;
+                    actors.y[SKULL] = actors.y[CROW] + 8;
+                    if (actors.y[CROW] < 72) {
+                        actors.ySpeed[CROW] = 0;
+                        actors.yRemain[CROW] = 0;
+                        actors.yVelocity[CROW] = 0;
+                    }
+                    if (actors.x[CROW] < 80) {
+                        actors.state[CROW] = RETURNING;
+                        actors.animation_delay[CROW] = 64;
+                        // Crow let the skull go:
+                        actors.xVelocity[SKULL] = 127;
+                        actors.xDir[SKULL] = LEFT;
+                        actors.state[SKULL] = ROTATE_H;
+
+                        // Move crow towards scarecrow
+                        param2 = STILL_DECORATION;
+                        set_projectile_dir_speed();
+                    }
+                    oam_spr(actors.x[SKULL], actors.y[SKULL], 0x00, 0x00);
+                    break;
+                case RETURNING:
+                    if (actors.x[CROW] == actors.x[STILL_DECORATION]) {
+                        actors.state[CROW] = IDLE2;
+                        actors.xDir[CROW] = LEFT;
+                        actors.state[10] = IDLE;
+                    }
+                    break;
+            }
+            if (actors.state[CROW] == IDLE2 || actors.state[CROW] == SKWAK) {
+                if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
+                    actors.state[CROW] = SKWAK;
+                }
+            } else {
                 actors.x[CROW] += get_x_speed();
                 actors.y[CROW] += get_y_speed();
-                if (actors.x[CROW] < 6) {
-                    actors.state[CROW] = INACTIVE;
-                }
-            } else if (actors.y[SKULL] > 120 && actors.y[SKULL] < 132) {
-                actors.state[CROW] = SKWAK;  // SKWAK!
             }
             break;
         case TYPE_SORCERER:
@@ -520,19 +591,13 @@ void move() {
                     actors.width[temp] = 8;
                     actors.height[temp] = 8;
                     actors.animation_delay[temp] = 8;
-                    actors.yDir[temp] = DOWN;
                     actors.state[temp] = APPEARING;
                     actors.type[temp] = TYPE_PARALYZER;
-                    actors.ySpeed[temp] = 128;
 
-                    // Get the right direction and speed for PARALYZER
-                    if (actors.x[temp] > actors.x[0]) {
-                        actors.xDir[temp] = LEFT;
-                        actors.xSpeed[temp] = actors.x[temp] - actors.x[0];
-                    } else {
-                        actors.xDir[temp] = RIGHT;
-                        actors.xSpeed[temp] = actors.x[0] - actors.x[temp];
-                    }
+                    param1 = temp;
+                    param2 = 0;
+                    set_projectile_dir_speed();
+
                 }
             }
             break;
@@ -581,7 +646,7 @@ void move() {
 }
 
 void animate_actors() {
-    for (draw_index = SKULL; draw_index < ACTOR_NUMBER; ++draw_index) {
+    for (draw_index = 4; draw_index < ACTOR_NUMBER; ++draw_index) {
         if (actors.state[draw_index] != INACTIVE) {
             animate();
             move();
@@ -660,11 +725,13 @@ void do_skull_tile_collision() {
             }
             hit_brick(temp);
             break;
-        case COL_TYPE_2HIT:
-            first_hit();
+        case COL_TYPE_2HIT_LONG:
+            first_hit_long();
             add_xp(1, HUNDREDS);
             break;
-        case 0x0A:
+        case COL_TYPE_2HIT_SMALL:
+            first_hit_small();
+            add_xp(5, TENS);
             break;
         case 0x0B:
             break;
@@ -707,14 +774,23 @@ char is_paddle_collision_skull() {
 
 void check_enemy_collision() {
     for (i = 6; i < ACTOR_NUMBER; ++i) {
-        if (actors.state[i] != INACTIVE && actors.state[i] != DEAD) {
+        if (actors.state[i] != INACTIVE) {
             pad_index = i;
-            if (actors.state[i] != DYING && is_skull_collision_paddle()) {
+            if (is_skull_collision_paddle()) {
                 switch (actors.type[i]) {
                     case TYPE_CROW:
-                        actors.counter[i] = 0;
-                        actors.state[i] = FLYING;
-                        actors.animation_delay[i] = 8;
+                        if (actors.state[i] == IDLE2) {
+                            actors.counter[i] = 0;
+                            actors.state[i] = FLYING;
+                            actors.animation_delay[i] = 8;
+                        } else if (actors.state[i] == CHASING) {
+                            actors.xDir[i] = LEFT;
+                            actors.yDir[i] = UP;
+                            actors.xSpeed[i] = 64;
+                            actors.ySpeed[i] = 4;
+                            actors.state[i] = KIDNAPPING;
+                            actors.state[SKULL] = INACTIVE;
+                        }
                         break;
                     case TYPE_SKELETON:
                         // TODO Verify if skeleton already dead...
@@ -753,6 +829,14 @@ void check_enemy_collision() {
                             } else {
                                 actors.xDir[SORCERER] = RIGHT;
                             }
+                        }
+                        break;
+                    case TYPE_TRIGGER:
+                        if (current_level == LVL_FARM) {
+                            actors.state[CROW] = CHASING;
+                            actors.counter[CROW] = NULL;
+                            actors.animation_delay[CROW] = 8;
+                            actors.state[10] = INACTIVE;
                         }
                         break;
                 }
@@ -946,7 +1030,13 @@ void check_main_input() {
 
     if (pad1_new & PAD_B) {
         // TEST THINGS
+        // actors.state[SORCERER] = APPEARING;
 
+        // Crow chasing skull:
+        // actors.counter[CROW] = NULL;
+        // actors.current_frame[CROW] = NULL;
+        // actors.state[CROW] = CHASING;
+        // actors.animation_delay[CROW] = 8;
         // /////////
 
         switch (items.type[current_item]) {
@@ -1590,6 +1680,9 @@ void play_story() {
         case LVL_TOWN:
             play_normal_level();
             break;
+        case LVL_FARM:
+            play_normal_level();
+            break;
         case LVL_TEST:
             play_normal_level();
             break;
@@ -1799,7 +1892,7 @@ void main() {
                     scroll_index_y = NULL;
 
                     // DEBUG
-                    debug_start(LVL_TEMPLE4);
+                    debug_start(LVL_FARM);
                 }
                 break;
             case GAME_OVER:

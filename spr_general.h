@@ -1,3 +1,9 @@
+const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
+
+const unsigned char* trigger_animation[] = {
+    no_sprite
+};
+
 const unsigned char HorizontalPaddleSpr[] = {
     0, 0, 0x05, 0,
     8, 0, 0x05, 0,
@@ -53,7 +59,6 @@ const unsigned char tree[] = {
 
 const unsigned char* const tree_animation[] = {
     tree
-
 };
 
 const unsigned char gate0[] = {

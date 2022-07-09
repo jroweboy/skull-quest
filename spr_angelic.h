@@ -1,5 +1,3 @@
-const unsigned char no_sprite[] = {256, 256, 0xFF, 0, 128};
-
 const unsigned char angelic_idle1[] = {
     0, 0, 0x93, 3,
     7, 0, 0x93, 3 | OAM_FLIP_H,

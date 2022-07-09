@@ -9,13 +9,13 @@ static unsigned char level_names[][16] = {
     " Tharsh Bridge "
 };
 
-// #define MAP_LOCATION_NUMBER 8
-// typedef struct {
-//     unsigned char done[MAP_LOCATION_NUMBER];
-//     unsigned char level_index[MAP_LOCATION_NUMBER];
-// } MapLocation;
+#define LEVEL_NUMBER 64
+typedef struct {
+    unsigned char done[LEVEL_NUMBER];
+    unsigned char level_index[LEVEL_NUMBER];
+} Level;
 
-// MapLocation locations;
+Level levels;
 
 void show_map() {
     oam_clear();

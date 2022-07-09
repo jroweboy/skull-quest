@@ -20,6 +20,18 @@ void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
     actors.type[p_index] = TYPE_TORCHES;
 }
 
+void set_crow(unsigned char p_x, unsigned char p_y) {
+    actors.x[CROW] = p_x;
+    actors.y[CROW] = p_y;
+    actors.state[CROW] = IDLE2;  // IDLE state of crow is 2... don't ask!
+    actors.animation_delay[CROW] = 64;
+    actors.xSpeed[CROW] = 128;
+    actors.ySpeed[CROW] = 32;
+    actors.type[CROW] = TYPE_CROW;
+    actors.width[CROW] = 16;
+    actors.height[CROW] = 16;
+}
+
 void init_level_specifics() {
     switch (current_level) {
         case LVL_ALTAR:
@@ -84,16 +96,7 @@ void init_level_specifics() {
 
             // CROW
             CROW = 6;
-            actors.x[CROW] = 207;
-            actors.y[CROW] = 117;
-            actors.state[CROW] = 2;  // IDLE state of crow is 2... don't ask!
-            actors.animation_delay[CROW] = 64;
-            actors.xSpeed[CROW] = 128;
-            actors.ySpeed[CROW] = 32;
-            actors.type[CROW] = TYPE_CROW;
-            actors.bbox_y[CROW] = 4;
-            actors.width[CROW] = 16;
-            actors.height[CROW] = 16;
+            set_crow(207, 117);
 
             // Skeleton index 6 & 7
             SKELETON1 = 7;
@@ -369,6 +372,73 @@ void init_level_specifics() {
             actors.animation_delay[DEVIL] = 16;
             actors.state[DEVIL] = IDLE;
             actors.type[DEVIL] = TYPE_DEVIL;
+            break;
+        case LVL_FARM:
+            // Achievement 1: Harvester of sorrow
+            // Achievement 2: Don't fear the reaper / Scared Scarecrow
+            
+            current_nametable = farm;
+            current_collision_map = farm_col;
+            current_background_palette = pal_town_bg2;
+            current_sprite_palette = pal_town_spr2;
+
+            chr_4_index = 0x0a;
+            chr_5_index = 0x0b;
+
+            // Paddle 1
+            actors.x[0] = 6 * 8;
+            actors.y[0] = 26 * 8;
+            actors.state[0] = PAD_LONG;
+            actors.type[0] = TYPE_PAD_HORZ;
+
+            // Paddle up
+            actors.x[1] = 9 * 8;
+            actors.y[1] = 7 * 8;
+            actors.state[1] = PAD_LONG;
+            actors.type[1] = TYPE_PAD_HORZ;
+
+            // Paddle right
+            actors.x[2] = 23 * 8;
+            actors.y[2] = 17 * 8;
+            actors.state[2] = PAD_SHORT;
+            actors.type[2] = TYPE_PAD_HORZ;
+
+            // Scarecrow
+            STILL_DECORATION = 4;
+            actors.x[STILL_DECORATION] = 24 *8;
+            actors.y[STILL_DECORATION] = 8 * 8;
+            actors.state[STILL_DECORATION] = IDLE;
+            actors.type[STILL_DECORATION] = TYPE_SCARECROW;
+
+            // Crow
+            CROW = 6;
+            set_crow(188, 58);
+
+            // Doors
+            DOOR1 = 7;
+            actors.x[DOOR1] = 7 * 8;
+            actors.y[DOOR1] = 17 * 8;
+            actors.width[DOOR1] = 16;
+            actors.height[DOOR1] = 50;
+            actors.animation_delay[DOOR1] = 8;
+            actors.state[DOOR1] = IDLE;
+            actors.type[DOOR1] = TYPE_HOUSE_DOOR;
+
+            // Ghost
+            GHOST = 9;
+            actors.x[GHOST] = 24 * 8;
+            actors.y[GHOST] = 8 * 8;
+            actors.animation_delay[GHOST] = 8;
+            actors.type[GHOST] = TYPE_VILLAGER1;
+
+            // TRIGGER
+            temp = 10;
+            actors.x[temp] = 20 * 8;
+            actors.y[temp] = 13 * 8;
+            actors.state[temp] = IDLE;
+            actors.type[temp] = TYPE_TRIGGER;
+            actors.width[temp] = 8;
+            actors.height[temp] = 16;
             break;
         case LVL_TEST:
             current_nametable = bombable;

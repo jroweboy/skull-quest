@@ -19,7 +19,10 @@
         "cemetery.h": "c",
         "map.h": "c",
         "spr_bomb.h": "c",
-        "map_logic.h": "c"
+        "map_logic.h": "c",
+        "spr_farm.h": "c",
+        "farm.h": "c",
+        "spr_angelic.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

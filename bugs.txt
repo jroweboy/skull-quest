@@ -8,4 +8,14 @@ x Skull collision with top paddle
 
 
 À TESTER:
-- Terminer le niveau cemetery avec le corbeau qui vole, il est supposé disparaitre avant qu'on voit la porte qui ouvre
+
+
+
+AJOUTER UN NOUVEAU LEVELS
+    - #define LVL_NEW
+    - include "new_level"
+    - #define TYPE_SPRITE if new sprite
+    - include "new_sprite" if new animation
+    - init_level
+    - play_story
+

@@ -7,6 +7,7 @@
 #include "I-CHR/title_screen.pngE/story.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
 #include "I-CHR/map.pngE/inventory.h"
+#include "I-CHR/town-farm/farm.h"
 
 // TEST
 #include "I-CHR/test/bombable.h"
@@ -22,6 +23,7 @@
 #include "spr_villagers.h"
 #include "spr_bomb.h"
 #include "spr_cursor.h"
+#include "spr_farm.h"
 
 // MAP Logic
 #include "map_logic.h"
@@ -163,9 +165,24 @@ void set_animation_info() {
             frame_count = cursor_animation_index[j];
             animation_array = cursor_animation;
             break;
+        case TYPE_SCARECROW:
+            animation_index = 0;
+            frame_count = 1;
+            animation_array = scarecrow_animation;
+            break;
+        case TYPE_PUMPKIN:
+            animation_index = pumpkin_animation_index[j];
+            ++j;
+            frame_count = pumpkin_animation_index[j];
+            animation_array = pumpkin_animation;
+            break;
+        case TYPE_TRIGGER:
+            animation_index = 0;
+            frame_count = 1;
+            animation_array = trigger_animation;
+            break;
     }
 }
-
 
 
 void init_paddles() {

@@ -78,8 +78,14 @@ JUNE
 
 JULY
 1:
+    x Farm Level Design
+    - Farm Level Gameplay (crow)
+
+2:
+    - Exit / Enter levels
+    - Mana Power Meter
     - Bombable wall (in temple)...
-    - multiple skulls?
+    - multiple skulls? orbs?
     - Bridge boss animation
     - Boss fight coding
     - Town ghost NPC
@@ -93,17 +99,19 @@ JULY
     - Forest level ennemies
     - Forest level design
     - Forest boss design & AI 
-    - Title Screen Logic
     - Gameover Screen
-    - Trails & Particles  (hit brick)
-
+    - Trails & Particles (hit brick)
+    - Power up
+        - Paddle confusion (right is left)
+        - Manna balls
+        - Hearts
+        - Paralysis
+        - Speedup
     - Story music
     - Ruin music
-
     - Title screen music
     - Forest music
     - Tower music
-2:
     - Boss music 2
 3:
     - Boss music 1
@@ -112,6 +120,7 @@ JULY
 
 AUGUST
 1:
+    - Title Screen Logic
 2:
     - 2 Player Pong Game
 3:
@@ -121,6 +130,8 @@ AUGUST
 
 
 5:
+    - Submap on inventory screen
+    - Teleportation
 
 SEPTEMBER
     - Testing / Debugging / Optimization
