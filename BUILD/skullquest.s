@@ -50,8 +50,6 @@
 	.import		_set_chr_mode_5
 	.import		_set_mirroring
 	.import		_disable_irq
-	.export		_empty_line
-	.export		_dialogs
 	.export		_black_level
 	.export		_altar
 	.export		_cemetery
@@ -209,6 +207,7 @@
 	.export		_devil_9_data
 	.export		_devil_10_data
 	.export		_devil_attack
+	.export		_devil_face
 	.export		_devil_animation_index
 	.export		_devil_animation
 	.export		_house_door_idle
@@ -298,13 +297,14 @@
 	.export		_pumpkin_animation_index
 	.export		_pumpkin_animation
 	.export		_levels
-	.export		_show_map
 	.export		_hide_map
 	.export		_load_map
 	.export		_load_inventory
 	.export		_manage_inventory
 	.export		_init_paddles
 	.export		_init_skull
+	.export		_empty_line
+	.export		_dialogs
 	.export		_reset_actors
 	.export		_set_skeleton
 	.export		_set_crow
@@ -383,15 +383,6 @@ _pumpkin_animation:
 	.addr	_pumpkin_9_data
 	.addr	_pumpkin_5_data
 	.addr	_pumpkin_6_data
-	.addr	_pumpkin_5_data
-	.addr	_pumpkin_6_data
-	.addr	_pumpkin_5_data
-	.addr	_pumpkin_6_data
-	.addr	_pumpkin_5_data
-	.addr	_pumpkin_6_data
-	.addr	_pumpkin_5_data
-	.addr	_pumpkin_6_data
-	.addr	_pumpkin_9_data
 _level_names:
 	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$00
 	.byte	$20,$20,$4F,$6C,$64,$20,$43,$65,$6D,$65,$74,$65,$72,$79,$20,$00
@@ -404,49 +395,6 @@ _level_names:
 .segment	"RODATA"
 
 .segment	"STARTUP"
-_empty_line:
-	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte	$20,$20,$20,$20,$20,$20,$20,$00
-_dialogs:
-	.byte	$57,$68,$65,$72,$65,$2E,$2E,$2E,$20,$00
-	.res	13,$00
-	.byte	$57,$68,$65,$72,$65,$20,$61,$6D,$20,$49,$3F,$00
-	.res	11,$00
-	.byte	$44,$6F,$20,$6E,$6F,$74,$20,$62,$65,$20,$61,$66,$72,$61,$69,$64
-	.byte	$2E,$00
-	.res	5,$00
-	.byte	$49,$20,$77,$61,$73,$20,$73,$65,$6E,$74,$20,$74,$6F,$20,$68,$65
-	.byte	$6C,$70,$20,$79,$6F,$75,$00
-	.byte	$59,$6F,$75,$20,$61,$72,$65,$20,$61,$62,$6F,$75,$74,$20,$74,$6F
-	.byte	$20,$65,$6E,$74,$65,$72,$00
-	.byte	$74,$68,$65,$20,$54,$72,$69,$61,$6C,$20,$6F,$66,$20,$4B,$68,$61
-	.byte	$72,$7A,$6F,$69,$64,$21,$00
-	.byte	$59,$6F,$75,$20,$6D,$75,$73,$74,$20,$67,$6F,$20,$62,$61,$63,$6B
-	.byte	$20,$74,$6F,$00
-	.res	3,$00
-	.byte	$74,$68,$65,$20,$63,$61,$73,$74,$6C,$65,$2C,$20,$61,$6E,$64,$20
-	.byte	$64,$65,$66,$65,$61,$74,$00
-	.byte	$74,$68,$69,$73,$20,$65,$76,$69,$6C,$20,$6E,$65,$63,$72,$6F,$6D
-	.byte	$61,$6E,$74,$00
-	.res	3,$00
-	.byte	$54,$61,$6B,$65,$20,$74,$68,$69,$73,$21,$00
-	.res	12,$00
-	.byte	$50,$72,$65,$73,$73,$20,$74,$68,$65,$20,$42,$20,$62,$75,$74,$74
-	.byte	$6F,$6E,$2C,$00
-	.res	3,$00
-	.byte	$79,$6F,$75,$20,$77,$69,$6C,$6C,$20,$6D,$6F,$76,$65,$20,$74,$6F
-	.byte	$77,$61,$72,$64,$00
-	.res	2,$00
-	.byte	$74,$68,$65,$20,$62,$6F,$74,$74,$6F,$6D,$20,$70,$61,$64,$64,$6C
-	.byte	$65,$00
-	.res	5,$00
-	.byte	$48,$69,$74,$20,$61,$6C,$6C,$20,$74,$68,$65,$20,$74,$6F,$6D,$62
-	.byte	$73,$74,$6F,$6E,$65,$73,$00
-	.byte	$74,$6F,$20,$67,$65,$74,$20,$6F,$75,$74,$20,$6F,$66,$20,$68,$65
-	.byte	$72,$65,$00
-	.res	4,$00
-	.byte	$57,$65,$27,$6C,$6C,$20,$6D,$65,$65,$74,$20,$61,$67,$61,$69,$6E
-	.byte	$20,$73,$6F,$6F,$6E,$21,$00
 _black_level:
 	.byte	$01
 	.byte	$00
@@ -3018,9 +2966,9 @@ _pal_cemetery_bg:
 	.byte	$30
 _pal_cemetery_spr:
 	.byte	$0F
-	.byte	$30
+	.byte	$03
 	.byte	$15
-	.byte	$02
+	.byte	$30
 	.byte	$0F
 	.byte	$00
 	.byte	$0F
@@ -3051,10 +2999,10 @@ _pal_altar_bg:
 	.byte	$07
 	.byte	$11
 _pal_altar_spr:
-	.byte	$10
-	.byte	$30
+	.byte	$0F
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$10
 	.byte	$05
 	.byte	$0C
@@ -3068,10 +3016,10 @@ _pal_altar_spr:
 	.byte	$19
 	.byte	$29
 _pal_altar_lightning:
-	.byte	$10
-	.byte	$30
+	.byte	$0F
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$10
 	.byte	$05
 	.byte	$0C
@@ -3102,10 +3050,10 @@ _pal_temple_bg:
 	.byte	$15
 	.byte	$30
 _pal_temple_spr:
-	.byte	$10
-	.byte	$30
+	.byte	$0F
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$10
 	.byte	$01
 	.byte	$19
@@ -3119,10 +3067,10 @@ _pal_temple_spr:
 	.byte	$18
 	.byte	$28
 _pal_temple_spr2:
-	.byte	$10
-	.byte	$30
+	.byte	$0F
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$10
 	.byte	$05
 	.byte	$25
@@ -3171,9 +3119,9 @@ _pal_town_bg2:
 	.byte	$30
 _pal_town_spr:
 	.byte	$0F
-	.byte	$30
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$0F
 	.byte	$0F
 	.byte	$17
@@ -3188,9 +3136,9 @@ _pal_town_spr:
 	.byte	$0C
 _pal_town_spr2:
 	.byte	$0F
-	.byte	$30
+	.byte	$03
 	.byte	$15
-	.byte	$11
+	.byte	$30
 	.byte	$0F
 	.byte	$00
 	.byte	$0F
@@ -11153,6 +11101,32 @@ _devil_attack:
 	.byte	$85
 	.byte	$02
 	.byte	$80
+_devil_face:
+	.byte	$00
+	.byte	$00
+	.byte	$D6
+	.byte	$00
+	.byte	$08
+	.byte	$00
+	.byte	$D7
+	.byte	$00
+	.byte	$08
+	.byte	$08
+	.byte	$E7
+	.byte	$00
+	.byte	$00
+	.byte	$08
+	.byte	$E6
+	.byte	$00
+	.byte	$00
+	.byte	$10
+	.byte	$F6
+	.byte	$00
+	.byte	$08
+	.byte	$10
+	.byte	$F7
+	.byte	$00
+	.byte	$80
 _devil_animation_index:
 	.byte	$00
 	.byte	$05
@@ -12463,243 +12437,247 @@ _pumpkin_1_data:
 	.byte	$00
 	.byte	$FD
 	.byte	$39
-	.byte	$03
+	.byte	$02
 	.byte	$FE
 	.byte	$FF
 	.byte	$8A
-	.byte	$43
+	.byte	$42
 	.byte	$04
 	.byte	$FF
 	.byte	$8A
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_2_data:
 	.byte	$05
 	.byte	$FF
 	.byte	$8A
-	.byte	$03
+	.byte	$02
 	.byte	$FD
 	.byte	$FF
 	.byte	$8A
-	.byte	$43
+	.byte	$42
 	.byte	$01
 	.byte	$FF
 	.byte	$F4
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_3_data:
 	.byte	$FA
 	.byte	$FE
 	.byte	$C7
-	.byte	$03
+	.byte	$02
 	.byte	$06
 	.byte	$FE
 	.byte	$C7
-	.byte	$43
+	.byte	$42
 	.byte	$02
 	.byte	$FF
 	.byte	$8A
-	.byte	$03
+	.byte	$02
 	.byte	$02
 	.byte	$FE
 	.byte	$D5
-	.byte	$03
+	.byte	$02
 	.byte	$FF
 	.byte	$FF
 	.byte	$48
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_4_data:
 	.byte	$F8
 	.byte	$FE
 	.byte	$C7
-	.byte	$03
+	.byte	$02
 	.byte	$0A
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FF
 	.byte	$FE
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$03
 	.byte	$FE
 	.byte	$C4
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$F8
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$FE
 	.byte	$F8
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_5_data:
 	.byte	$F4
 	.byte	$FE
 	.byte	$C5
-	.byte	$03
+	.byte	$02
 	.byte	$0C
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FE
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$FE
 	.byte	$C4
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$F6
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$F6
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_6_data:
 	.byte	$F5
 	.byte	$FE
 	.byte	$C5
-	.byte	$03
+	.byte	$02
 	.byte	$0B
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FE
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$FE
 	.byte	$C4
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$F7
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$F7
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$80
 _pumpkin_7_data:
 	.byte	$F4
 	.byte	$FE
 	.byte	$C5
-	.byte	$03
+	.byte	$02
 	.byte	$0C
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FE
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$FE
 	.byte	$C4
-	.byte	$03
+	.byte	$02
 	.byte	$FD
 	.byte	$F3
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$F3
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$FC
-	.byte	$F9
+	.byte	$FA
 	.byte	$E5
+	.byte	$00
 	.byte	$03
-	.byte	$03
-	.byte	$F9
+	.byte	$FA
 	.byte	$E5
-	.byte	$43
+	.byte	$40
 	.byte	$80
 _pumpkin_8_data:
 	.byte	$F4
 	.byte	$FE
 	.byte	$C5
-	.byte	$03
+	.byte	$02
 	.byte	$0C
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FF
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$FF
 	.byte	$C4
-	.byte	$03
-	.byte	$FF
-	.byte	$ED
+	.byte	$02
+	.byte	$FD
+	.byte	$EE
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$05
-	.byte	$ED
+	.byte	$EE
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$FC
-	.byte	$FA
+	.byte	$FB
 	.byte	$E5
+	.byte	$00
 	.byte	$03
-	.byte	$03
-	.byte	$FA
+	.byte	$FB
 	.byte	$E5
-	.byte	$43
+	.byte	$40
 	.byte	$01
 	.byte	$F1
 	.byte	$E5
-	.byte	$03
+	.byte	$00
+	.byte	$02
+	.byte	$F5
+	.byte	$7C
+	.byte	$00
 	.byte	$80
 _pumpkin_9_data:
 	.byte	$F4
 	.byte	$FE
 	.byte	$C5
-	.byte	$03
+	.byte	$02
 	.byte	$0C
 	.byte	$FE
 	.byte	$C6
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FF
 	.byte	$C3
-	.byte	$03
+	.byte	$02
 	.byte	$04
 	.byte	$FF
 	.byte	$C4
-	.byte	$03
-	.byte	$FF
+	.byte	$02
+	.byte	$FD
 	.byte	$EB
 	.byte	$C1
-	.byte	$03
+	.byte	$02
 	.byte	$05
 	.byte	$EB
 	.byte	$C2
-	.byte	$03
+	.byte	$02
 	.byte	$FC
 	.byte	$FB
 	.byte	$E5
-	.byte	$03
+	.byte	$00
 	.byte	$03
 	.byte	$FB
 	.byte	$E5
-	.byte	$43
+	.byte	$40
 	.byte	$01
-	.byte	$EF
+	.byte	$F1
 	.byte	$E5
-	.byte	$03
+	.byte	$00
 	.byte	$01
 	.byte	$F4
 	.byte	$7C
-	.byte	$03
+	.byte	$00
 	.byte	$80
 _pumpkin_animation_index:
 	.byte	$00
@@ -12708,12 +12686,86 @@ _pumpkin_animation_index:
 	.byte	$05
 	.byte	$06
 	.byte	$01
+	.byte	$06
+	.byte	$01
+	.byte	$06
+	.byte	$01
 	.byte	$07
 	.byte	$04
 	.byte	$0B
-	.byte	$0A
+	.byte	$02
+	.byte	$06
+	.byte	$01
+	.byte	$06
+	.byte	$01
 .segment	"BANK1"
+_empty_line:
+	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
+	.byte	$20,$20,$20,$20,$20,$20,$20,$00
+_dialogs:
+	.byte	$57,$68,$65,$72,$65,$2E,$2E,$2E,$20,$00
+	.res	13,$00
+	.byte	$57,$68,$65,$72,$65,$20,$61,$6D,$20,$49,$3F,$00
+	.res	11,$00
+	.byte	$44,$6F,$20,$6E,$6F,$74,$20,$62,$65,$20,$61,$66,$72,$61,$69,$64
+	.byte	$2E,$00
+	.res	5,$00
+	.byte	$49,$20,$77,$61,$73,$20,$73,$65,$6E,$74,$20,$74,$6F,$20,$68,$65
+	.byte	$6C,$70,$20,$79,$6F,$75,$00
+	.byte	$59,$6F,$75,$20,$61,$72,$65,$20,$61,$62,$6F,$75,$74,$20,$74,$6F
+	.byte	$20,$65,$6E,$74,$65,$72,$00
+	.byte	$74,$68,$65,$20,$54,$72,$69,$61,$6C,$20,$6F,$66,$20,$4B,$68,$61
+	.byte	$72,$7A,$6F,$69,$64,$21,$00
+	.byte	$59,$6F,$75,$20,$6D,$75,$73,$74,$20,$67,$6F,$20,$62,$61,$63,$6B
+	.byte	$20,$74,$6F,$00
+	.res	3,$00
+	.byte	$74,$68,$65,$20,$63,$61,$73,$74,$6C,$65,$2C,$20,$61,$6E,$64,$20
+	.byte	$64,$65,$66,$65,$61,$74,$00
+	.byte	$74,$68,$69,$73,$20,$65,$76,$69,$6C,$20,$6E,$65,$63,$72,$6F,$6D
+	.byte	$61,$6E,$74,$00
+	.res	3,$00
+	.byte	$54,$61,$6B,$65,$20,$74,$68,$69,$73,$21,$00
+	.res	12,$00
+	.byte	$50,$72,$65,$73,$73,$20,$74,$68,$65,$20,$42,$20,$62,$75,$74,$74
+	.byte	$6F,$6E,$2C,$00
+	.res	3,$00
+	.byte	$79,$6F,$75,$20,$77,$69,$6C,$6C,$20,$6D,$6F,$76,$65,$20,$74,$6F
+	.byte	$77,$61,$72,$64,$00
+	.res	2,$00
+	.byte	$74,$68,$65,$20,$62,$6F,$74,$74,$6F,$6D,$20,$70,$61,$64,$64,$6C
+	.byte	$65,$00
+	.res	5,$00
+	.byte	$48,$69,$74,$20,$61,$6C,$6C,$20,$74,$68,$65,$20,$74,$6F,$6D,$62
+	.byte	$73,$74,$6F,$6E,$65,$73,$00
+	.byte	$74,$6F,$20,$67,$65,$74,$20,$6F,$75,$74,$20,$6F,$66,$20,$68,$65
+	.byte	$72,$65,$00
+	.res	4,$00
+	.byte	$57,$65,$27,$6C,$6C,$20,$6D,$65,$65,$74,$20,$61,$67,$61,$69,$6E
+	.byte	$20,$73,$6F,$6F,$6E,$21,$00
+	.byte	$47,$72,$72,$72,$21,$20,$50,$65,$73,$6B,$79,$20,$63,$72,$6F,$77
+	.byte	$20,$77,$6F,$6E,$27,$74,$00
+	.byte	$6C,$65,$61,$76,$65,$20,$47,$72,$61,$6B,$6B,$20,$61,$6C,$6F,$6E
+	.byte	$65,$2E,$2E,$2E,$00
+	.res	2,$00
+	.byte	$47,$6F,$20,$61,$77,$61,$79,$21,$00
+	.res	14,$00
+	.byte	$47,$72,$61,$6B,$6B,$20,$62,$75,$73,$79,$2E,$20,$50,$6C,$61,$6E
+	.byte	$74,$20,$74,$68,$69,$73,$00
+	.byte	$73,$65,$65,$64,$20,$69,$6E,$20,$66,$69,$65,$6C,$64,$20,$61,$62
+	.byte	$6F,$76,$65,$2E,$2E,$2E,$00
+	.byte	$50,$65,$73,$6B,$79,$20,$63,$72,$6F,$77,$20,$6C,$6F,$76,$65,$73
+	.byte	$20,$74,$68,$69,$73,$21,$00
+.segment	"BANK2"
+.segment	"BANK3"
+.segment	"BANK4"
+.segment	"BANK5"
 .segment	"BANK6"
+.segment	"BANK7"
+.segment	"BANK8"
+.segment	"BANK9"
+.segment	"BANK10"
+.segment	"BANK11"
+.segment	"BANK12"
 .segment	"CODE"
 
 .segment	"BSS"
@@ -14488,23 +14540,6 @@ L0003:	sta     ptr1
 ; }
 ;
 L0002:	rts
-
-.endproc
-
-; ---------------------------------------------------------------
-; void __near__ show_map (void)
-; ---------------------------------------------------------------
-
-.segment	"BANK0"
-
-.proc	_show_map: near
-
-.segment	"BANK0"
-
-;
-; oam_clear();
-;
-	jmp     _oam_clear
 
 .endproc
 
@@ -23394,20 +23429,20 @@ L006A:	lda     #$01
 	ldx     #>(_reset_actors)
 	jsr     _banked_call
 ;
-; banked_call(0, load_map);
-;
-	lda     #$00
-	jsr     pusha
-	lda     #<(_load_map)
-	ldx     #>(_load_map)
-	jsr     _banked_call
-;
 ; banked_call(0, init_skull);
 ;
 	lda     #$00
 	jsr     pusha
 	lda     #<(_init_skull)
 	ldx     #>(_init_skull)
+	jsr     _banked_call
+;
+; banked_call(0, load_map);
+;
+	lda     #$00
+	jsr     pusha
+	lda     #<(_load_map)
+	ldx     #>(_load_map)
 	jsr     _banked_call
 ;
 ; actors.x[SKULL] = 128;

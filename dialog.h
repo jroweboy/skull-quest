@@ -26,7 +26,15 @@ const unsigned char dialogs[][DIALOG_LENGTH] = {
     "the bottom paddle",  // 12
 
     "Hit all the tombstones",  // 13
-    "to get out of here",
-    "We'll meet again soon!",
+    "to get out of here",   // 14
+    "We'll meet again soon!", // 15
+
+    "Grrr! Pesky crow won't", // 16
+    "leave Grakk alone...",
+    "Go away!",
+
+    "Grakk busy. Plant this",
+    "seed in field above...",
+    "Pesky crow loves this!"
 
 };

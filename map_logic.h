@@ -17,14 +17,6 @@ typedef struct {
 
 Level levels;
 
-void show_map() {
-    oam_clear();
-
-    // Set Skull coordinates
-    // actors.x[SKULL] = ;
-    // actors.y[SKULL] = ;
-}
-
 void hide_map() {
     pal_bg(current_background_palette);
     set_chr_mode_4(chr_4_index);

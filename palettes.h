@@ -6,7 +6,9 @@
 //     0x0f, 0x37, 0x17, 0x09   // Bricks
 // };
 
+#define SKULL_WHITE 0x30
 #define SKULL_RED 0x15
+#define SKULL_DARK 0x03
 
 #define GUI1 0x03
 #define GUI2 0x15
@@ -33,7 +35,7 @@ const unsigned char pal_cemetery_bg[16] = {
 };
 
 const char pal_cemetery_spr[16] = {
-    0x0f, 0x30, SKULL_RED, 0x02,  // Skull / Skeleton
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x0f, 0x00, 0x0f, 0x38,       // Crow / Door
     0x0f, 0x17, 0x06, 0x07,       // Tree
     0x0f, 0x04, 0x23, 0x0C        // Angelic
@@ -47,14 +49,14 @@ const unsigned char pal_altar_bg[16] = {
 };
 
 const unsigned char pal_altar_spr[16] = {
-    0x10, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x10, 0x05, 0x0c, 0x27,       // Necromancer
     0x10, 0x17, 0x08, 0x36,       // Hero
     0x10, 0x09, 0x19, 0x29        // Torches
 };
 
 const unsigned char pal_altar_lightning[16] = {
-    0x10, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton  // Skull
     0x10, 0x05, 0x0c, 0x27,  // Necromancer
     0x10, 0x21, 0x31, 0x30,  // Lightning bolt
     0x10, 0x09, 0x19, 0x29   // Torches
@@ -68,14 +70,14 @@ const unsigned char pal_temple_bg[16] = {
 };
 
 const unsigned char pal_temple_spr[16] = {
-    0x10, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x10, 0x01, 0x19, 0x26,       // Vitrail
     0x10, 0x08, 0x28, 0x22,       // Sorcerer
     0x10, 0x08, 0x18, 0x28        // Pile of Skull
 };
 
 const unsigned char pal_temple_spr2[16] = {
-    0x10, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x10, 0x05, 0x25, 0x28,       // Skeleton king
     0x10, 0x08, 0x28, 0x22,       // Sorcerer
     0x10, 0x08, 0x18, 0x28        // Pile of Skull
@@ -96,14 +98,14 @@ const unsigned char pal_town_bg2[16] = {
 };
 
 const unsigned char pal_town_spr[16] = {
-    0x0f, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x0f, 0x0f, 0x17, 0x28,       // Crate / Door
     0x0f, 0x0f, 0x16, 0x30,       // Devil
     0x0f, 0x04, 0x23, 0x0c        // Ghosts
 };
 
 const unsigned char pal_town_spr2[16] = {
-    0x0f, 0x30, SKULL_RED, 0x11,  // Skull
+    0x0f, SKULL_DARK, SKULL_RED, SKULL_WHITE,  // Skull / Skeleton
     0x0f, 0x00, 0x0f, 0x38,       // Crow / Door
     0x0f, 0x17, 0x0c, 0x05,       // Scarecrow
     0x0f, 0x04, 0x23, 0x0c        // Ghosts

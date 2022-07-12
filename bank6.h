@@ -412,7 +412,7 @@ void init_level_specifics() {
 
             // Crow
             CROW = 6;
-            set_crow(188, 58);
+            set_crow(188, 60);
 
             // Doors
             DOOR1 = 7;

@@ -1,4 +1,7 @@
 
+// Dialog
+#include "dialog.h"
+
 void reset_actors() {
     for (i = 0; i < ACTOR_NUMBER; ++i) {
         actors.state[i] = INACTIVE;

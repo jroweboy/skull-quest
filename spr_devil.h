@@ -43,6 +43,17 @@ const unsigned char devil_attack[] = {
 
 };
 
+const unsigned char devil_face[]={
+	  0,  0,0xd6,0,
+	  8,  0,0xd7,0,
+	  8,  8,0xe7,0,
+	  0,  8,0xe6,0,
+	  0, 16,0xf6,0,
+	  8, 16,0xf7,0,
+	128
+};
+
+
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
 const unsigned char devil_animation_index[] = {

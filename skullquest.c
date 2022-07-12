@@ -4,7 +4,6 @@
 #include "LIB/neslib.h"
 #include "MMC3/mmc3_code.h"
 #include "MMC3/mmc3_code.c"
-#include "dialog.h"
 
 // NAMETABLES
 #include "Nametable/black_level.h"
@@ -110,18 +109,55 @@ Actors actors;
 // ---------------------------- BANK 0  -------------------------------
 #pragma rodata-name("BANK0")
 #pragma code-name("BANK0")
-
 #include "bank0.h"
 
 #pragma rodata-name("BANK1")
 #pragma code-name("BANK1")
-
 #include "bank1.h"
+
+#pragma rodata-name("BANK2")
+#pragma code-name("BANK2")
+#include "bank2.h"
+
+#pragma rodata-name("BANK3")
+#pragma code-name("BANK3")
+#include "bank3.h"
+
+#pragma rodata-name("BANK4")
+#pragma code-name("BANK4")
+#include "bank4.h"
+
+#pragma rodata-name("BANK5")
+#pragma code-name("BANK5")
+#include "bank5.h"
 
 #pragma rodata-name("BANK6")
 #pragma code-name("BANK6")
-
 #include "bank6.h"
+
+#pragma rodata-name("BANK7")
+#pragma code-name("BANK7")
+#include "bank7.h"
+
+#pragma rodata-name("BANK8")
+#pragma code-name("BANK8")
+#include "bank8.h"
+
+#pragma rodata-name("BANK9")
+#pragma code-name("BANK9")
+#include "bank9.h"
+
+#pragma rodata-name("BANK10")
+#pragma code-name("BANK10")
+#include "bank10.h"
+
+#pragma rodata-name("BANK11")
+#pragma code-name("BANK11")
+#include "bank11.h"
+
+#pragma rodata-name("BANK12")
+#pragma code-name("BANK12")
+#include "bank12.h"
 
 #pragma rodata-name("CODE")
 #pragma code-name("CODE")
@@ -1456,8 +1492,8 @@ void play_story() {
                     break;
                 case 5:
                     banked_call(1, reset_actors);
-                    banked_call(0, load_map);
                     banked_call(0, init_skull);
+                    banked_call(0, load_map);
                     actors.x[SKULL] = 128;
                     actors.y[SKULL] = 56;
                     actors.state[SKULL] = ROTATE_H;
@@ -1467,7 +1503,6 @@ void play_story() {
                     break;
                 case 7:
                     story_counter = 56;  // Skull y position
-                    // banked_call(0, show_map);
                     ++story_step;
                 case 8:
                     // Skull moving to cemetery on map 128.56 to 156.156

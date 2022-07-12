@@ -22,7 +22,14 @@
         "map_logic.h": "c",
         "spr_farm.h": "c",
         "farm.h": "c",
-        "spr_angelic.h": "c"
+        "spr_angelic.h": "c",
+        "nesdoug.h": "c",
+        "altar.h": "c",
+        "temple2.h": "c",
+        "temple3.h": "c",
+        "inventory.h": "c",
+        "mmc3_code.h": "c",
+        "black_level.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
