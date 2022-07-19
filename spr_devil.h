@@ -43,7 +43,7 @@ const unsigned char devil_attack[] = {
 
 };
 
-const unsigned char devil_face[]={
+const unsigned char grakk_face[]={
 	  0,  0,0xd6,0,
 	  8,  0,0xd7,0,
 	  8,  8,0xe7,0,
@@ -53,6 +53,14 @@ const unsigned char devil_face[]={
 	128
 };
 
+const unsigned char grakk[]={
+	  0,  0,0x84,0,
+	  0,  8,0x78,0,
+	- 6, 10,0x87,0,
+	  1,  8,0x77,0,
+	  6,  5,0x12,0|OAM_FLIP_H|OAM_FLIP_V,
+	128
+};
 
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation

@@ -32,6 +32,14 @@ void set_crow(unsigned char p_x, unsigned char p_y) {
     actors.height[CROW] = 16;
 }
 
+void set_stars() {
+    actors.x[STARS] = ITEM_X + 2;
+    actors.y[STARS] = ITEM_Y + 2;
+    actors.animation_delay[STARS] = 8;
+    actors.state[STARS] = INACTIVE;
+    actors.type[STARS] = TYPE_STARS;
+}
+
 void init_level_specifics() {
     switch (current_level) {
         case LVL_ALTAR:
@@ -79,7 +87,6 @@ void init_level_specifics() {
         case LVL_CEMETERY:
             // Achievement 1 : Scarecrow
             // Achievement 2 : Skeleton buster
-
             current_nametable = cemetery;
             current_collision_map = cemetery_col;
             current_background_palette = pal_cemetery_bg;
@@ -385,6 +392,9 @@ void init_level_specifics() {
             chr_4_index = 0x0a;
             chr_5_index = 0x0b;
 
+            // TODO maybe check for achievement instead, so coming back to level later won't trigger grakk....
+            level_condition1 = FALSE;
+
             // Paddle 1
             actors.x[0] = 6 * 8;
             actors.y[0] = 26 * 8;
@@ -410,35 +420,41 @@ void init_level_specifics() {
             actors.state[STILL_DECORATION] = IDLE;
             actors.type[STILL_DECORATION] = TYPE_SCARECROW;
 
-            // Crow
-            CROW = 6;
-            set_crow(188, 60);
+            // STARS
+            STARS = 6;
+            set_stars();
 
             // Doors
             DOOR1 = 7;
-            actors.x[DOOR1] = 7 * 8;
-            actors.y[DOOR1] = 17 * 8;
+            actors.x[DOOR1] = 56;
+            actors.y[DOOR1] = 136;
             actors.width[DOOR1] = 16;
-            actors.height[DOOR1] = 50;
-            actors.animation_delay[DOOR1] = 8;
+            actors.height[DOOR1] = 27;
+            actors.animation_delay[DOOR1] = 16;
             actors.state[DOOR1] = IDLE;
             actors.type[DOOR1] = TYPE_HOUSE_DOOR;
 
-            // Ghost
-            GHOST = 9;
-            actors.x[GHOST] = 24 * 8;
-            actors.y[GHOST] = 8 * 8;
-            actors.animation_delay[GHOST] = 8;
-            actors.type[GHOST] = TYPE_VILLAGER1;
+            // Crow
+            CROW = 8;
+            set_crow(192, 60);
 
-            // TRIGGER
-            temp = 10;
-            actors.x[temp] = 20 * 8;
-            actors.y[temp] = 13 * 8;
-            actors.state[temp] = IDLE;
-            actors.type[temp] = TYPE_TRIGGER;
-            actors.width[temp] = 8;
-            actors.height[temp] = 16;
+            // TRIGGER Entry to crow zone
+            TRIGGER = 10;
+            actors.x[TRIGGER] = 20 * 8;
+            actors.y[TRIGGER] = 13 * 8;
+            actors.state[TRIGGER] = IDLE;
+            actors.type[TRIGGER] = TYPE_TRIGGER;
+            actors.width[TRIGGER] = 8;
+            actors.height[TRIGGER] = 16;
+
+            // FARMING AREA!!!
+            TRIGGER2 = 11;
+            actors.x[TRIGGER2] = 4 * 8;
+            actors.y[TRIGGER2] = 8 * 8;
+            actors.state[TRIGGER2] = IDLE;
+            actors.type[TRIGGER2] = TYPE_TRIGGER2;
+            actors.width[TRIGGER2] = 15 * 8;
+            actors.height[TRIGGER2] = 3 * 8;
             break;
         case LVL_TEST:
             current_nametable = bombable;

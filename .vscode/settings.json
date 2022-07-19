@@ -29,7 +29,11 @@
         "temple3.h": "c",
         "inventory.h": "c",
         "mmc3_code.h": "c",
-        "black_level.h": "c"
+        "black_level.h": "c",
+        "spr_staff.h": "c",
+        "spr_skull_door.h": "c",
+        "bank9.h": "c",
+        "spr_star.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -54,7 +54,7 @@ void load_inventory() {
 void manage_inventory() {
     // Show items
     for (i = 0; i < ITEM_NUMBER; ++i) {
-        if (items.is_active) {
+        if (items.is_active[i]) {
             temp3 = 69 + i * 24;
             oam_spr(temp3, 44, items.sprite[i], 0x00);
         }
@@ -80,24 +80,27 @@ void manage_inventory() {
         actors.x[CURSOR] = 56 + temp3;
         
         if (pad1_new & PAD_LEFT) {
+            // TODO: Play sound
             if (current_selection == 0) {
                 current_selection = 5;
-            } else {
+            } 
+            while (!items.is_active[current_selection]) {
                 --current_selection;
             }
-            // TODO: Play sound
         }
 
         if (pad1_new & PAD_RIGHT) {
+            // TODO: Play sound
             if (current_selection == 5) {
                 current_selection = 0;
-            } else {
+            }
+            while (!items.is_active[current_selection]) {
                 ++current_selection;
             }
-            // TODO: Play sound
         }
 
-        if (pad1_new & PAD_A) {
+        if ((pad1_new & PAD_A)  || (pad1_new & PAD_SELECT) || (pad1_new & PAD_START)) {
+            // Play sound?
             current_item = current_selection;
             exit_inventory = TRUE;
         }
@@ -111,10 +114,6 @@ void manage_inventory() {
             actors.y[CURSOR] = SAVE_BUTTON_Y;
             actors.state[CURSOR] = CURSOR_LARGE;
         }
-    }
-
-    if (pad1_new & PAD_SELECT) {
-        exit_inventory = TRUE;
     }
 
     if (exit_inventory) {

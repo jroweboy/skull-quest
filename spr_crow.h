@@ -62,29 +62,53 @@ const unsigned char crow_right_fly2[] = {
 
 };
 
+const unsigned char crow_left_eat[]={
+	  1,  7,0x20,1|OAM_FLIP_H,
+	  0,  5,0x23,1,
+	  8,  5,0x24,1,
+	128
+};
+
+const unsigned char crow_right_eat[]={
+	  7,  7,0x20,1,
+	  8,  5,0x23,1|OAM_FLIP_H,
+	  0,  5,0x24,1|OAM_FLIP_H,
+	128
+};
+
+
+
+
 // 1st element: Animation index
 // 2nd element: Number of frames in the animation
 const unsigned char crow_animation_index[] = {
     0, 2,  // FLYING
     4, 1,  // SKWAK
     6, 1,  // IDLE2
-	0, 2,  // --
+    0, 2,  // --
     0, 2,  // CHASING
-	0, 2,  // --
-	0, 2,  // KIDNAPPING
-	0, 2,  // --
-	0, 2   // RETURNING
+    0, 2,  // --
+    0, 2,  // KIDNAPPING
+    0, 2,  // --
+    0, 2,  // RETURNING
+    8, 2,  // CROW_EAT
+    0, 2   // IDLE
 };
 
 const unsigned char* const crow_animation[] = {
     crow_left_fly1,
     crow_left_fly2,
-	crow_right_fly1,
-	crow_right_fly2,
+    crow_right_fly1,
+    crow_right_fly2,
 
     crow_left_skwak,
-	crow_right_skwak,
+    crow_right_skwak,
 
     crow_left_idle,
-	crow_right_idle,
+    crow_right_idle,
+
+    crow_left_skwak,
+    crow_left_eat,
+    crow_right_skwak,
+    crow_right_eat
 };

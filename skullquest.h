@@ -8,6 +8,10 @@
 #define MILLIONS 1
 #define TEN_MILLIONS 0
 
+#define STORY_LEVEL_START 0
+#define STORY_LEVEL_EVENT 20
+#define STORY_LEVEL_END 150
+
 #define MAX_HEALTH 8
 #define SPEED_STEP 1
 #define TILE_BACK 0x01
@@ -68,12 +72,16 @@
 #define ATTACKING 2
 #define WALKING 2
 #define IDLE2 2
+#define OPENED 2
 #define DISAPPEARING 3
 #define CHASING 4
 #define RISING 5
+#define EATING 5
+#define CHEWING 6
 #define PARALYZED 5
 #define KIDNAPPING 6
 #define RETURNING 8
+#define CROW_EAT 9
 #define INACTIVE 128
 
 #define ROTATE_H 2
@@ -110,11 +118,14 @@
 #define TYPE_ITEM_BIG 25
 #define TYPE_ITEM_VOLT 26
 #define TYPE_ITEM_HEAL 27
+#define TYPE_ITEM_SEED 28
+#define TYPE_ITEM_X 29
+#define TYPE_ITEM_Y 30
 // 
-#define TYPE_CURSOR 28
-#define TYPE_SCARECROW 29
-#define TYPE_PUMPKIN 30
-#define TYPE_TRIGGER 31
+#define TYPE_CURSOR 31
+#define TYPE_SCARECROW 32
+#define TYPE_TRIGGER 33
+#define TYPE_TRIGGER2 34
 
 
 // ACHIEVEMENTS CHECKBOX COORD
@@ -127,18 +138,19 @@
 #define PAD_SHORT 16
 #define PAD_LONG 32
 #define PAD_VELOCITY 80
-#define FACE_X 16
+#define FACE_X 32
 #define FACE_Y 8
 #define ITEM_X 188
 #define ITEM_Y 21
 
 // ITEMS TILE INDEX
-#define ITEM_MAGNET 0x09
-#define ITEM_BOMB 0x0a
-#define ITEM_HOOK 0x0b
-#define ITEM_BIG 0x17
-#define ITEM_VOLT 0x18
-#define ITEM_HEAL 0x19
+#define ITEM_INDEX_MAGNET 0x09
+#define ITEM_INDEX_BOMB 0x0a
+#define ITEM_INDEX_HOOK 0x0b
+#define ITEM_INDEX_BIG 0x17
+#define ITEM_INDEX_VOLT 0x18
+#define ITEM_INDEX_HEAL 0x19
+#define ITEM_INDEX_SEED 0x07
 
 // ITEMS
 #define BOMB_DELAY 0x20

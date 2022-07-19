@@ -5,10 +5,12 @@
 #include "MMC3/mmc3_code.h"
 #include "MMC3/mmc3_code.c"
 
+// Dialog
+#include "dialog.h"
+
 // NAMETABLES
 #include "Nametable/black_level.h"
 #include "I-CHR/altar.pngE/altar.h"
-#include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/church-interior.pngE/temple.h"
 #include "I-CHR/map.pngE/map.h"
 #include "I-CHR/title_screen.pngE/title_screen.h"
@@ -32,13 +34,14 @@ static unsigned char pad1_new;
 
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
-static unsigned char p1_health, p1_max_health, brick_counter, wait_timer;
+static unsigned char p1_health, p1_max_health, brick_counter, wait_timer, level_condition1, level_condition2;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
 static unsigned char animation_index, frame_count, show_face, show_item, current_item, current_selection, exit_inventory = FALSE;
 static unsigned char map_x, map_y, map_lvl_name_x, map_lvl_name_y;
 static unsigned char brightness = 4;
 static unsigned char NECROMANCER, GHOST, LIGHTNING, DEVIL, SKELETON1, SKELETON2, DOOR1, DOOR2, DOOR3, STARS;
-static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION, SORCERER;
+static unsigned char CROW, GATE, CRATE1, CRATE2, CRATE3, HERO, STILL_DECORATION, SORCERER, TRIGGER, TRIGGER2;
+static unsigned char SPECIAL_ITEM;
 
 unsigned char const** animation_array;
 
@@ -98,6 +101,7 @@ typedef struct
     unsigned char current_frame[ACTOR_NUMBER];
     unsigned char state[ACTOR_NUMBER];
     unsigned char type[ACTOR_NUMBER];
+    unsigned char has_collision[ACTOR_NUMBER]; // Collision with skull
 } Actors;
 
 // index 0-3 paddles
@@ -199,16 +203,6 @@ void add_xp(unsigned char value, unsigned char pos) {
 }
 
 void show_HUD() {
-    // vram_adr(NAMETABLE_A);
-    // vram_fill(0xFF, 32);
-    // ppu_wait_nmi();
-    // vram_fill(0xFF, 32);
-    // ppu_wait_nmi();
-    // vram_fill(0xFF, 32);
-    // ppu_wait_nmi();
-    // vram_fill(0xFF, 32);
-    // ppu_wait_nmi();
-
     // HEALTH
     update_health();
 
@@ -228,6 +222,26 @@ void show_HUD() {
     // OTHER??
 }
 
+void hide_HUD() {
+    // Health
+    for (i = 0; i < p1_max_health; ++i) {
+        one_vram_buffer(0x00, NTADR_A(i + 2, 2));
+    }
+    ppu_wait_nmi();
+    // Exp
+    multi_vram_buffer_horz(empty_line, sizeof(empty_line), NTADR_A(7, 2));
+    
+    ppu_wait_nmi();
+    
+    // ITEM BOX:
+    one_vram_buffer(0x00, NTADR_A(22, 2));
+    one_vram_buffer(0x00, NTADR_A(23, 2));
+    one_vram_buffer(0x00, NTADR_A(24, 2));
+    one_vram_buffer(0x00, NTADR_A(23, 3));
+    one_vram_buffer(0x00, NTADR_A(24, 3));
+    ppu_wait_nmi();
+}
+
 void show_game_over() {
     // TODO
 }
@@ -236,6 +250,7 @@ void load_black_level() {
     ppu_off();
     vram_adr(NAMETABLE_A);
     vram_unrle(black_level);
+    pal_bg(pal_cemetery_bg);
     ppu_on_all();
 }
 
@@ -500,7 +515,7 @@ void animate() {
     if (actors.xDir[draw_index] == RIGHT) {
         animation_index += frame_count;
     }
-
+    
     oam_meta_spr(actors.x[draw_index], actors.y[draw_index], animation_array[animation_index]);
 }
 
@@ -590,7 +605,7 @@ void move() {
                         actors.state[CROW] = RETURNING;
                         actors.animation_delay[CROW] = 64;
                         // Crow let the skull go:
-                        actors.xVelocity[SKULL] = 127;
+                        actors.xVelocity[SKULL] = 32;
                         actors.xDir[SKULL] = LEFT;
                         actors.state[SKULL] = ROTATE_H;
 
@@ -604,7 +619,9 @@ void move() {
                     if (actors.x[CROW] == actors.x[STILL_DECORATION]) {
                         actors.state[CROW] = IDLE2;
                         actors.xDir[CROW] = LEFT;
-                        actors.state[10] = IDLE;
+                        actors.x[CROW] = 192;
+                        actors.y[CROW] = 60;
+                        actors.state[TRIGGER] = IDLE;
                     }
                     break;
             }
@@ -678,6 +695,42 @@ void move() {
                 actors.state[draw_index] = INACTIVE;
             }
             break;
+        case TYPE_ITEM_SEED:
+            ++actors.width[draw_index]; // TIMER
+            if (actors.state[draw_index] == IDLE) {
+                if (actors.width[draw_index] == 250) {
+                    ++actors.state[draw_index];
+                }
+            } else if (actors.state[draw_index] == IDLE2) {
+                if (actors.width[draw_index] == 250) {
+                    actors.state[TRIGGER] = INACTIVE;
+                    actors.state[CROW] = FLYING;
+                    param1 = CROW;
+                    param2 = SPECIAL_ITEM;
+                    set_projectile_dir_speed();
+                    ++actors.state[draw_index];
+                }
+            } else if (actors.state[draw_index] == 4) {
+                if (actors.x[CROW] == actors.x[draw_index]) {
+                    actors.state[CROW] = IDLE;
+                    actors.xSpeed[CROW] = 0;
+                    actors.ySpeed[CROW] = 0;
+                    actors.y[CROW] = actors.y[draw_index];
+                }
+                if (actors.width[draw_index == 188]) {
+                    actors.state[CROW] = CROW_EAT;
+                }
+                if (actors.width[draw_index] == 250) {
+                    ++actors.state[draw_index];
+                }
+            } else if (actors.state[draw_index] == CHEWING) {
+                actors.state[CROW] = INACTIVE;
+                if (actors.x[CROW] == actors.x[draw_index] - 8) {
+                    ++actors.state[draw_index];
+                }
+            }
+            break;
+        
     }
 }
 
@@ -808,6 +861,23 @@ char is_paddle_collision_skull() {
             actors.y[SKULL] + 1 < temp_y_col + actors.height[pad_index] + actors.bbox_y[pad_index]);
 }
 
+// !!! width initialized at 0 !!! (serve as timer...)
+// animation_delay default is 8
+unsigned char create_item_at_skull_pos() {
+    temp = get_inactive_actor_index();
+    if (temp) {
+        actors.x[temp] = actors.x[SKULL];
+        actors.y[temp] = actors.y[SKULL];
+        actors.animation_delay[temp] = 8;
+        actors.width[temp] = NULL; // -> for example, serves as timer before bomb explodes!!!
+        actors.state[temp] = IDLE;
+        actors.type[temp] = items.type[current_item];
+    }
+    return temp;
+}
+
+// We update actors.has_collision[i] at the end.
+// So if actors.has_collision[i] == FALSE --> first time collision
 void check_enemy_collision() {
     for (i = 6; i < ACTOR_NUMBER; ++i) {
         if (actors.state[i] != INACTIVE) {
@@ -853,8 +923,9 @@ void check_enemy_collision() {
                         break;
                     case TYPE_HOUSE_DOOR:
                         // Play sound
-                        if (actors.state[i] == IDLE) {
-                            ++actors.state[i];
+                        if (actors.has_collision[i] == FALSE && actors.state[i] != IDLE2) {
+                            story_step = STORY_LEVEL_EVENT;
+                            game_state = STORY;
                         }
                         break;
                     case TYPE_SKULL_PILE:
@@ -869,13 +940,29 @@ void check_enemy_collision() {
                         break;
                     case TYPE_TRIGGER:
                         if (current_level == LVL_FARM) {
+                            // When skull enters crow zone
                             actors.state[CROW] = CHASING;
                             actors.counter[CROW] = NULL;
                             actors.animation_delay[CROW] = 8;
-                            actors.state[10] = INACTIVE;
+                            if (story_step > STORY_LEVEL_EVENT) { // Means we already talked to Grakk
+                                level_condition1 = TRUE; // To activate grakk' second dialog
+                            }
+                            actors.state[TRIGGER] = INACTIVE;
+                        }
+                        break;
+                    case TYPE_TRIGGER2:
+                        if ((pad1_new & PAD_B) && items.type[current_item] == TYPE_ITEM_SEED && items.is_active[current_item] == TRUE) {
+                            // CREATE PUMPKIN
+                            SPECIAL_ITEM = create_item_at_skull_pos();                                            
+                            actors.animation_delay[SPECIAL_ITEM] = 12;
+                            items.is_active[current_item] = FALSE;
+                            current_item = 0;
                         }
                         break;
                 }
+                actors.has_collision[i] = TRUE;
+            } else {
+                actors.has_collision[i] = FALSE;
             }
         }
     }
@@ -1081,15 +1168,7 @@ void check_main_input() {
                 actors.xDir[SKULL] = actors.x[SKULL] < actors.x[0] ? RIGHT : LEFT;
                 break;
             case TYPE_ITEM_BOMB:
-                temp = get_inactive_actor_index();
-                if (temp) {
-                    actors.x[temp] = actors.x[SKULL];
-                    actors.y[temp] = actors.y[SKULL];
-                    actors.animation_delay[temp] = 8;
-                    actors.width[temp] = NULL; // -> width serves as timer before bomb explodes!!!
-                    actors.state[temp] = IDLE;
-                    actors.type[temp] = TYPE_ITEM_BOMB;
-                }
+                create_item_at_skull_pos();
                 break;
         }
     }
@@ -1418,19 +1497,18 @@ void play_normal_level() {
         case 1:
             game_state = MAIN;
             show_HUD();
-            ++story_step;
             break;
-        case 2:
+        case STORY_LEVEL_END:
             wait(64);
             break;
-        case 3:
+        case STORY_LEVEL_END + 1:
             fadeout();
             break;
-        case 4:
+        case STORY_LEVEL_END + 2:
             ++current_level;
             // oam_clear();
             load_level();
-            story_step = 0;
+            story_step = STORY_LEVEL_START;
             break;
     }
 }
@@ -1493,7 +1571,7 @@ void play_story() {
                 case 5:
                     banked_call(1, reset_actors);
                     banked_call(0, init_skull);
-                    banked_call(0, load_map);
+                    banked_call(1, load_map);
                     actors.x[SKULL] = 128;
                     actors.y[SKULL] = 56;
                     actors.state[SKULL] = ROTATE_H;
@@ -1528,7 +1606,7 @@ void play_story() {
                     fadeout();
                     break;
                 case 12:
-                    banked_call(0, hide_map);
+                    banked_call(1, hide_map);
                     actors.state[SKULL] = INACTIVE;
                     banked_call(1, reset_actors);
                     set_chr_mode_1(0x06);  // Angelic sprite
@@ -1550,12 +1628,11 @@ void play_story() {
                 oam_meta_spr(FACE_X, FACE_Y, angelic_face);
             }
             if (show_item) {
-                oam_spr(123, 130, ITEM_MAGNET, 0);
+                oam_spr(123, 130, ITEM_INDEX_MAGNET, 0);
             }
             switch (story_step) {
                 case 0:
                     load_black_level();
-                    pal_bg(pal_cemetery_bg);
                     pal_bright(4);
                     ++story_step;
                     break;
@@ -1564,7 +1641,8 @@ void play_story() {
                     break;
                 case 2:
                     // Where?
-                    multi_vram_buffer_horz(dialogs[0], sizeof(dialogs[0]), NTADR_A(6, 15));
+                    multi_vram_buffer_horz(dial0001, sizeof(dial0001), NTADR_A(6, 15));
+                    ppu_wait_nmi();
                     ++story_step;
                     break;
                 case 3:
@@ -1572,7 +1650,8 @@ void play_story() {
                     break;
                 case 4:
                     // Where am I?
-                    multi_vram_buffer_horz(dialogs[1], sizeof(dialogs[1]), NTADR_A(15, 15));
+                    multi_vram_buffer_horz(dial0002, sizeof(dial0002), NTADR_A(15, 15));
+                    ppu_wait_nmi();
                     ++story_step;
                     break;
                 case 5:
@@ -1596,8 +1675,8 @@ void play_story() {
                     break;
                 case 9:
                     // do not be affraid
-                    multi_vram_buffer_horz(dialogs[2], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[3], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0003, sizeof(dial0003), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0004, sizeof(dial0004), NTADR_A(7, 2));
                     ++story_step;
                     break;
                 case 10:
@@ -1605,8 +1684,8 @@ void play_story() {
                     break;
                 case 11:
                     // This is the start
-                    multi_vram_buffer_horz(dialogs[4], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[5], DIALOG_LENGTH, NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0005, sizeof(dial0005), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0006, sizeof(dial0006), NTADR_A(7, 2));
                     ++story_step;
                     break;
                 case 12:
@@ -1614,9 +1693,9 @@ void play_story() {
                     break;
                 case 13:
                     // You must go back
-                    multi_vram_buffer_horz(dialogs[6], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[7], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[8], DIALOG_LENGTH, NTADR_A(7, 3));
+                    multi_vram_buffer_horz(dial0007, sizeof(dial0007), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0008, sizeof(dial0008), NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0009, sizeof(dial0009), NTADR_A(7, 3));
                     ++story_step;
                     break;
                 case 14:
@@ -1624,13 +1703,12 @@ void play_story() {
                     break;
                 case 15:
                     // Take this!
-                    multi_vram_buffer_horz(dialogs[9], DIALOG_LENGTH, NTADR_A(7, 1));
-                    // ++actors.state[STARS];
+                    multi_vram_buffer_horz(dial0010, sizeof(dial0010), NTADR_A(7, 1));
                     show_item = TRUE;
                     current_item = 0;
                     items.type[current_item] = TYPE_ITEM_MAGNET;
                     items.is_active[current_item] = TRUE;
-                    items.sprite[current_item] = ITEM_MAGNET;
+                    items.sprite[current_item] = ITEM_INDEX_MAGNET;
                     ++story_step;
                     break;
                 case 16:
@@ -1638,9 +1716,9 @@ void play_story() {
                     break;
                 case 17:
                     // Use it
-                    multi_vram_buffer_horz(dialogs[10], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[11], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[12], DIALOG_LENGTH, NTADR_A(7, 3));
+                    multi_vram_buffer_horz(dial0011, sizeof(dial0011), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0012, sizeof(dial0012), NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0013, sizeof(dial0013), NTADR_A(7, 3));
                     ++story_step;
                     break;
                 case 18:
@@ -1648,9 +1726,9 @@ void play_story() {
                     break;
                 case 19:
                     // Hit all tombstones...
-                    multi_vram_buffer_horz(dialogs[13], DIALOG_LENGTH, NTADR_A(7, 1));
-                    multi_vram_buffer_horz(dialogs[14], DIALOG_LENGTH, NTADR_A(7, 2));
-                    multi_vram_buffer_horz(dialogs[15], DIALOG_LENGTH, NTADR_A(7, 3));
+                    multi_vram_buffer_horz(dial0014, sizeof(dial0014), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0015, sizeof(dial0015), NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0016, sizeof(dial0016), NTADR_A(7, 3));
                     ++story_step;
                     break;
                 case 20:
@@ -1671,6 +1749,8 @@ void play_story() {
                     game_state = MAIN;
                     show_face = FALSE;
                     show_item = FALSE;
+                    ++actors.state[STARS];
+
                     pal_bright(4);
                     show_HUD();
                     break;
@@ -1716,7 +1796,76 @@ void play_story() {
             play_normal_level();
             break;
         case LVL_FARM:
-            play_normal_level();
+            if (show_face) {
+                oam_meta_spr(FACE_X, FACE_Y, grakk_face);
+                if (actors.state[DOOR1] == OPENED) {
+                    oam_meta_spr(58, 144, grakk);
+                }
+            }
+            animate_actors();
+            switch (story_step) {
+                case STORY_LEVEL_EVENT:
+                    hide_HUD();
+                    show_face = TRUE;
+                    ++story_step;
+                    break;
+                case STORY_LEVEL_EVENT + 1:
+                    // If crow moved at least once
+                    if (level_condition1) {
+                        ++story_step;
+                        ++actors.state[DOOR1];
+                    } else {
+                        //  Pesky crow won't leave...
+                        multi_vram_buffer_horz(dial0017, sizeof(dial0017), NTADR_A(7, 1));
+                        multi_vram_buffer_horz(dial0018, sizeof(dial0018), NTADR_A(7, 2));
+                        multi_vram_buffer_horz(dial0019, sizeof(dial0019), NTADR_A(7, 3));
+                        story_step = STORY_LEVEL_EVENT + 7;
+                    }
+                    break;
+                case STORY_LEVEL_EVENT + 2:
+                    multi_vram_buffer_horz(dial0020, sizeof(dial0020), NTADR_A(7, 1));
+                    ++story_step;
+                    break;
+                case STORY_LEVEL_EVENT + 3:
+                    wait_input();
+                    break;
+                case STORY_LEVEL_EVENT + 4:
+                    // Grakk busy. Take this...
+                    multi_vram_buffer_horz(dial0021, sizeof(dial0021), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0022, sizeof(dial0022), NTADR_A(7, 2));
+                    //  Gives seed
+                    current_item = 5;
+                    items.sprite[current_item] = ITEM_INDEX_SEED;
+                    items.type[current_item] = TYPE_ITEM_SEED;
+                    items.is_active[current_item] = TRUE;
+                    ++story_step;
+                    break;
+                case STORY_LEVEL_EVENT + 5:
+                    oam_spr(136, 16, ITEM_INDEX_SEED, 0);
+                    wait_input();
+                    break;
+                case STORY_LEVEL_EVENT + 6:
+                    // This is gift for pesky crow...
+                    multi_vram_buffer_horz(dial0023, sizeof(dial0023), NTADR_A(7, 1));
+                    multi_vram_buffer_horz(dial0024, sizeof(dial0024), NTADR_A(7, 2));
+                    multi_vram_buffer_horz(dial0025, sizeof(dial0025), NTADR_A(7, 3));
+                    ++story_step;
+                    break;
+                case STORY_LEVEL_EVENT + 7:
+                    wait_input();
+                    break;
+                case STORY_LEVEL_EVENT + 8:
+                    show_HUD();
+                case STORY_LEVEL_EVENT + 9:
+                    game_state = MAIN;
+                    show_face = FALSE;
+                    if (current_item == 5) {
+                        actors.state[STARS] = TURNING;
+                    }
+                    break;
+                default:
+                    play_normal_level();
+            }
             break;
         case LVL_TEST:
             play_normal_level();
@@ -1733,13 +1882,11 @@ void play_story() {
                     break;
                 case 2:
                     // Erase the title screen (sad, but no choice!)
-                    // oam_clear();
                     load_black_level();
                     ++story_step;
                     break;
                 case 3:
                     // Prepare the graphics
-                    // set_chr_mode_1(0x0c); // for lightning
                     set_chr_mode_2(0x00);
                     set_chr_mode_3(0x01);
                     pal_bright(4);
@@ -1792,35 +1939,33 @@ void debug_start(char debuglevel) {
     brightness = NULL;
     pal_bright(brightness);
 
-    current_item = 5;
-    items.sprite[current_item] = ITEM_HEAL;
+  
+    current_item = 4;
+    items.sprite[current_item] = ITEM_INDEX_HEAL;
     items.type[current_item] = TYPE_ITEM_HEAL;
     items.is_active[current_item] = TRUE;
     
-    current_item = 4;
-    items.sprite[current_item] = ITEM_VOLT;
-    items.type[current_item] = TYPE_ITEM_VOLT;
-    items.is_active[current_item] = TRUE;
-    
     current_item = 3;
-    items.sprite[current_item] = ITEM_BIG;
+    items.sprite[current_item] = ITEM_INDEX_BIG;
     items.type[current_item] = TYPE_ITEM_BIG;
     items.is_active[current_item] = TRUE;
     
     current_item = 2;
-    items.sprite[current_item] = ITEM_HOOK;
+    items.sprite[current_item] = ITEM_INDEX_HOOK;
     items.type[current_item] = TYPE_ITEM_HOOK;
     items.is_active[current_item] = TRUE;
     
     current_item = 1;
-    items.sprite[current_item] = ITEM_BOMB;
+    items.sprite[current_item] = ITEM_INDEX_BOMB;
     items.type[current_item] = TYPE_ITEM_BOMB;
     items.is_active[current_item] = TRUE;
     
     current_item = 0;
-    items.sprite[current_item] = ITEM_MAGNET;
+    items.sprite[current_item] = ITEM_INDEX_MAGNET;
     items.type[current_item] = TYPE_ITEM_MAGNET;
     items.is_active[current_item] = TRUE;
+
+    // current_item = 5;
 }
 
 void main() {
@@ -1847,7 +1992,7 @@ void main() {
 
     banked_call(0, init_skull);
     p1_health = 3;
-    p1_max_health = 3;
+    p1_max_health = 4;
 
     bank_spr(1);
     oam_meta_spr(182, 122, staff);
@@ -1874,13 +2019,13 @@ void main() {
                     game_state = STORY;
                 }
 
-                // Check is status changed, if so prepare data
+                // Check if status changed, if so prepare data
                 if (game_state == MAP) {
-                    banked_call(0, load_map);
+                    banked_call(1, load_map);
                 }
                 
                 if (game_state == INVENTORY) {
-                    banked_call(0, load_inventory);
+                    banked_call(1, load_inventory);
                     draw_index = CURSOR;
                     
                     actors.y[CURSOR] = INVENTORY_ITEM_Y;
@@ -1896,7 +2041,7 @@ void main() {
                 // gray_line();
                 break;
             case INVENTORY:
-                banked_call(0, manage_inventory);
+                banked_call(1, manage_inventory);
                 animate();
                 break;
             case MAP:
@@ -1904,7 +2049,7 @@ void main() {
                 oam_spr(1, 1, 0x00, 0x00);
                 if (pad1_new & PAD_START) {
                     // Return to gameplay
-                    banked_call(0, hide_map);
+                    banked_call(1, hide_map);
                     game_state = MAIN;
                 }
                 break;
@@ -1923,7 +2068,7 @@ void main() {
                 if (pad1_new & PAD_START) {
                     game_state = STORY;
                     current_level = LVL_INTRO;
-                    story_step = NULL;
+                    story_step = STORY_LEVEL_START;
                     scroll_index_y = NULL;
 
                     // DEBUG

@@ -1,6 +1,8 @@
+#include "I-CHR/map.pngE/inventory.h"
+#include "I-CHR/temple4/temple4.h"
 
-// Dialog
-#include "dialog.h"
+// MAP Logic
+#include "map_logic.h"
 
 void reset_actors() {
     for (i = 0; i < ACTOR_NUMBER; ++i) {

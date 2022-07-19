@@ -3,10 +3,8 @@
 // LEVELS
 #include "I-CHR/temple2/temple2.h"
 #include "I-CHR/temple3/temple3.h"
-#include "I-CHR/temple4/temple4.h"
 #include "I-CHR/title_screen.pngE/story.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
-#include "I-CHR/map.pngE/inventory.h"
 #include "I-CHR/town-farm/farm.h"
 
 // TEST
@@ -20,13 +18,12 @@
 #include "spr_sorcerer.h"
 #include "spr_staff.h"
 #include "spr_stainedglass.h"
+#include "spr_star.h"
 #include "spr_villagers.h"
 #include "spr_bomb.h"
 #include "spr_cursor.h"
 #include "spr_farm.h"
 
-// MAP Logic
-#include "map_logic.h"
 
 void set_animation_info() {
     j = actors.state[draw_index] << 1;
@@ -106,12 +103,12 @@ void set_animation_info() {
             frame_count = necromancer_animation_index[j];
             animation_array = necromancer_animation;
             break;
-        // case TYPE_STARS:
-        //     animation_index = stars_animation_index[j];
-        //     ++j;
-        //     frame_count = stars_animation_index[j];
-        //     animation_array = stars_animation;
-        //     break;
+        case TYPE_STARS:
+            animation_index = stars_animation_index[j];
+            ++j;
+            frame_count = stars_animation_index[j];
+            animation_array = stars_animation;
+            break;
         case TYPE_VILLAGER1:
             animation_index = villager_animation_index[j];
             ++j;
@@ -170,13 +167,14 @@ void set_animation_info() {
             frame_count = 1;
             animation_array = scarecrow_animation;
             break;
-        case TYPE_PUMPKIN:
+        case TYPE_ITEM_SEED:
             animation_index = pumpkin_animation_index[j];
             ++j;
             frame_count = pumpkin_animation_index[j];
             animation_array = pumpkin_animation;
             break;
         case TYPE_TRIGGER:
+        case TYPE_TRIGGER2:
             animation_index = 0;
             frame_count = 1;
             animation_array = trigger_animation;
