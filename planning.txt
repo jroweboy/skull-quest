@@ -129,7 +129,7 @@ AUGUST
     - Achievements...
     - Experience & level up system
 4:
-
+    - Time lapse circle sprite for dialog next ->
 
 5:
     - Submap on inventory screen

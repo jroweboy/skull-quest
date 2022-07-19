@@ -715,7 +715,8 @@ void move() {
                     actors.state[CROW] = IDLE;
                     actors.xSpeed[CROW] = 0;
                     actors.ySpeed[CROW] = 0;
-                    actors.y[CROW] = actors.y[draw_index];
+                    actors.counter[CROW] = 0;
+                    actors.y[CROW] = actors.y[draw_index] - 16;
                 }
                 if (actors.width[draw_index == 188]) {
                     actors.state[CROW] = CROW_EAT;
@@ -944,9 +945,10 @@ void check_enemy_collision() {
                             actors.state[CROW] = CHASING;
                             actors.counter[CROW] = NULL;
                             actors.animation_delay[CROW] = 8;
-                            if (story_step > STORY_LEVEL_EVENT) { // Means we already talked to Grakk
-                                level_condition1 = TRUE; // To activate grakk' second dialog
-                            }
+                            level_condition1 = TRUE; // To activate grakk' second dialog
+                            // if (story_step > STORY_LEVEL_EVENT) { // Means we already talked to Grakk
+                            //      level_condition1 = TRUE; // To activate grakk' second dialog
+                            // }
                             actors.state[TRIGGER] = INACTIVE;
                         }
                         break;
@@ -1463,12 +1465,11 @@ void wait_input() {
     // Show waiting cursor
     if (wait_timer > 64) {
         one_vram_buffer(0x00, NTADR_A(30, 3));
-
     } else {
         one_vram_buffer(0x29, NTADR_A(30, 3));
     }
     // Erasing previous dialogs
-    if (pad1_new) {
+    if (pad1_new & PAD_A) {
         ++story_step;
         story_counter = 0;
         wait_timer = 0;
@@ -1939,7 +1940,11 @@ void debug_start(char debuglevel) {
     brightness = NULL;
     pal_bright(brightness);
 
-  
+    current_item = 5;
+    items.sprite[current_item] = ITEM_INDEX_SEED;
+    items.type[current_item] = TYPE_ITEM_SEED;
+    items.is_active[current_item] = TRUE;
+
     current_item = 4;
     items.sprite[current_item] = ITEM_INDEX_HEAL;
     items.type[current_item] = TYPE_ITEM_HEAL;

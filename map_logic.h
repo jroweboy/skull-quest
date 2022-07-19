@@ -54,8 +54,8 @@ void load_inventory() {
 void manage_inventory() {
     // Show items
     for (i = 0; i < ITEM_NUMBER; ++i) {
+        temp3 = 69 + i * 24;
         if (items.is_active[i]) {
-            temp3 = 69 + i * 24;
             oam_spr(temp3, 44, items.sprite[i], 0x00);
         }
     }
@@ -83,7 +83,11 @@ void manage_inventory() {
             // TODO: Play sound
             if (current_selection == 0) {
                 current_selection = 5;
-            } 
+            } else {
+                --current_selection;
+            }
+
+            // We assume there is at least 1 active item!
             while (!items.is_active[current_selection]) {
                 --current_selection;
             }
@@ -93,9 +97,16 @@ void manage_inventory() {
             // TODO: Play sound
             if (current_selection == 5) {
                 current_selection = 0;
-            }
-            while (!items.is_active[current_selection]) {
+            } else {
                 ++current_selection;
+            }
+            // We assume there is at least 1 active item!
+            while (!items.is_active[current_selection]) {
+                if (current_selection == 5) {
+                    current_selection = 0;
+                } else {
+                    ++current_selection;
+                }
             }
         }
 
