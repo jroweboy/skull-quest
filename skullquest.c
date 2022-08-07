@@ -1799,6 +1799,7 @@ void play_story() {
         case LVL_FARM:
             if (show_face) {
                 oam_meta_spr(FACE_X, FACE_Y, grakk_face);
+                draw_paddles();
                 if (actors.state[DOOR1] == OPENED) {
                     oam_meta_spr(58, 144, grakk);
                 }
@@ -2077,7 +2078,7 @@ void main() {
                     scroll_index_y = NULL;
 
                     // DEBUG
-                    debug_start(LVL_FARM);
+                    // debug_start(LVL_TEMPLE4);
                 }
                 break;
             case GAME_OVER:

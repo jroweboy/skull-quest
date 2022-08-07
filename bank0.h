@@ -1,11 +1,12 @@
 // COLLISION
 #include "Collision/master_collision.h"
 // LEVELS
+#include "I-CHR/cemetery.pngE/cemetery.h"
 #include "I-CHR/temple2/temple2.h"
 #include "I-CHR/temple3/temple3.h"
-#include "I-CHR/title_screen.pngE/story.h"
 #include "I-CHR/town-ruins.pngE/town_ruins.h"
 #include "I-CHR/town-farm/farm.h"
+#include "I-CHR/temple4/temple4.h"
 
 // TEST
 #include "I-CHR/test/bombable.h"
