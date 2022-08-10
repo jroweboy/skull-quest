@@ -89,8 +89,6 @@ void init_level_specifics() {
             // Achievement 1 : Scarecrow
             // Achievement 2 : Skeleton buster
 
-            level_bank = 1;
-
             current_nametable = cemetery;
             current_collision_map = cemetery_col;
             current_background_palette = pal_cemetery_bg;

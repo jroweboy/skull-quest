@@ -14889,7 +14889,8 @@ L0027:	jsr     _first_hit_small
 ;
 ; if (bankLevel > 0) {
 ;
-	beq     L0002
+	lda     _bankLevel
+	beq     L0005
 ;
 ; set_prg_8000(bankBuffer[bankLevel-1]);
 ;
@@ -14906,11 +14907,10 @@ L0003:	sta     ptr1
 	sta     ptr1+1
 	ldy     #<(_bankBuffer)
 	lda     (ptr1),y
-	jmp     _set_prg_8000
 ;
-; }
+; set_prg_8000(0);
 ;
-L0002:	rts
+L0005:	jmp     _set_prg_8000
 
 .endproc
 
@@ -15937,7 +15937,7 @@ L001C:	ldy     _i
 ;
 	beq     L0004
 	cmp     #$01
-	jeq     L0099
+	jeq     L0014
 	cmp     #$02
 	jeq     L0025
 	cmp     #$03
@@ -16159,13 +16159,9 @@ L0004:	lda     #>(_altar)
 ;
 	rts
 ;
-; level_bank = 1;
-;
-L0099:	sta     _level_bank
-;
 ; current_nametable = cemetery;
 ;
-	lda     #>(_cemetery)
+L0014:	lda     #>(_cemetery)
 	sta     _current_nametable+1
 	lda     #<(_cemetery)
 	sta     _current_nametable
@@ -16459,9 +16455,9 @@ L0025:	lda     #>(_temple)
 ;
 	lda     #$06
 	sta     _i
-L009A:	lda     _i
+L0098:	lda     _i
 	cmp     #$09
-	bcs     L009B
+	bcs     L0099
 ;
 ; actors.animation_delay[i] = 12;
 ;
@@ -16502,11 +16498,11 @@ L009A:	lda     _i
 ; for (i = 6; i < 9; ++i) {
 ;
 	inc     _i
-	jmp     L009A
+	jmp     L0098
 ;
 ; STILL_DECORATION = 10;
 ;
-L009B:	lda     #$0A
+L0099:	lda     #$0A
 	sta     _STILL_DECORATION
 ;
 ; actors.x[STILL_DECORATION] = 184;
@@ -16675,7 +16671,7 @@ L003F:	lda     #>(_temple2)
 ;
 ; break;
 ;
-	jmp     L009F
+	jmp     L009D
 ;
 ; current_nametable = temple3;
 ;
@@ -17746,7 +17742,7 @@ L0096:	lda     #>(_bombable)
 ; actors.y[1] = 7 * 8;
 ;
 	lda     #$38
-L009F:	sta     _actors+15
+L009D:	sta     _actors+15
 ;
 ; actors.state[1] = PAD_LONG;
 ;

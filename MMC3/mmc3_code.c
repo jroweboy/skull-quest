@@ -34,6 +34,8 @@ void bank_pop(void) {
     --bankLevel;
     if (bankLevel > 0) {
         set_prg_8000(bankBuffer[bankLevel-1]);
+    } else {
+        set_prg_8000(0);
     }
 }
 
