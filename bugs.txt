@@ -11,7 +11,7 @@ x Skull collision with top paddle
 
 
 
-AJOUTER UN NOUVEAU LEVELS
+AJOUTER UN NOUVEAU LEVEL
     - #define LVL_NEW
     - include "new_level"
     - #define TYPE_SPRITE if new sprite
@@ -19,3 +19,29 @@ AJOUTER UN NOUVEAU LEVELS
     - init_level
     - play_story
 
+
+Hi, I have a bank switching problem, hope somebody can help me.
+I use cc65 with neslib (and nesdoug), and the MMC3 mapper.
+
+Here's how I import each file for each bank.
+    #pragma rodata-name("BANK2")
+    #pragma code-name("BANK2")
+    #include "bank2.h"
+
+Then I put some nametables (with RLE compression) in bank2.h
+    #include "I-CHR/cemetery.pngE/cemetery.h"
+
+Then I call this when I load a level
+    ...
+    const unsigned char* current_nametable;
+    ...
+    bank_push(level_bank); 
+    vram_adr(NAMETABLE_A);
+    vram_unrle(current_nametable);
+    bank_pop();
+
+It works for some levels, but not for all. Sometimes it just freezes! The ppu is off when I load levels.
+
+Is it a pointer problem? A size problem (some levels are more than 600 bytes)? 
+
+Found some interesting details here: https://github.com/cppchriscpp/nes-starter-kit/blob/master/guide/section_3/putting_your_code_in_the_right_place.md but it doesn't work as expected. Here's my problem:

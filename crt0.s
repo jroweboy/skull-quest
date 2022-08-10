@@ -362,7 +362,7 @@ detectNTSC:
 .segment "BANK12"	
 	
 music_data:
-;	.include "MUSIC/TestMusic3.s"
+;	.include "./MUSIC/music.s"
 
 sounds_data:
 ;	.include "MUSIC/SoundFx.s"

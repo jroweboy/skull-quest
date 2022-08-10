@@ -33,7 +33,10 @@
         "spr_staff.h": "c",
         "spr_skull_door.h": "c",
         "bank9.h": "c",
-        "spr_star.h": "c"
+        "spr_star.h": "c",
+        "spr_general.h": "c",
+        "bombable.h": "c",
+        "bank2.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

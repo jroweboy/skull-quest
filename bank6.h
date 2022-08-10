@@ -1,15 +1,15 @@
 void set_skeleton(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
-        actors.x[p_index] = p_x;
-        actors.y[p_index] = p_y;
-        actors.width[p_index] = 0x04;
-        actors.height[p_index] = 0x14;
-        actors.bbox_x[p_index] = 0x01;
-        actors.bbox_y[p_index] = 0x02;
-        actors.xSpeed[p_index] = 10;
-        actors.maxSpeed[p_index] = 20;
-        actors.animation_delay[p_index] = 16;
-        actors.state[p_index] = DEAD;
-        actors.type[p_index] = TYPE_SKELETON;
+    actors.x[p_index] = p_x;
+    actors.y[p_index] = p_y;
+    actors.width[p_index] = 0x04;
+    actors.height[p_index] = 0x14;
+    actors.bbox_x[p_index] = 0x01;
+    actors.bbox_y[p_index] = 0x02;
+    actors.xSpeed[p_index] = 10;
+    actors.maxSpeed[p_index] = 20;
+    actors.animation_delay[p_index] = 16;
+    actors.state[p_index] = DEAD;
+    actors.type[p_index] = TYPE_SKELETON;
 }
 
 void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
@@ -41,6 +41,7 @@ void set_stars() {
 }
 
 void init_level_specifics() {
+    level_bank = 2;
     switch (current_level) {
         case LVL_ALTAR:
             current_nametable = altar;
@@ -87,6 +88,9 @@ void init_level_specifics() {
         case LVL_CEMETERY:
             // Achievement 1 : Scarecrow
             // Achievement 2 : Skeleton buster
+
+            level_bank = 1;
+
             current_nametable = cemetery;
             current_collision_map = cemetery_col;
             current_background_palette = pal_cemetery_bg;
@@ -112,7 +116,7 @@ void init_level_specifics() {
             actors.xDir[SKELETON1] = LEFT;
             set_skeleton(SKELETON2, 160, 104);
             actors.xDir[SKELETON2] = RIGHT;
-        
+
             // GATE
             GATE = 9;
             actors.x[GATE] = 120;
@@ -284,7 +288,7 @@ void init_level_specifics() {
             actors.y[2] = 12 * 8;
             actors.state[2] = PAD_SHORT;
             actors.type[2] = TYPE_PAD_HORZ;
-            
+
             // Skull Door
             DOOR1 = 6;
             actors.x[DOOR1] = 120;
@@ -383,7 +387,7 @@ void init_level_specifics() {
         case LVL_FARM:
             // Achievement 1: Harvester of sorrow
             // Achievement 2: Don't fear the reaper / Scared Scarecrow
-            
+
             current_nametable = farm;
             current_collision_map = farm_col;
             current_background_palette = pal_town_bg2;
@@ -415,7 +419,7 @@ void init_level_specifics() {
 
             // Scarecrow
             STILL_DECORATION = 4;
-            actors.x[STILL_DECORATION] = 24 *8;
+            actors.x[STILL_DECORATION] = 24 * 8;
             actors.y[STILL_DECORATION] = 8 * 8;
             actors.state[STILL_DECORATION] = IDLE;
             actors.type[STILL_DECORATION] = TYPE_SCARECROW;
@@ -476,5 +480,4 @@ void init_level_specifics() {
             actors.type[1] = TYPE_PAD_HORZ;
             break;
     }
-
 }

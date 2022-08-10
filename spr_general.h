@@ -1,5 +1,3 @@
-const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
-
 const unsigned char* trigger_animation[] = {
     no_sprite
 };

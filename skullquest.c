@@ -7,26 +7,12 @@
 
 // Dialog
 #include "dialog.h"
-
-// NAMETABLES
 #include "Nametable/black_level.h"
-#include "I-CHR/altar.pngE/altar.h"
-#include "I-CHR/church-interior.pngE/temple.h"
-#include "I-CHR/map.pngE/map.h"
-#include "I-CHR/title_screen.pngE/title_screen.h"
 
 // PALETTES
 #include "palettes.h"
 
-// SPRITES METATILES IN BANK 1
-#include "spr_general.h"
-#include "spr_angelic.h"
-#include "spr_crow.h"
-#include "spr_hero.h"
-#include "spr_lightning.h"
-#include "spr_necromancer.h"
-#include "spr_skeleton.h"
-#include "spr_skull.h"
+
 
 #pragma bss-name(push, "ZEROPAGE")
 static unsigned char pad1;
@@ -35,6 +21,7 @@ static unsigned char pad1_new;
 static unsigned char pad_index, temp_y_col, temp_x_col, chr_4_index, chr_5_index;
 static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, temp2, temp3, is_first, temp_speed, temp_x, temp_y, backup_col_type, skull_launched;
 static unsigned char p1_health, p1_max_health, brick_counter, wait_timer, level_condition1, level_condition2;
+static unsigned char level_bank;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
 static unsigned char animation_index, frame_count, show_face, show_item, current_item, current_selection, exit_inventory = FALSE;
 static unsigned char map_x, map_y, map_lvl_name_x, map_lvl_name_y;
@@ -110,7 +97,6 @@ typedef struct
 
 Actors actors;
 
-// ---------------------------- BANK 0  -------------------------------
 #pragma rodata-name("BANK0")
 #pragma code-name("BANK0")
 #include "bank0.h"
@@ -227,11 +213,11 @@ void hide_HUD() {
     for (i = 0; i < p1_max_health; ++i) {
         one_vram_buffer(0x00, NTADR_A(i + 2, 2));
     }
-    ppu_wait_nmi();
+    // ppu_wait_nmi();
     // Exp
     multi_vram_buffer_horz(empty_line, sizeof(empty_line), NTADR_A(7, 2));
     
-    ppu_wait_nmi();
+    // ppu_wait_nmi();
     
     // ITEM BOX:
     one_vram_buffer(0x00, NTADR_A(22, 2));
@@ -297,10 +283,13 @@ void load_level() {
             ++paddle_count;
         }
     }
+    
     banked_call(0, init_paddles);
     
+    bank_push(level_bank);
     vram_adr(NAMETABLE_A);
     vram_unrle(current_nametable);
+    bank_pop();
 
     pal_bg(current_background_palette);
     pal_spr(current_sprite_palette);
@@ -350,11 +339,13 @@ void load_title_screen() {
     pal_col(0x12, 0x18);
     pal_col(0x13, 0x0c);
 
+    bank_push(2);
     vram_adr(NAMETABLE_A);
     vram_unrle(title_screen);
 
     vram_adr(NAMETABLE_C);
     vram_unrle(story);
+    bank_pop();
 
     game_state = TITLE;
 }
@@ -1978,6 +1969,7 @@ void main() {
     // famitone_init(&music_data);
     // sfx_init(&sound_data);
     // nmi_set_callback(famitone_update);
+
     ppu_off();
 
     disable_irq();
@@ -2078,7 +2070,7 @@ void main() {
                     scroll_index_y = NULL;
 
                     // DEBUG
-                    // debug_start(LVL_TEMPLE4);
+                    // debug_start(LVL_CEMETERY);
                 }
                 break;
             case GAME_OVER:

@@ -1,5 +1,5 @@
 #include "I-CHR/map.pngE/inventory.h"
-#include "I-CHR/title_screen.pngE/story.h"
+#include "I-CHR/map.pngE/map.h"
 
 // MAP Logic
 #include "map_logic.h"

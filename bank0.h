@@ -1,30 +1,28 @@
 // COLLISION
 #include "Collision/master_collision.h"
-// LEVELS
-#include "I-CHR/cemetery.pngE/cemetery.h"
-#include "I-CHR/temple2/temple2.h"
-#include "I-CHR/temple3/temple3.h"
-#include "I-CHR/town-ruins.pngE/town_ruins.h"
-#include "I-CHR/town-farm/farm.h"
-#include "I-CHR/temple4/temple4.h"
 
-// TEST
-#include "I-CHR/test/bombable.h"
-
+const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
 // SPRITES
+#include "spr_angelic.h"
+#include "spr_bomb.h"
+#include "spr_crow.h"
+#include "spr_cursor.h"
 #include "spr_devil.h"
 #include "spr_door.h"
+#include "spr_farm.h"
 #include "spr_fireball.h"
+#include "spr_general.h"
+#include "spr_hero.h"
+#include "spr_lightning.h"
+#include "spr_necromancer.h"
+#include "spr_skeleton.h"
+#include "spr_skull.h"
 #include "spr_skull_door.h"
 #include "spr_sorcerer.h"
 #include "spr_staff.h"
 #include "spr_stainedglass.h"
 #include "spr_star.h"
 #include "spr_villagers.h"
-#include "spr_bomb.h"
-#include "spr_cursor.h"
-#include "spr_farm.h"
-
 
 void set_animation_info() {
     j = actors.state[draw_index] << 1;
@@ -183,13 +181,12 @@ void set_animation_info() {
     }
 }
 
-
 void init_paddles() {
     // Init paddles
     for (i = 0; i < paddle_count; ++i) {
         if (actors.type[i] == TYPE_PAD_HORZ) {
-            actors.width[i] = actors.state[i]; // State is PAD_SHORT 16 or PAD_LONG 32
-            actors.height[i] = 0x04;  // 4
+            actors.width[i] = actors.state[i];  // State is PAD_SHORT 16 or PAD_LONG 32
+            actors.height[i] = 0x04;            // 4
             actors.bbox_y[i] = 0x02;
         } else {
             actors.width[i] = 0x04;
