@@ -129,7 +129,7 @@ al 000100 .__STACKSIZE__
 al 000700 .__STACK_START__
 al 00E000 .__STARTUP_LOAD__
 al 00E000 .__STARTUP_RUN__
-al 000BF9 .__STARTUP_SIZE__
+al 000BF0 .__STARTUP_SIZE__
 al 000001 .__STARTUP__
 al 000000 .__WRAM_FILEOFFS__
 al 008000 .__WRAM_LAST__
@@ -161,7 +161,7 @@ al 00007A ._animation_array
 al 00039A ._bankBuffer
 al 000399 ._bankLevel
 al 00E59E ._bank_bg
-al 00EBD7 ._bank_pop
+al 00EBE3 ._bank_pop
 al 00EBBD ._bank_push
 al 00E58E ._bank_spr
 al 00EBA2 ._banked_call

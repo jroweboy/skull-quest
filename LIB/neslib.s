@@ -146,15 +146,19 @@ nmi:
 @skipNtsc:
 	
 ;switch the music into the prg bank first
-	lda BP_BANK_8000 ;save current prg bank
-	pha
+	lda #(6 | A12_INVERT)
+	sta $8000
 	lda #SOUND_BANK
-	jsr _set_prg_8000
+	sta $8001
 	jsr FamiToneUpdate
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jsr _set_prg_8000
-
+	
+	lda #(6 | A12_INVERT)
+    sta $8000
+    lda BP_BANK_8000
+    sta $8001
+    lda mmc3_8000_PRG
+    sta $8000
+	
 	pla
 	tay
 	pla

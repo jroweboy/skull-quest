@@ -43,6 +43,7 @@
 	.export		_bank_push
 	.export		_bank_pop
 	.import		_set_prg_8000
+	.import		_get_prg_8000
 	.import		_set_chr_mode_1
 	.import		_set_chr_mode_2
 	.import		_set_chr_mode_3
@@ -14849,12 +14850,18 @@ L0027:	jsr     _first_hit_small
 ;
 	jsr     pusha
 ;
-; bankBuffer[bankLevel] = bankId;
+; bankBuffer[bankLevel] = get_prg_8000();
 ;
+	lda     #<(_bankBuffer)
+	ldx     #>(_bankBuffer)
+	clc
+	adc     _bankLevel
+	bcc     L0002
+	inx
+L0002:	jsr     pushax
+	jsr     _get_prg_8000
 	ldy     #$00
-	lda     (sp),y
-	ldy     _bankLevel
-	sta     _bankBuffer,y
+	jsr     staspidx
 ;
 ; ++bankLevel;
 ;
@@ -14883,34 +14890,19 @@ L0027:	jsr     _first_hit_small
 .segment	"STARTUP"
 
 ;
+; set_prg_8000(bankBuffer[bankLevel]);
+;
+	ldy     _bankLevel
+	lda     _bankBuffer,y
+	jsr     _set_prg_8000
+;
 ; --bankLevel;
 ;
 	dec     _bankLevel
 ;
-; if (bankLevel > 0) {
+; }
 ;
-	lda     _bankLevel
-	beq     L0005
-;
-; set_prg_8000(bankBuffer[bankLevel-1]);
-;
-	ldx     #$00
-	lda     _bankLevel
-	sec
-	sbc     #$01
-	bcs     L0003
-	dex
-L0003:	sta     ptr1
-	txa
-	clc
-	adc     #>(_bankBuffer)
-	sta     ptr1+1
-	ldy     #<(_bankBuffer)
-	lda     (ptr1),y
-;
-; set_prg_8000(0);
-;
-L0005:	jmp     _set_prg_8000
+	rts
 
 .endproc
 
