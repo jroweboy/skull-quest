@@ -85,6 +85,15 @@ JULY
     x Farm Level Dialog
 
 3:
+    x Music
+    x Learning FamiStudio
+4:
+    x Vacations
+
+AUGUST
+    x Bank switching
+    x Music
+
     - Exit / Enter levels
     - Mana Power Meter
     - Bombable wall (in temple)...
@@ -117,25 +126,17 @@ JULY
     - Tower music
     - Boss music 2
     - Boss music 1
-4:
     - Sound fx
 
-AUGUST
-1:
     - Title Screen Logic
-2:
     - 2 Player Pong Game
-3:
     - Achievements...
     - Experience & level up system
-4:
     - Time lapse circle sprite for dialog next ->
 
-5:
     - Submap on inventory screen
     - Teleportation
 
-SEPTEMBER
     - Testing / Debugging / Optimization
 
     PHYSICAL EDITION:
@@ -144,6 +145,11 @@ SEPTEMBER
     - Goodies
     - Burning ROMs
     - Ordering
+SEPTEMBER
 
 OCTOBER
+
+NOVEMBER
+
+DECEMBER
     - Kickstarter Campaign

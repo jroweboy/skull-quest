@@ -31,9 +31,7 @@ void bank_push(unsigned char bankId) {
 // Go back to the previous bank
 
 void bank_pop(void) {
-    if (bankLevel >= 0) {
-        set_prg_8000(bankBuffer[bankLevel]);
-    }
+    set_prg_8000(bankBuffer[bankLevel]);
     --bankLevel;
 }
 
