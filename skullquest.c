@@ -1890,11 +1890,11 @@ void play_story() {
                 case 4:
                     // Scroll !!!
                     set_scroll_y(scroll_index_y);
-                    scroll_index_y = add_scroll_y(1, scroll_index_y);
-                    // if (story_counter > 10) {
-                    //     story_counter = NULL;
-                    // }
-                    // ++story_counter;
+                    if (story_counter > 10) {
+                        scroll_index_y = add_scroll_y(1, scroll_index_y);
+                        story_counter = NULL;
+                    }
+                    ++story_counter;
                     if (scroll_index_y > 488) {
                         ++story_step;
                     }
