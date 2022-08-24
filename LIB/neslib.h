@@ -14,6 +14,8 @@
 //  060414 - many fixes and improvements, including sequential VRAM updates
 //  previous versions were created since mid-2011, there were many updates
 
+#include "music_driver.h"
+
 // set bg and spr palettes, data is 32 bytes array
 
 void __fastcall__ pal_all(const char *data);
@@ -114,26 +116,6 @@ void __fastcall__ oam_set(unsigned char index);
 // returns the sprid (index to the sprite buffer)
 
 unsigned char __fastcall__ oam_get(void);
-
-// play a music in FamiTone format
-
-void __fastcall__ music_play(unsigned char song);
-
-// stop music
-
-void __fastcall__ music_stop(void);
-
-// pause and unpause music
-
-void __fastcall__ music_pause(unsigned char pause);
-
-// play FamiTone sound effect on channel 0..3
-
-void __fastcall__ sfx_play(unsigned char sound, unsigned char channel);
-
-// play a DPCM sample, 1..63
-
-void __fastcall__ sample_play(unsigned char sample);
 
 // poll controller and return flags like PAD_LEFT etc, input is pad number (0 or 1)
 

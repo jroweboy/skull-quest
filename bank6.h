@@ -1,3 +1,10 @@
+
+
+// COLLISION DATA
+#include "Collision/master_collision.h"
+
+#pragma wrapped-call(push, bank_trampoline, bank)
+
 void set_skeleton(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
     actors.x[p_index] = p_x;
     actors.y[p_index] = p_y;
@@ -479,3 +486,5 @@ void init_level_specifics() {
             break;
     }
 }
+
+#pragma wrapped-call(pop)
