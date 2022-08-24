@@ -2,44 +2,23 @@
 ; based on code by Groepaz/Hitmen <groepaz@gmx.net>, Ullrich von Bassewitz <uz@cc65.org>
 
 
-
-
-; Edited to work with MMC3 code
-.define SOUND_BANK 12
-;segment BANK12
-
-
-FT_BASE_ADR		= $0100		;page in RAM, should be $xx00
-FT_DPCM_OFF		= $f000		;$c000..$ffc0, 64-byte steps
-FT_SFX_STREAMS	= 1			;number of sound effects played at once, 1..4
-
-FT_THREAD       = 1		;undefine if you call sound effects in the same thread as sound update
-FT_PAL_SUPPORT	= 1		;undefine to exclude PAL support
-FT_NTSC_SUPPORT	= 1		;undefine to exclude NTSC support
-FT_DPCM_ENABLE  = 1		;undefine to exclude all DMC code
-FT_SFX_ENABLE   = 1		;undefine to exclude all sound effects code
-
-
-
-
+.include "MMC3/mmc3_code.asm"
 
 ;REMOVED initlib
 ;this called the CONDES function
 
-    .export _exit,__STARTUP__:absolute=1
-	.import push0,popa,popax,_main,zerobss,copydata
+.export _exit,__STARTUP__:absolute=1
+.import push0,popa,popax,_main,zerobss,copydata
 
 ; Linker generated symbols
-	.import __STACK_START__   ,__STACKSIZE__ ;changed
-	.import __ROM0_START__  ,__ROM0_SIZE__
-	.import __STARTUP_LOAD__,__STARTUP_RUN__,__STARTUP_SIZE__
-	.import	__CODE_LOAD__   ,__CODE_RUN__   ,__CODE_SIZE__
-	.import	__RODATA_LOAD__ ,__RODATA_RUN__ ,__RODATA_SIZE__
-	.import NES_MAPPER, NES_PRG_BANKS, NES_CHR_BANKS, NES_MIRRORING
+.import __STACK_START__   ,__STACKSIZE__ ;changed
+.import __ROM0_START__  ,__ROM0_SIZE__
+.import __STARTUP_LOAD__,__STARTUP_RUN__,__STARTUP_SIZE__
+.import	__CODE_LOAD__   ,__CODE_RUN__   ,__CODE_SIZE__
+.import	__RODATA_LOAD__ ,__RODATA_RUN__ ,__RODATA_SIZE__
+.import NES_MAPPER, NES_PRG_BANKS, NES_CHR_BANKS, NES_MIRRORING
 
-    .include "zeropage.inc"
-
-
+.include "zeropage.inc"
 
 
 PPU_CTRL	=$2000
@@ -123,25 +102,21 @@ DATA_PTR:			.res 2
 	.byte 1 ;8k of PRG RAM
 	.res 7,0
 
-
-; linker complains if I don't have at least one mention of each bank
-.segment "ONCE"
-.segment "BANK0"
-.segment "BANK1"
-.segment "BANK2"
-.segment "BANK3"
-.segment "BANK4"
-.segment "BANK5"
-.segment "BANK6"
-.segment "BANK7"
-.segment "BANK8"
-.segment "BANK9"
-.segment "BANK10"
-.segment "BANK11"
-.segment "BANK12"
-
+.segment "LOWCODE"
+	.include "LIB/neslib.s"
+	.include "LIB/nesdoug.s"
 
 .segment "STARTUP"
+
+; Maps the CHR bank select to the CHR bank value
+.ifdef USE_CHR_A12_INVERT
+BankInitializationTable:
+	.byte $04, $06, $00, $01, $02, $03
+.else
+BankInitializationTable:
+	.byte $00, $01, $02, $03, $04, $06
+.endif
+
 ; this should be mapped to the last PRG bank
 
 start:
@@ -157,8 +132,6 @@ _exit:
     stx PPU_MASK
     stx DMC_FREQ
     stx PPU_CTRL		;no NMI
-	
-	jsr _disable_irq ;disable mmc3 IRQ
 	
 	;x is zero
 
@@ -221,42 +194,36 @@ clearRAM:
 	
 ; don't call any subroutines until the banks are in place	
 	
-	
-	
-; MMC3 reset
-
-; set which bank at $8000
-; also $c000 fixed to 14 of 15
-	lda #0 ; PRG bank zero
-	jsr _set_prg_8000
-; set which bank at $a000
-	lda #13 ; PRG bank 13 of 15
-	jsr _set_prg_a000
-	
-; with CHR invert, set $0000-$03FF
+; MMC3 configure the PRG and CHR banks. We need to initialize the bank_shadow, so here is fine for that
+	lda #CODE_BANK_SELECT
+	sta bank_shadow
+	sta BANK_SELECT
 	lda #0
-	jsr _set_chr_mode_2
-; with CHR invert, set $0400-$07FF
-	lda #1
-	jsr _set_chr_mode_3
-; with CHR invert, set $0800-$0BFF
-	lda #2
-	jsr _set_chr_mode_4
-; with CHR invert, set $0C00-$0FFF
-	lda #3
-	jsr _set_chr_mode_5
-; with CHR invert, set $1000-$17FF
-	lda #4
-	jsr _set_chr_mode_0
-; with CHR invert, set $1800-$1FFF
-	lda #6
-	jsr _set_chr_mode_1
+	sta BANK_DATA
+	lda #ALT_BANK_SELECT
+	sta BANK_SELECT
+	lda #13
+	sta BANK_DATA
+
+; Initialize the CHR banks differently depending on if A12 inversion is enabled.
+	ldx #5
+@chr_init_loop:
+		txa
+		ora #MMC3_BANK_FLAGS
+		sta BANK_SELECT
+		lda BankInitializationTable, x
+		sta BANK_DATA
+		dex
+		bpl @chr_init_loop
+
 ;set mirroring to vertical, no good reason	
 	lda #0
 	jsr _set_mirroring
 ;allow reads and writes to WRAM	
 	lda #$80 ;WRAM_ON 0x80
 	jsr _set_wram_mode
+
+	jsr _disable_irq ;disable mmc3 IRQ
 	
 	cli ;allow irq's to happen on the 6502 chip	
 		;however, the mmc3 IRQ was disabled above
@@ -318,62 +285,28 @@ detectNTSC:
 	sta PPU_SCROLL
 	sta PPU_SCROLL
 	
-	
-	
-;BANK12
-	
-	lda #SOUND_BANK ;swap the music in place before using
-					;SOUND_BANK is defined above
-	jsr _set_prg_8000
-	
+ 	;swap the music in place before using
+	lda #CODE_BANK_SELECT
+	sta BANK_SELECT
+	lda #<.bank(music_init)
+	sta BANK_DATA
+.if .defined(USE_BANKABLE_DPCM) && .defined(MUSIC_HAS_DPCM)
+	; switch the $c000 address to the banked DPCM
+	lda #(6 | MMC3_BANK_FLAGS)
+	sta BANK_SELECT
+	lda #<.bank(samples)
+	sta BANK_DATA
+.endif
 	ldx #<music_data
 	ldy #>music_data
 	lda <NTSC_MODE
-	jsr FamiToneInit
-
+	jsr music_init
+.ifdef MUSIC_HAS_SFX
 	ldx #<sounds_data
 	ldy #>sounds_data
-	jsr FamiToneSfxInit
-	
-	lda #$00 ;PRG bank #0 at $8000, back to basic
-	jsr _set_prg_8000
-
+	jsr sfx_init
+.endif
 	jmp _main			;no parameters
-	
-	
-
-	.include "MMC3/mmc3_code.asm"
-	.include "LIB/neslib.s"
-	.include "LIB/nesdoug.s"
-	
-
-
-
-	
-
-	
-.segment "CODE"	
-	.include "MUSIC/famitone2.s"
-; When music files get very big, it's probably best to
-; split the songs into multiple swapped banks
-; the music code itself is in the regular CODE banks.
-; It could be moved into BANK12 if music data is small.
-	
-.segment "BANK12"	
-	
-music_data:
-;	.include "./MUSIC/music.s"
-
-sounds_data:
-;	.include "MUSIC/SoundFx.s"
-
-
-	
-	
-;.segment "SAMPLES"
-;	.incbin "MUSIC/BassDrum.dmc"
-
-
 
 .segment "VECTORS"
 

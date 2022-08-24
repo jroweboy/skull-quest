@@ -1,6 +1,24 @@
 
+.import callptr4
+.importzp tmp4
 
-.define A12_INVERT $80
+.define BANK_SELECT 	$8000
+.define BANK_DATA		$8001
+.define A12_INVERT		%10000000
+.define BANK_DPCM_FLAG	%01000000
+
+.if !.defined(MMC3_BANK_FLAGS)
+	.if .defined(USE_BANKABLE_DPCM) .and .defined(USE_CHR_A12_INVERT)
+		MMC3_BANK_FLAGS = BANK_DPCM_FLAG | A12_INVERT
+	.elseif .defined(USE_BANKABLE_DPCM)
+		MMC3_BANK_FLAGS = BANK_DPCM_FLAG
+	.elseif .defined(USE_CHR_A12_INVERT)
+		MMC3_BANK_FLAGS = A12_INVERT
+	.else
+		MMC3_BANK_FLAGS = 0
+	.endif
+.endif
+
 ;values 0 or $80, for the $8000 register
 ;(changes in tileset mapping)
 
@@ -20,145 +38,180 @@
 ;mode 4 changes $0800-$0BFF
 ;mode 5 changes $0C00-$0FFF
 
-
-
+.pushseg
 .segment "ZEROPAGE"
-	BP_BANK_8000: .res 1
-    mmc3_8000_PRG:	.res 1
-	mmc3_8001_PRG:	.res 1
-	mmc3_8000_CHR:	.res 1
-	mmc3_8001_CHR:	.res 1
-	mmc3_ptr:		.res 2 ; array for the irq parser
-	mmc3_index:		.res 1 ; index to this array
-	irq_done:		.res 1
+mmc3_ptr:		.res 2 ; array for the irq parser
+mmc3_index:		.res 1 ; index to this array
+_irq_done:		.res 1
 
-	
-    .exportzp BP_BANK_8000, mmc3_8000_PRG, mmc3_8001_PRG, mmc3_8000_CHR, mmc3_8001_CHR
-	.exportzp mmc3_ptr, mmc3_index, irq_done
-	
+; A bank shadow stores the most recent value of the write to the MMC3 $8000 register. When a thread is interruptable,
+; then it MUST save the value of the select before writing it to the register. If a thread is the one that does the interrupting
+; (ie NMI or IRQ) then it should NOT save the value, but should restore the value to the MMC3 $8000 register before returning.
+; Because the IRQ is not able to interrupt the NMI thread under the current configuration, we only need one shadow. If this is changed
+; so that the scanline IRQ can run, then you need a second shadow, and NMI should save the current select value to the second shadow
+; and restore the value of the first shadow to $8000 on exit.
+bank_shadow: 	.res 1
+mmc3_bank_6:	.res 1
+mmc3_bank_7:	.res 1
 
-.segment "STARTUP"
+.segment "BSS"
+mmc3_temp:		.res 1
+
+.segment "LOWCODE"
+
 ;needs to be mapped to the fixed bank
-
-.export _set_prg_8000, _get_prg_8000, _set_prg_a000
-.export _set_chr_mode_0, _set_chr_mode_1, _set_chr_mode_2, _set_chr_mode_3
-.export _set_chr_mode_4, _set_chr_mode_5
-
 .export _set_mirroring, _set_wram_mode, _disable_irq
-.export _set_irq_ptr, _is_irq_done
+.export _set_irq_ptr
 
+; Rename the exports to match what the C header defines them as.
+.export _set_prg_a000:=main_thread_set_prg_7
+.export _current_prg_a000:=mmc3_bank_7
 
-; sets the bank at $8000-9fff
+.ifdef USE_BANKABLE_DPCM
+	CODE_BANK_SELECT = (7 | MMC3_BANK_FLAGS)
+	ALT_BANK_SELECT = (6 | MMC3_BANK_FLAGS)
+	code_bank_fn = main_thread_set_prg_7
+	alt_bank_fn = main_thread_set_prg_6
+	.export _bank_code:=main_thread_set_prg_7
+	.export _current_code_bank:=mmc3_bank_7
+	.export _set_prg_c000:=main_thread_set_prg_6
+	.export _current_prg_c000:=mmc3_bank_6
+.else
+	; if we aren't banking DPCM then we export functions for banking $8000
+	CODE_BANK_SELECT = (6 | MMC3_BANK_FLAGS)
+	ALT_BANK_SELECT = (7 | MMC3_BANK_FLAGS)
+	code_bank_fn = main_thread_set_prg_6
+	alt_bank_fn = main_thread_set_prg_7
+	.export _bank_code:=main_thread_set_prg_6
+	.export _current_code_bank:=mmc3_bank_6
+	.export _set_prg_8000:=main_thread_set_prg_6
+	.export _current_prg_8000:=mmc3_bank_6
+.endif
+
+; Any banking routines that begin with `main_thread` should NOT be used in NMI or IRQ.
+
+; sets the bank at $8000-9fff or $c000-$dfff if USE_BANKABLE_DPCM is enabled
 ; only changes the A register
-_set_prg_8000:
-    sta BP_BANK_8000
-	sta mmc3_8001_PRG
-	lda #(6 | A12_INVERT)
-	sta mmc3_8000_PRG
-	jmp safe_bank_swapping
-
-
-; returns the current bank at $8000-9fff	
-_get_prg_8000:
-    lda BP_BANK_8000
-	ldx #0
-    rts
-	
-	
-; sets the bank at $a000-bfff
-_set_prg_a000:
-	sta mmc3_8001_PRG
-	lda #(7 | A12_INVERT)
-	sta mmc3_8000_PRG
-	jmp safe_bank_swapping
-
-
-; only changes the A register, all these
-; see chart in README for what these do
-_set_chr_mode_0:
-	sta mmc3_8001_CHR
-	lda #(0 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-_set_chr_mode_1:
-	sta mmc3_8001_CHR
-	lda #(1 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-_set_chr_mode_2:
-	sta mmc3_8001_CHR
-	lda #(2 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-_set_chr_mode_3:
-	sta mmc3_8001_CHR
-	lda #(3 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-_set_chr_mode_4:
-	sta mmc3_8001_CHR
-	lda #(4 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-_set_chr_mode_5:
-	sta mmc3_8001_CHR
-	lda #(5 | A12_INVERT)
-	sta mmc3_8000_CHR
-	jmp safe_bank_swapping
-
-	
-	
-	
-	
-; borrowing idea (but not code) from tepples/pinobatch
-; because the CHR bank swap and PRG bank swap use the same
-; register, the IRQ code and the MAIN code might try to
-; use this register at the same time, and conflict	
-; thus we need redundant writes to make sure that
-; both go through.
-;
-; This only works if the MAIN code only ever changes
-; the PRG bank and the IRQ code only ever changes the
-; CHR banks.
-; However, the main code can safely do CHR changes if  
-; the IRQ system is not changing CHR
-
-safe_bank_swapping:
-	lda mmc3_8000_CHR
-	sta $8000
-	lda mmc3_8001_CHR
-	sta $8001
-	lda mmc3_8000_PRG
-	sta $8000
-	lda mmc3_8001_PRG
-	sta $8001
+main_thread_set_prg_6:
+	sta mmc3_bank_6
+	lda #(6 | MMC3_BANK_FLAGS)
+	sta bank_shadow
+	sta BANK_SELECT
+	lda mmc3_bank_6
+	sta BANK_DATA
 	rts
-	
-	
+
+; sets the bank at $a000-bfff
+main_thread_set_prg_7:
+	sta mmc3_bank_7
+	lda #(7 | MMC3_BANK_FLAGS)
+	sta bank_shadow
+	sta BANK_SELECT
+	lda mmc3_bank_7
+	sta BANK_DATA
+	rts
+
+; rexport the following function for C use
+.export _bank_trampoline:=main_thread_bank_trampoline
+; Use with cc65 wrapped-call pragmas to automatically switch banks when calling different methods
+main_thread_bank_trampoline:
+	; A needs to be preserved and passed to the function in ptr4 that we are trampolining to.
+	; we don't touch x or y so nothing to preserve there.
+	; IN - tmp4 - bank to switch to
+	; IN - ptr4 - function to call
+	sta mmc3_temp ; store the current value in A so we can pass it to the banked function later
+	; First we check to see if the bank we are switching to is the same already.
+	lda _current_code_bank
+	cmp tmp4
+	bne @do_bank_switch
+		; since they are the same, we can skip the banking and just run the function and return
+		lda mmc3_temp
+		jmp callptr4
+@do_bank_switch:
+	; save the current bank value to the stack so we can restore it later
+	pha
+		lda tmp4
+		jsr code_bank_fn
+		lda mmc3_temp
+		jsr callptr4
+	pla
+	jmp code_bank_fn
+
+; The following are mainthread safe CHR banking routines
+.export _set_chr_mode_0:=main_thread_set_chr_0
+.export _set_chr_mode_1:=main_thread_set_chr_1
+.export _set_chr_mode_2:=main_thread_set_chr_2
+.export _set_chr_mode_3:=main_thread_set_chr_3
+.export _set_chr_mode_4:=main_thread_set_chr_4
+.export _set_chr_mode_5:=main_thread_set_chr_5
+
+main_thread_set_chr_0:
+	pha
+		lda #(0 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+main_thread_set_chr_1:
+	pha
+		lda #(1 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+main_thread_set_chr_2:
+	pha
+		lda #(2 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+main_thread_set_chr_3:
+	pha
+		lda #(3 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+main_thread_set_chr_4:
+	pha
+		lda #(4 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+main_thread_set_chr_5:
+	pha
+		lda #(5 | MMC3_BANK_FLAGS)
+		sta bank_shadow
+		sta BANK_SELECT
+	pla
+	sta BANK_DATA
+	rts
+
+
 ; MIRROR_VERTICAL 0
 ; MIRROR_HORIZONTAL 1	
 _set_mirroring:
 	sta $a000
 	rts
-	
-	
+
 ; WRAM_OFF $40
 ; WRAM_ON $80
 ; WRAM_READ_ONLY $C0
 _set_wram_mode:
 	sta $a001
 	rts
-	
 
 _disable_irq:
 	sta $e000 ;any value
@@ -166,26 +219,16 @@ _disable_irq:
 	ldx #>default_array
 	;jmp _set_irq_ptr ; fall through
 	
-	
 _set_irq_ptr:
 ;ax = pointer
 	sta mmc3_ptr
 	stx mmc3_ptr+1
-	rts	
-	
-	
-_is_irq_done:
-	lda irq_done
-	ldx #0
 	rts
 
-	
 default_array: ;just an eof terminator
 .byte $ff
 
 
-
-	
 irq:
 	pha
 	txa
@@ -292,18 +335,17 @@ irq_parser:
 @wait_loop: ; the timing of this wait could change if this crosses a page boundary
 	dex
 	bne @wait_loop		
-	jmp @loop	
+	beq @loop ; unconditional
 
 @chr_change:
 ;f7-fc change a CHR set
 	sec
 	sbc #$f7 ;should result in 0-5
-	ora #A12_INVERT
-	sta mmc3_8000_CHR
+	ora #MMC3_BANK_FLAGS
+	sta BANK_SELECT
 	lda (mmc3_ptr), y ; get next value
+	sta BANK_DATA
 	iny
-	sta mmc3_8001_CHR
-	jsr safe_bank_swapping
 	jmp @loop
 	
 @scanline:
@@ -313,12 +355,18 @@ irq_parser:
 	nop
 	jsr set_scanline_count ;this terminates the set
 	sty mmc3_index
+	; before exiting the IRQ we must restore the previous value of the BANK_SELECT to prevent issues!
+	lda bank_shadow
+	sta BANK_SELECT
 	rts
 	
 @exit:
-	sta irq_done ;value 0xff
+	sta _irq_done ;value 0xff
 	dey ; undo the previous iny, keep it pointed to ff
 	sty mmc3_index
+	; before exiting the IRQ we must restore the previous value of the BANK_SELECT to prevent issues!
+	lda bank_shadow
+	sta BANK_SELECT
 	rts
 	
 	
@@ -331,12 +379,5 @@ set_scanline_count:
     cli ;make sure irqs are enabled
 	rts
 
-
-	
-
-	
-
-
-	
-	
+.popseg ; "LOWCODE"
 	

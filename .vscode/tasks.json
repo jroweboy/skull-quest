@@ -1,0 +1,55 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "compile",
+            "runOptions": {"instanceLimit": 20},
+            "type": "process",
+            "command": "cmd.exe",
+            "args": ["/c", "${workspaceFolder}/compile.bat"],
+            "presentation": {
+                "echo": true,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "close": false,
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                {
+                    "owner": "ca65",
+                    "applyTo": "allDocuments",
+                    "source": "ca65",
+                    "pattern": [
+                        {
+                            "regexp": "^([^:]*):([0-9]+): ?([^:]*): ?(.*)$",
+                            "file": 1,
+                            "line": 2,
+                            "severity": 3,
+                            "message": 4
+                        },
+                    ]
+                },
+                {
+                    "owner": "ca65",
+                    "applyTo": "allDocuments",
+                    "source": "ca65",
+                    "pattern": [
+                        {
+                            "regexp": "^([^:]*)\\(([0-9]+)\\): ?([^:]*): ?(.*)$",
+                            "file": 1,
+                            "line": 2,
+                            "severity": 3,
+                            "message": 4
+                        },
+                    ]
+                }
+            ]
+        }
+    ]
+}

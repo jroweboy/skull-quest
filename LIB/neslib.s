@@ -10,7 +10,7 @@
 ;SOUND_BANK is defined at the top of crt0.s
 ;and needs to match the bank where the music is
 
-
+.include "music_driver.s"
 
 	.export _pal_all,_pal_bg,_pal_spr,_pal_col,_pal_clear
 	.export _pal_bright,_pal_spr_bright,_pal_bg_bright
@@ -20,8 +20,6 @@
 	.export _scroll,_split
 	.export _bank_spr,_bank_bg
 	.export _vram_read,_vram_write
-	.export _music_play,_music_stop,_music_pause
-	.export _sfx_play,_sample_play
 	.export _pad_poll,_pad_trigger,_pad_state
 	.export _rand8,_rand16,_set_rand
 	.export _vram_adr,_vram_put,_vram_fill,_vram_inc,_vram_unrle
@@ -43,7 +41,7 @@ nmi:
 	
 	lda #0
 	sta mmc3_index
-	sta irq_done
+	sta _irq_done
 
 	lda <PPU_MASK_VAR	;if rendering is disabled, do not access the VRAM at all
 	and #%00011000
@@ -144,20 +142,21 @@ nmi:
 	sta <FRAME_CNT2
 
 @skipNtsc:
-	
 ;switch the music into the prg bank first
-	lda #(6 | A12_INVERT)
-	sta $8000
-	lda #SOUND_BANK
-	sta $8001
-	jsr FamiToneUpdate
+	lda _current_code_bank
+	pha
+		lda #CODE_BANK_SELECT
+		sta BANK_SELECT
+		lda #<.bank(music_update)
+		sta BANK_DATA
+		jsr music_update
+		lda #CODE_BANK_SELECT
+		sta BANK_SELECT
+    pla
+    sta BANK_DATA
 	
-	lda #(6 | A12_INVERT)
-    sta $8000
-    lda BP_BANK_8000
-    sta $8001
-    lda mmc3_8000_PRG
-    sta $8000
+    lda bank_shadow
+    sta BANK_SELECT
 	
 	pla
 	tay
@@ -165,8 +164,6 @@ nmi:
 	tax
 	pla
     rti
-
-
 
 ;void __fastcall__ pal_all(const char *data);
 
@@ -817,120 +814,6 @@ _vram_write:
 	bne @1
 
 	rts
-
-
-
-;void __fastcall__ music_play(unsigned char song);
-;a = song #
-
-_music_play:
-	tax
-	lda BP_BANK_8000 ;save current prg bank
-	pha
-	lda #SOUND_BANK
-	jsr _set_prg_8000 ;only uses A register
-	txa ;song number
-	jsr FamiToneMusicPlay
-	
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jmp _set_prg_8000
-	;rts
-
-
-;void __fastcall__ music_stop(void);
-
-_music_stop:
-	lda BP_BANK_8000 ;save current prg bank
-	pha
-	lda #SOUND_BANK
-	jsr _set_prg_8000
-	jsr FamiToneMusicStop
-	
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jmp _set_prg_8000
-	;rts
-
-
-
-;void __fastcall__ music_pause(unsigned char pause);
-;a = pause or not
-
-_music_pause:
-	tax
-	lda BP_BANK_8000 ;save current prg bank
-	pha
-	lda #SOUND_BANK
-	jsr _set_prg_8000 ;only uses A register
-	txa ;song number
-	jsr FamiToneMusicPause
-	
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jmp _set_prg_8000
-	;rts
-
-	
-
-
-
-;void __fastcall__ sfx_play(unsigned char sound,unsigned char channel);
-
-_sfx_play:
-
-.if(FT_SFX_ENABLE)
-; a = channel
-	and #$03
-	tax
-	lda @sfxPriority,x
-	tax
-	
-	lda BP_BANK_8000 ;save current prg bank
-	pha
-	lda #SOUND_BANK
-	jsr _set_prg_8000 ;only uses A register
-	
-	jsr popa ;a = sound
-	;x = channel offset
-	jsr FamiToneSfxPlay
-	
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jmp _set_prg_8000
-	;rts
-
-@sfxPriority:
-
-	.byte FT_SFX_CH0,FT_SFX_CH1,FT_SFX_CH2,FT_SFX_CH3
-	
-.else
-	rts
-.endif
-
-
-;void __fastcall__ sample_play(unsigned char sample);
-;a = sample #
-
-.if(FT_DPCM_ENABLE)
-_sample_play:
-	tax
-	lda BP_BANK_8000 ;save current prg bank
-	pha
-	lda #SOUND_BANK
-	jsr _set_prg_8000 ;only uses A register
-	txa ;sample number
-	jsr FamiToneSamplePlay
-	
-	pla
-	sta BP_BANK_8000 ;restore prg bank
-	jmp _set_prg_8000
-	;rts
-
-.else
-_sample_play:
-	rts
-.endif
 
 
 ;unsigned char __fastcall__ pad_poll(unsigned char pad);

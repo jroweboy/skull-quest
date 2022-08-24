@@ -17,3 +17,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+*.o
+BUILD/labels.txt
+BUILD/*.dbg
