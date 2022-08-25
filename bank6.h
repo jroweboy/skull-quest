@@ -1,3 +1,16 @@
+
+
+#ifndef _BANK6_H
+#define _BANK6_H
+
+// COLLISION DATA
+#include "Collision/master_collision.h"
+
+#pragma wrapped-call(push, bank_trampoline, bank)
+void load_collision();
+void init_level_specifics();
+#pragma wrapped-call(pop)
+
 void set_skeleton(unsigned char p_index, unsigned char p_x, unsigned char p_y) {
     actors.x[p_index] = p_x;
     actors.y[p_index] = p_y;
@@ -479,3 +492,33 @@ void init_level_specifics() {
             break;
     }
 }
+
+// We assume there will never be a col type value greater than 15;
+// And current_collision_map length < 255
+void load_collision() {
+    collision_index = 0;
+    is_first = TRUE;
+    i = 0;
+    temp = current_collision_map[i];
+    // Array terminated by 255;
+    while (temp < 255) {
+        ++i;
+        // of which type
+        temp2 = current_collision_map[i];
+        for (j = 0; j < temp; ++j) {
+            if (is_first) {
+                temp3 = temp2 << 4;
+                is_first = FALSE;
+            } else {
+                c_map[collision_index] = temp3 | temp2;
+                ++collision_index;
+                is_first = TRUE;
+            }
+        }
+        ++i;
+        // how many
+        temp = current_collision_map[i];
+    }
+}
+
+#endif // _BANK6_H

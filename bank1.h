@@ -4,6 +4,8 @@
 // MAP Logic
 #include "map_logic.h"
 
+#pragma wrapped-call(push, bank_trampoline, bank)
+
 void reset_actors() {
     for (i = 0; i < ACTOR_NUMBER; ++i) {
         actors.state[i] = INACTIVE;
@@ -29,3 +31,5 @@ void reset_actors() {
         actors.type[i] = NULL;
     }
 }
+
+#pragma wrapped-call(pop)

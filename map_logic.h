@@ -1,5 +1,5 @@
 
-static unsigned char level_names[][16] = {
+static char level_names[][16] = {
     "               ",
     "  Old Cemetery ",
     "  Temple Ruins ",
@@ -16,6 +16,13 @@ typedef struct {
 } Level;
 
 Level levels;
+
+#pragma wrapped-call(push, bank_trampoline, bank)
+void hide_map();
+void load_map();
+void load_inventory();
+void manage_inventory();
+#pragma wrapped-call(pop)
 
 void hide_map() {
     pal_bg(current_background_palette);

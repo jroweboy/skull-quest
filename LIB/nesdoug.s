@@ -2,15 +2,10 @@
 ;version 1.2, 1/1/2022
 
 .export _set_vram_buffer, _multi_vram_buffer_horz, _multi_vram_buffer_vert, _one_vram_buffer
-.export _get_pad_new, _get_frame_count, _set_music_speed
+.export _get_pad_new, _get_frame_count
 .export _check_collision, _pal_fade_to, _set_scroll_x, _set_scroll_y, _add_scroll_y, _sub_scroll_y
 .export  _get_ppu_addr, _get_at_addr, _set_data_pointer, _set_mt_pointer, _buffer_4_mt, _buffer_1_mt
 .export _color_emphasis, _xy_split, _gray_line, _seed_rng
-
-.segment "CODE"
-
-
-
 
 ;void set_vram_buffer(void)
 _set_vram_buffer:
@@ -126,18 +121,6 @@ _get_frame_count:
 	lda <FRAME_CNT1
 	ldx #0
 	rts
-	
-	
-	
-	
-;void __fastcall__ set_music_speed(unsigned char tempo);
-_set_music_speed:
-	sta FT_SONG_SPEED
-	rts
-	
-	
-
-
 
 
 PTR2 = TEMP+2 ;and TEMP+3
