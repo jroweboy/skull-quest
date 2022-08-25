@@ -1,5 +1,3 @@
-// COLLISION
-#include "Collision/master_collision.h"
 
 const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
 // SPRITES
@@ -23,6 +21,8 @@ const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
 #include "spr_stainedglass.h"
 #include "spr_star.h"
 #include "spr_villagers.h"
+
+#pragma wrapped-call(push, bank_trampoline, bank)
 
 void set_animation_info() {
     j = actors.state[draw_index] << 1;
@@ -212,3 +212,5 @@ void init_skull() {
     actors.type[SKULL] = TYPE_SKULL;
     actors.state[SKULL] = INACTIVE;
 }
+
+#pragma wrapped-call(pop)

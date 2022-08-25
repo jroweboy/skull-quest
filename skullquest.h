@@ -1,4 +1,7 @@
 
+#ifndef _SKULLQUEST_H
+#define _SKULLQUEST_H
+
 #define ONES 7
 #define TENS 6
 #define HUNDREDS 5
@@ -182,3 +185,15 @@ signed char get_y_speed();
 void set_torch(unsigned char p_index, unsigned char p_x, unsigned char p_y);
 
 void do_skull_tile_collision();
+
+void update_health();
+
+void update_xp();
+
+void first_hit_long();
+
+void first_hit_small();
+
+unsigned char get_inactive_actor_index();
+
+#endif // _SKULLQUEST_H

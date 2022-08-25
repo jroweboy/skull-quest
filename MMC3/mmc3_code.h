@@ -1,47 +1,70 @@
+
+#ifndef _MMC3_CODE_H
+#define _MMC3_CODE_H
+
+// Workaround for code analyzers that don't know about fastcall
+#ifndef __fastcall__
+#define __fastcall__ 
+#endif
+
 // Contains functions to help with working with multiple PRG/CHR banks
 // For MMC3 code.
 
-// Maximum level of recursion to allow with banked_call and similar functions.
-#define MAX_BANK_DEPTH 10
+// Helper method for #pragma wrapped-call to call banked routines.
+// this shouldn't need to be called directly. Instead just wrap the function declaration in the pragma as follows
+// Example:
+/*
+    #pragma wrapped-call(push, bank_trampoline, bank)
+    void my_banked_function(unsigned char parameters, const void* are_allowed);
+    #pragma wrapped-call(pop)
+*/
+// Then you can just call the function like normal and it will bank through this tramponline code if needed.
+// my_banked_function(1, fn);
+void bank_trampoline(void);
 
-unsigned char bankLevel;
-unsigned char bankBuffer[MAX_BANK_DEPTH];
+// macro that uses the bank information provided by the linker to lookup a bank for a symbol
+#define GET_BANK(sym) (__asm__("ldx #0\nlda #<.bank(%v)", sym), __A__)
 
+// Helper macro to run a block of code with a specific bank loaded and then switch back after it has finished
+#define RUN_WITH_BANK(bank_num, block) \
+    do {\
+        unsigned char saved_bank = current_code_bank;\
+        bank_code(bank_num);\
+        block;\
+        bank_code(saved_bank);\
+    } while(0);
 
+// Readonly value of the current code bank. This is defined as either the $a000 bank or the $8000 bank depending on
+// whether you are banking DPCM or not
+extern unsigned char const volatile current_code_bank;
 
+// Unconditionally switches the current code bank.
+// CAUTION: if you call this while running code from the code bank, then it will CRASH
+// Use the wrapped-call bank trampoline to be safe when you need to run code from a different bank
+void __fastcall__ bank_code(unsigned char bank_id);
 
-// Switch to another bank and call this function.
-// Note: Using banked_call to call a second function from within  
-// another banked_call is safe. This will break if you nest more  
-// than 10 calls deep.
-void banked_call(unsigned char bankId, void (*method)(void));
+// The following two methods can be used for manually switching the banks if needed
+// The preferred way is to use the bank_trampoline by wrapping your calls instead.
+#ifdef USE_BANKABLE_DPCM
+// Switch to the given bank (at $a000-bfff). Your prior bank is not saved.
+// Can be used for reading data with a function in the fixed bank.
+// bank_id: The bank to switch to.
+void __fastcall__ set_prg_a000(unsigned char bank_id);
 
+// WARNING, DON'T USE THIS IN THE CURRENT CFG, unless you
+// really know what you're doing. El Crasho.
+// Switch to the given bank (at $c000-dfff). Your prior bank is not saved.
+// bank_id: The bank to switch to.
+void __fastcall__ set_prg_c000(unsigned char bank_id);
 
-// Internal function used by banked_call(), don't call this directly.
-// Switch to the given bank, and keep track of the current bank, so 
-// that we may jump back to it as needed.
-void bank_push(unsigned char bankId);
+// Readonly value of the current bank number for the prg $c000 bank
+extern unsigned char const volatile current_prg_c000;
 
-
-// Internal function used by banked_call(), don't call this directly.
-// Go back to the last bank pushed on using bank_push.
-void bank_pop(void);
-
-
-
-
-
-
+#else
 // Switch to the given bank (at $8000-9fff). Your prior bank is not saved.
 // Can be used for reading data with a function in the fixed bank.
 // bank_id: The bank to switch to.
 void __fastcall__ set_prg_8000(unsigned char bank_id);
-
-
-// Get the current PRG bank at $8000-9fff.
-// returns: The current bank.
-unsigned char __fastcall__ get_prg_8000(void);
-
 
 // WARNING, DON'T USE THIS IN THE CURRENT CFG, unless you
 // really know what you're doing. El Crasho.
@@ -49,11 +72,14 @@ unsigned char __fastcall__ get_prg_8000(void);
 // bank_id: The bank to switch to.
 void __fastcall__ set_prg_a000(unsigned char bank_id);
 
+// Readonly value of the current bank number for the prg $8000 bank
+extern unsigned char const volatile current_prg_8000;
+#endif
+
+// Readonly value of the current bank number for the prg $a000 bank
+extern unsigned char const volatile current_prg_a000;
 
 // Changes a portion of the tilsets
-// The plan was to NOT use these. Use the irq system instead
-// You can, but make sure the IRQ system isn't changing CHR.
-// See notes in README
 void __fastcall__ set_chr_mode_0(unsigned char chr_id);
 void __fastcall__ set_chr_mode_1(unsigned char chr_id);
 void __fastcall__ set_chr_mode_2(unsigned char chr_id);
@@ -91,7 +117,9 @@ void set_irq_ptr(char * address);
 
 
 // Check if it's safe to write to the irq array
-// returns 0xff if done, zero if not done
+// The value will be 0xff if done, zero if not done
 // if the irq pointer is pointing to 0xff it is
 // safe to edit.
-unsigned char is_irq_done(void);
+extern unsigned char const volatile irq_done;
+
+#endif // _MMC3_CODE_H
