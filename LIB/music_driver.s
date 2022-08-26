@@ -107,7 +107,7 @@ FAMISTUDIO_CFG_C_BINDINGS = 1
 
 .segment "AUDIO"
 .include "../MUSIC/famistudio_ca65.s"
-.include "../MUSIC/music.s"
+.include "../MUSIC/music_data.s"
 
 ; re-export the music data as a common name
 .export music_data:=music_data_the_trial_of_kharzoid_ost
@@ -136,7 +136,7 @@ FAMISTUDIO_CFG_C_BINDINGS = 1
 
 .segment "SAMPLES"
 samples:
-.incbin "../MUSIC/music.dmc"
+.incbin "../MUSIC/music_data.dmc"
 
 .else
 .out "Famistudio music driver not used"

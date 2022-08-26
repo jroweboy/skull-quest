@@ -47,6 +47,7 @@ if %ERRORLEVEL% EQU 0 (
     move /Y %name%.nes %out%\
     echo Build successful!
     @REM pause
+    BUILD\%name%.nes
 ) else (
     echo Build failed, check the error messages above for details
     @REM pause

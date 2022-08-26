@@ -94,6 +94,7 @@ AUGUST
     x Bank switching
     x Music
 
+    - FamiStudio integration
     - Exit / Enter levels
     - Mana Power Meter
     - Bombable wall (in temple)...

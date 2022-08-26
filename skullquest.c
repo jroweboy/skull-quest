@@ -322,6 +322,7 @@ void load_title_screen() {
         vram_unrle(story);
     });
 
+    music_play(0);
     game_state = TITLE;
 }
 
@@ -1241,9 +1242,8 @@ void debug_start(char debuglevel) {
 }
 
 void main() {
-    // famitone_init(&music_data);
     // sfx_init(&sound_data);
-    // nmi_set_callback(famitone_update);
+    music_init(FAMISTUDIO_PLATFORM_NTSC, &music_data);
 
     ppu_off();
 
@@ -1275,7 +1275,10 @@ void main() {
 
     while (1) {
         ppu_wait_nmi();
+        music_update();
+        
         oam_clear();
+
         pad1 = pad_poll(0);
         pad1_new = get_pad_new(0);
 

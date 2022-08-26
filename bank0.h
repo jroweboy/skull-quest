@@ -21,6 +21,7 @@ const unsigned char no_sprite[] = {0, 0, 0xFF, 0, 128};
 #include "spr_stainedglass.h"
 #include "spr_star.h"
 #include "spr_villagers.h"
+#include "spr_cancel_btn.h"
 
 #pragma wrapped-call(push, bank_trampoline, bank)
 
@@ -177,6 +178,12 @@ void set_animation_info() {
             animation_index = 0;
             frame_count = 1;
             animation_array = trigger_animation;
+            break;
+        case TYPE_CANCEL_BTN:
+            animation_index = cancel_btn_animation_index[j];
+            ++j;
+            frame_count = cancel_btn_animation_index[j];
+            animation_array = cancel_btn_animation;
             break;
     }
 }

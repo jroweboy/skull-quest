@@ -36,7 +36,9 @@
         "spr_star.h": "c",
         "spr_general.h": "c",
         "bombable.h": "c",
-        "bank2.h": "c"
+        "bank2.h": "c",
+        "music_driver.h": "c",
+        "neslib.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
