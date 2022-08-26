@@ -5,8 +5,8 @@
 
 #include "MMC3/mmc3_code.h"
 
-#define FAMISTUDIO_PLATFORM_PAL 0
-#define FAMISTUDIO_PLATFORM_NTSC 1
+#define PLATFORM_PAL 0
+#define PLATFORM_NTSC 1
 
 #pragma wrapped-call(push, bank_trampoline, bank)
 
@@ -19,8 +19,6 @@ void __fastcall__ set_music_speed(unsigned char tempo);
 // music_stop() and music_pause() also overwrite this value
 #endif  // USE_FAMITONE2
 
-extern unsigned char music_data[]; // Added to test, doesn't work :/
-
 // play a music in FamiTone format
 void __fastcall__ music_play(unsigned char song);
 
@@ -32,12 +30,6 @@ void __fastcall__ music_stop(void);
 
 void __fastcall__ music_pause(unsigned char pause);
 
-// Init
-void __fastcall__ music_init(unsigned char platform, void* music_data);
-
-// Update
-void __fastcall__ music_update(void);
-
 // play FamiTone sound effect on channel 0..3
 
 void __fastcall__ sfx_play(unsigned char sound, unsigned char channel);
@@ -47,5 +39,13 @@ void __fastcall__ sfx_play(unsigned char sound, unsigned char channel);
 void __fastcall__ sample_play(unsigned char sample);
 
 #pragma wrapped-call(pop)
+
+
+// These two methods are likely to be called during NMI and should not use the main thread trampoline
+// Init
+void __fastcall__ music_init(unsigned char platform, const void* music_data);
+
+// Update
+void __fastcall__ music_update(void);
 
 #endif

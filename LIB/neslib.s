@@ -11,6 +11,7 @@
 ;and needs to match the bank where the music is
 
 .include "music_driver.s"
+	.import nmi_callback
 
 	.export _pal_all,_pal_bg,_pal_spr,_pal_col,_pal_clear
 	.export _pal_bright,_pal_spr_bright,_pal_bg_bright
@@ -142,22 +143,12 @@ nmi:
 	sta <FRAME_CNT2
 
 @skipNtsc:
-;switch the music into the prg bank first
-	lda _current_code_bank
-	pha
-		lda #CODE_BANK_SELECT
-		sta BANK_SELECT
-		lda #<.bank(music_update)
-		sta BANK_DATA
-		jsr music_update
-		lda #CODE_BANK_SELECT
-		sta BANK_SELECT
-    pla
-    sta BANK_DATA
+
+	jsr nmi_callback
 	
+	; before leaving, we always want to restore the bank select shadow just in case
     lda bank_shadow
     sta BANK_SELECT
-	
 	pla
 	tay
 	pla

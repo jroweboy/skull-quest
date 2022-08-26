@@ -37,6 +37,12 @@ void bank_trampoline(void);
 // Readonly value of the current code bank. This is defined as either the $a000 bank or the $8000 bank depending on
 // whether you are banking DPCM or not
 extern unsigned char const volatile current_code_bank;
+#pragma zpsym ("current_code_bank")
+
+// Readonly value of the current alt bank. This is defined as either the $a000 bank or the $c000 bank depending on
+// whether you are banking DPCM or not. This normally does not need to be used.
+extern unsigned char const volatile current_alt_bank;
+#pragma zpsym ("current_alt_bank")
 
 // Unconditionally switches the current code bank.
 // CAUTION: if you call this while running code from the code bank, then it will CRASH
@@ -121,5 +127,48 @@ void set_irq_ptr(char * address);
 // if the irq pointer is pointing to 0xff it is
 // safe to edit.
 extern unsigned char const volatile irq_done;
+
+
+// The following are special defines to help with banking during NMI
+// BE VERY CAREFUL. in the NMI callback you CANNOT use the normal banking calls
+// so do not use the trampoline or any of the other helper functions if this is in an NMI callback
+// The real issue is in order to call C code in NMI you need to save all your C registers,
+// which is a lot of overhead. As such it is recommended to keep your NMI and IRQ routines
+// entirely in ASM. These are just here for an example.
+#define BANK_SELECT (*(unsigned char*)(0x8000))
+#define BANK_DATA (*(unsigned char*)(0x8001))
+
+#define A12_INVERT     0b10000000
+#define BANK_DPCM_FLAG 0b01000000
+
+#ifndef MMC3_BANK_FLAGS
+	#if defined(USE_BANKABLE_DPCM) && defined(USE_CHR_A12_INVERT)
+		#define MMC3_BANK_FLAGS (BANK_DPCM_FLAG | A12_INVERT)
+	#elif defined(USE_BANKABLE_DPCM)
+		#define MMC3_BANK_FLAGS (BANK_DPCM_FLAG)
+	#elif defined(USE_CHR_A12_INVERT)
+		#define MMC3_BANK_FLAGS (0b10000000)
+	#else
+		#define MMC3_BANK_FLAGS (0)
+	#endif
+#endif
+
+#ifdef USE_BANKABLE_DPCM
+    #define CODE_BANK_SELECT (7 | MMC3_BANK_FLAGS)
+	#define ALT_BANK_SELECT (6 | MMC3_BANK_FLAGS)
+#else
+    #define CODE_BANK_SELECT (6 | MMC3_BANK_FLAGS)
+	#define ALT_BANK_SELECT (7 | MMC3_BANK_FLAGS)
+#endif
+
+#define NMI_RUN_WITH_BANK(bank_num, block) \
+    do {\
+        unsigned char saved_bank = current_code_bank;\
+        BANK_SELECT = CODE_BANK_SELECT;\
+        BANK_DATA = bank_num;\
+        block;\
+        BANK_SELECT = CODE_BANK_SELECT;\
+        BANK_DATA = saved_bank;\
+    } while(0);
 
 #endif // _MMC3_CODE_H
