@@ -97,6 +97,8 @@ MUSIC_ENABLED = 1
 
 FAMISTUDIO_CFG_EXTERNAL = 1
 FAMISTUDIO_CFG_C_BINDINGS = 1
+FAMISTUDIO_CFG_THREAD = 1
+FAMISTUDIO_CFG_DPCM_SUPPORT = 1
 
 .define FAMISTUDIO_CA65_ZP_SEGMENT   ZEROPAGE
 .define FAMISTUDIO_CA65_RAM_SEGMENT  XRAM
@@ -109,12 +111,11 @@ FAMISTUDIO_CFG_C_BINDINGS = 1
 .include "../MUSIC/famistudio_ca65.s"
 .include "../MUSIC/music_data.s"
 
-; re-export the music data as a common name
-.export music_data:=music_data_the_trial_of_kharzoid_ost
-
-; export the common init/update functions for using the main library (not available to C code)
+; export the common init/update functions for use in C. We have to use the C versions of the
+; famistudio exports for this to line up right.
 .export music_init:=famistudio_init
 .export music_update:=famistudio_update
+
 .if(FAMISTUDIO_CFG_SFX_SUPPORT)
 .export sfx_init:=famistudio_sfx_init
 .endif
@@ -129,13 +130,14 @@ FAMISTUDIO_CFG_C_BINDINGS = 1
 	.export _sfx_play:=_famistudio_sfx_play
 .endif
 
-.if(FAMISTUDIO_CFG_DPCM_SUPPORT)
+.if(FAMISTUDIO_CFG_DPCM_SUPPORT) && (FAMISTUDIO_CFG_SFX_SUPPORT)
 	.define MUSIC_HAS_DPCM 1
 	.export _sample_play:=_famistudio_sfx_sample_play
 .endif
 
 .segment "SAMPLES"
-samples:
+.export music_samples
+music_samples:
 .incbin "../MUSIC/music_data.dmc"
 
 .else

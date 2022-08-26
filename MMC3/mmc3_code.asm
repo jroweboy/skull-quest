@@ -73,9 +73,11 @@ mmc3_temp:		.res 1
 	code_bank_fn = main_thread_set_prg_7
 	alt_bank_fn = main_thread_set_prg_6
 	.export _bank_code:=main_thread_set_prg_7
-	.export _current_code_bank:=mmc3_bank_7
+
+	.exportzp _current_code_bank:=mmc3_bank_7
+	.exportzp _current_alt_bank:=mmc3_bank_6
+
 	.export _set_prg_c000:=main_thread_set_prg_6
-	.export _current_prg_c000:=mmc3_bank_6
 .else
 	; if we aren't banking DPCM then we export functions for banking $8000
 	CODE_BANK_SELECT = (6 | MMC3_BANK_FLAGS)
@@ -83,10 +85,14 @@ mmc3_temp:		.res 1
 	code_bank_fn = main_thread_set_prg_6
 	alt_bank_fn = main_thread_set_prg_7
 	.export _bank_code:=main_thread_set_prg_6
-	.export _current_code_bank:=mmc3_bank_6
+
+	.exportzp _current_code_bank:=mmc3_bank_6
+	.exportzp _current_alt_bank:=mmc3_bank_7
+
 	.export _set_prg_8000:=main_thread_set_prg_6
-	.export _current_prg_8000:=mmc3_bank_6
 .endif
+
+.exportzp CODE_BANK_SELECT, ALT_BANK_SELECT
 
 ; Any banking routines that begin with `main_thread` should NOT be used in NMI or IRQ.
 
@@ -198,7 +204,6 @@ main_thread_set_chr_5:
 	pla
 	sta BANK_DATA
 	rts
-
 
 ; MIRROR_VERTICAL 0
 ; MIRROR_HORIZONTAL 1	

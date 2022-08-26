@@ -1241,17 +1241,17 @@ void debug_start(char debuglevel) {
     // current_item = 5;
 }
 
+void init() {
+    // clear the WRAM, not done by the init code
+    // memfill(void *dst,unsigned char value,unsigned int len);
+    memfill(wram_array, 0, 0x2000);
+}
+
 void main() {
-    // sfx_init(&sound_data);
-    music_init(FAMISTUDIO_PLATFORM_NTSC, &music_data);
 
     ppu_off();
 
     disable_irq();
-
-    // clear the WRAM, not done by the init code
-    // memfill(void *dst,unsigned char value,unsigned int len);
-    memfill(wram_array, 0, 0x2000);
 
     set_scroll_y(0xff);  // shift the bg down 1 pixel
 
@@ -1275,7 +1275,6 @@ void main() {
 
     while (1) {
         ppu_wait_nmi();
-        music_update();
         
         oam_clear();
 

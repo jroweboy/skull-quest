@@ -7,7 +7,7 @@
 set name=skullquest
 
 @REM Source files in the project
-set srcs=%name%.c crt0.s
+set srcs=%name%.c crt0.s skullquest-asm.s
 
 @REM Update path to include the CC65 libraries
 set path="c:\cc65\bin\"

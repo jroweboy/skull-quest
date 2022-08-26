@@ -8,7 +8,7 @@
 ;this called the CONDES function
 
 .export _exit,__STARTUP__:absolute=1
-.import push0,popa,popax,_main,zerobss,copydata
+.import push0,popa,popax,_main,init_callback,zerobss,copydata
 
 ; Linker generated symbols
 .import __STACK_START__   ,__STACKSIZE__ ;changed
@@ -285,27 +285,7 @@ detectNTSC:
 	sta PPU_SCROLL
 	sta PPU_SCROLL
 	
- 	;swap the music in place before using
-	lda #CODE_BANK_SELECT
-	sta BANK_SELECT
-	lda #<.bank(music_init)
-	sta BANK_DATA
-.if .defined(USE_BANKABLE_DPCM) && .defined(MUSIC_HAS_DPCM)
-	; switch the $c000 address to the banked DPCM
-	lda #(6 | MMC3_BANK_FLAGS)
-	sta BANK_SELECT
-	lda #<.bank(samples)
-	sta BANK_DATA
-.endif
-	ldx #<music_data
-	ldy #>music_data
-	lda <NTSC_MODE
-	jsr music_init
-.ifdef MUSIC_HAS_SFX
-	ldx #<sounds_data
-	ldy #>sounds_data
-	jsr sfx_init
-.endif
+	jsr init_callback
 	jmp _main			;no parameters
 
 .segment "VECTORS"
