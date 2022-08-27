@@ -16,6 +16,9 @@ SELECT
 Dedicated to the loving memory of:
 CECILE PINARD
 
+Technical Support
+James Rowe
+
 Special thanks to:
 CHARLES LEMAY
 LOUIS MARCHAND
@@ -23,3 +26,5 @@ ELIJAH HURST
 
 Some artwork by
 LUIS ZUNO
+heavily modified by
+PASCAL BELISLE

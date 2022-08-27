@@ -322,7 +322,7 @@ void load_title_screen() {
         vram_unrle(story);
     });
 
-    music_play(0);
+    music_play(1);
     game_state = TITLE;
 }
 
