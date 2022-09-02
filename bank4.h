@@ -37,11 +37,6 @@ char skull_was_above() {  // or below !!!
            actors.y[SKULL] + 7 < actors.y[pad_index] + actors.bbox_y[pad_index];
 }
 
-unsigned char get_collision_type() {
-    collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
-    return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
-}
-
 void check_main_input() {
     for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
         param1 = pad_index;
@@ -795,13 +790,15 @@ char has_collision() {
             actors.y[draw_index] + actors.bbox_y[draw_index] + actors.height[draw_index] > actors.y[pad_index] + actors.bbox_y[pad_index]);
 }
 
-
-
+unsigned char get_collision_type() {
+    backup_col_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
+    backup_col_type = (temp_x_col >> 3) % 2 ? c_map[backup_col_index] & 0x0F : c_map[backup_col_index] >> 4;
+    return backup_col_type;
+}
 
 unsigned char set_collision_data() {
     backup_nt_index = NTADR_A((temp_x_col >> 3), (temp_y_col >> 3));
-    backup_col_type = get_collision_type();
-    backup_col_index = collision_index;
+    get_collision_type(); // will set backup_col_type && backup_col_index
     return backup_col_type;
 }
 

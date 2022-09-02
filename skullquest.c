@@ -472,11 +472,6 @@ void set_projectile_dir_speed() {
     }
 }
 
-unsigned char get_collision_type2() {
-    collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
-    return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
-}
-
 void move() {
     switch (actors.type[draw_index]) {
         case TYPE_SKELETON:
@@ -497,7 +492,8 @@ void move() {
                 // Collision detection at the feet of the skeleton:
                 temp_y_col = actors.y[draw_index] + actors.height[draw_index];
                
-                if (get_collision_type()) {
+                get_collision_type();
+                if (backup_col_type) {
                     actors.current_frame[draw_index] = 0;
                     actors.counter[draw_index] = 0;
                     actors.state[draw_index] = TURNING;
@@ -611,7 +607,8 @@ void move() {
                     for (j = 0; j < 3; j += 8) {
                         temp_x_col += i;
                         temp_y_col += j;
-                        if (get_collision_type() == COL_TYPE_BOMBABLE) {
+                        get_collision_type()
+                        if (backup_col_type == COL_TYPE_BOMBABLE) {
                             do_skull_tile_collision();
                         }
                     }
