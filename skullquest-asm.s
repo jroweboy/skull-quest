@@ -3,7 +3,7 @@
 .define BANK_DATA $8001
 
 .importzp CODE_BANK_SELECT, ALT_BANK_SELECT, _current_code_bank
-.import music_init, music_update, music_data_the_trial_of_kharzoid_ost, music_samples, _init
+.import music_init, music_update, music_data_the_trial_of_kharzoid_ost, music_samples, _init, sfx_init, sounds
 .export init_callback, nmi_callback
 
 init_callback:
@@ -22,6 +22,11 @@ init_callback:
         ldx #<music_data_the_trial_of_kharzoid_ost
         ldy #>music_data_the_trial_of_kharzoid_ost
         jsr music_init
+        ; SFX
+        lda #1 ; NTSC
+        ldx #<sounds
+        ldy #>sounds
+        jsr sfx_init
         lda #CODE_BANK_SELECT
         sta BANK_SELECT
     pla

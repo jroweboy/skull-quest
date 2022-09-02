@@ -197,4 +197,10 @@ void first_hit_small();
 
 unsigned char get_inactive_actor_index();
 
+void move();
+
+void debug(unsigned char value);
+
+void debug_show_byte();
+
 #endif // _SKULLQUEST_H

@@ -99,6 +99,7 @@ FAMISTUDIO_CFG_EXTERNAL = 1
 FAMISTUDIO_CFG_C_BINDINGS = 1
 FAMISTUDIO_CFG_THREAD = 1
 FAMISTUDIO_CFG_DPCM_SUPPORT = 1
+FAMISTUDIO_CFG_SFX_SUPPORT = 1
 
 .define FAMISTUDIO_CA65_ZP_SEGMENT   ZEROPAGE
 .define FAMISTUDIO_CA65_RAM_SEGMENT  XRAM
@@ -110,6 +111,7 @@ FAMISTUDIO_CFG_DPCM_SUPPORT = 1
 .segment "AUDIO"
 .include "../MUSIC/famistudio_ca65.s"
 .include "../MUSIC/music_data.s"
+.include "../MUSIC/sfx_data.s"
 
 ; export the common init/update functions for use in C. We have to use the C versions of the
 ; famistudio exports for this to line up right.

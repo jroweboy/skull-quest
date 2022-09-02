@@ -24,6 +24,7 @@ static unsigned char i, j, draw_index, param1, param2, param3, param4, temp, tem
 static unsigned char p1_health, p1_max_health, brick_counter, wait_timer, level_condition1, level_condition2;
 static unsigned char level_bank;
 static unsigned char game_state, current_level, paddle_count, story_step, story_counter;
+static unsigned char has_corner_col;
 static unsigned char animation_index, frame_count, show_face, show_item, current_item, current_selection, exit_inventory = FALSE;
 static unsigned char map_x, map_y, map_lvl_name_x, map_lvl_name_y;
 static unsigned char brightness = 4;
@@ -157,6 +158,18 @@ void debug(unsigned char value) {
     one_vram_buffer(value, NTADR_A(1, 1));
 }
 
+// Show a byte in decimal form at top left screen
+void debug_show_byte(unsigned char value) {
+    // multi_vram_buffer_horz(name, sizeof(name), NTADR_A(1, 0));
+    i = 3;
+    while (i) {
+        temp3 = value % 10;
+        one_vram_buffer(0x30 + temp3, NTADR_A(i, 1));
+        value = value / 10;
+        --i;
+    }
+}
+
 void update_health() {
     if (p1_health > 0) {
         for (i = 0; i < p1_max_health; ++i) {
@@ -231,12 +244,11 @@ void load_level() {
     ppu_off();
     // set_scroll_x(0x0000);
 
-    // banked_call(1, reset_actors);
     reset_actors();
-    // banked_call(6, init_level_specifics);
     init_level_specifics();
-    // banked_call(0, init_skull);
+
     init_skull();
+
 
     // How many paddles?
     paddle_count = NULL;
@@ -257,6 +269,7 @@ void load_level() {
         vram_adr(NAMETABLE_A);
         vram_unrle(current_nametable);
     });
+    
     
     pal_bg(current_background_palette);
     pal_spr(current_sprite_palette);
@@ -322,7 +335,7 @@ void load_title_screen() {
         vram_unrle(story);
     });
 
-    music_play(1);
+    // music_play(1);
     game_state = TITLE;
 }
 
@@ -395,7 +408,7 @@ signed char get_y_speed() {
 
 // Don't forget to reset the current frame when changing state.
 void animate() {
-    // banked_call(0, set_animation_info);
+    // Bank 0
     set_animation_info();
 
     if (actors.counter[draw_index] == actors.animation_delay[draw_index]) {
@@ -403,7 +416,6 @@ void animate() {
         if ((actors.state[draw_index] % 2 != 0) && actors.current_frame[draw_index] == frame_count - 1) {
             // NEXT STATE
             ++actors.state[draw_index];
-            // banked_call(0, set_animation_info);
             set_animation_info();
             actors.current_frame[draw_index] = 0;
         } else {
@@ -460,7 +472,6 @@ void set_projectile_dir_speed() {
     }
 }
 
-
 void move() {
     switch (actors.type[draw_index]) {
         case TYPE_SKELETON:
@@ -475,13 +486,12 @@ void move() {
             } else if (actors.state[draw_index] != DYING && actors.state[draw_index] != RISING) {
                 temp_x = actors.x[draw_index] + get_x_speed();
                 // Collision detection at the feet of the skeleton:
-                temp_y_col = actors.y[draw_index] + actors.height[draw_index];
-
                 temp_x_col = temp_x;
                 if (actors.xDir[draw_index] == RIGHT) {
                     temp_x_col += actors.width[draw_index];
                 }
-
+                temp_y_col = actors.y[draw_index] + actors.height[draw_index];
+               
                 if (get_collision_type()) {
                     actors.current_frame[draw_index] = 0;
                     actors.counter[draw_index] = 0;
@@ -596,10 +606,8 @@ void move() {
                     for (j = 0; j < 3; j += 8) {
                         temp_x_col += i;
                         temp_y_col += j;
-                        if (set_collision_data()) {
-                            if (backup_col_type == COL_TYPE_BOMBABLE) {
-                                do_skull_tile_collision();
-                            }
+                        if (get_collision_type() == COL_TYPE_BOMBABLE) {
+                            do_skull_tile_collision();
                         }
                     }
                 }
@@ -780,6 +788,7 @@ void play_story() {
     switch (current_level) {
         case LVL_ALTAR:
             // oam_clear();
+
             animate_actors();
             switch (story_step) {
                 case 0:
@@ -1141,6 +1150,7 @@ void play_story() {
             break;
         case LVL_INTRO:
             // INTRO STORY
+            
             switch (story_step) {
                 case 0:
                     oam_meta_spr(182, 122, staff);
@@ -1174,6 +1184,11 @@ void play_story() {
                     if (scroll_index_y > 488) {
                         ++story_step;
                     }
+
+                    if (pad1 & PAD_A) {
+                        ++story_step;
+                    }
+
                     break;
                 case 5:
                     fadeout();
@@ -1352,7 +1367,7 @@ void main() {
                     scroll_index_y = NULL;
 
                     // DEBUG
-                    // debug_start(LVL_CEMETERY);
+                    // debug_start(LVL_TEST);
                 }
                 break;
             case GAME_OVER:

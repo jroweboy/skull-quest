@@ -38,7 +38,9 @@
         "bombable.h": "c",
         "bank2.h": "c",
         "music_driver.h": "c",
-        "neslib.h": "c"
+        "neslib.h": "c",
+        "spr_sorcerer.h": "c",
+        "temple_temp.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

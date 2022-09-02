@@ -16,13 +16,28 @@ SELECT
 Dedicated to the loving memory of:
 CECILE PINARD
 
+Graphics
+Pascal BELISLE
+
+Music
+Pascal BELISLE
+
+Producer
+Pascal BELISLE
+
+Gameplay
+Pascal BELISLE
+
 Technical Support
 James Rowe
 
+Game Design Assistant
+Charles Lemay
+
 Special thanks to:
-CHARLES LEMAY
 LOUIS MARCHAND
 ELIJAH HURST
+Mathieu Gauthier for FamiStudio tool
 
 Some artwork by
 LUIS ZUNO

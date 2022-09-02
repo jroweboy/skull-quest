@@ -7,7 +7,6 @@
 // External calls
 #pragma wrapped-call(push, bank_trampoline, bank)
 void check_main_input();
-void move();
 void update_skull();
 unsigned char get_collision_type();
 #pragma wrapped-call(pop)
@@ -26,6 +25,7 @@ unsigned char create_item_at_skull_pos();
 void hit_brick(char tile_type);
 void remove_brick(char tile_type);
 void add_xp(unsigned char value, unsigned char pos);
+unsigned char set_collision_data();
 
 char skull_was_beside() {
     return actors.x[SKULL] + 1 > actors.x[pad_index] + actors.width[pad_index] + actors.bbox_x[pad_index] ||
@@ -193,12 +193,23 @@ void move_vertical_paddle() {
     }
 }
 
+char is_beside_brick() {
+    // Old row
+    temp = actors.y[SKULL];
+    if (actors.yDir[SKULL] == DOWN) {
+        temp += 6;
+    } else {
+        ++temp;
+    }
+    temp = temp >> 3;
 
-unsigned char set_collision_data() {
-    backup_nt_index = NTADR_A((temp_x_col >> 3), (temp_y_col >> 3));
-    backup_col_type = get_collision_type();
-    backup_col_index = collision_index;
-    return backup_col_type;
+    // New row
+    temp2 = temp_y_col >> 3;
+
+    temp3 = temp == temp2;
+    return temp3;
+
+    // return temp == temp2;
 }
 
 void update_skull() {
@@ -212,179 +223,208 @@ void update_skull() {
         temp_x = actors.x[SKULL] + get_x_speed();
         temp_y = actors.y[SKULL] + get_y_speed();
 
-        // bbox of skull is 1, so we increment because it's faster than addition
-        ++temp_x;
-        ++temp_y;
-
         if (actors.xDir[SKULL] == RIGHT) {
             if (actors.yDir[SKULL] == DOWN) {
-                // Going DOWN RIGHT
-                // Check down
-                temp_x_col = temp_x;
-                temp_y_col = temp_y + actors.height[SKULL];
+                // Going RIGHT DOWN
+                temp_x_col = temp_x + 6;
+                temp_y_col = temp_y + 6;
+                has_corner_col = get_collision_type();
+
+                // Check left down
+                temp_x_col = temp_x; ++temp_x_col;
                 if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.yDir[SKULL] = UP;
-                        temp_y -= temp_y % 8;
-                    }
-                    do_skull_tile_collision();
-                }
-                temp_x_col += actors.width[SKULL];
-                temp_y_col = temp_y;
-                if (set_collision_data()) {
-                    // Check up right
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.xDir[SKULL] = LEFT;
-                        temp_x -= temp_x % 8;
-                    }
-                    do_skull_tile_collision();
-                } else {
-                    // Check down-right
-                    temp_y_col += actors.height[SKULL];
-                    if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_x % 8 < 5) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7;
-                            temp2 -= temp2 % 8;
-                            if (temp == temp2) {
-                                actors.xDir[SKULL] = LEFT;
-                                temp_x = actors.x[SKULL];
-                            } else {
-                                actors.yDir[SKULL] = UP;
-                                temp_y = actors.y[SKULL];
-                            }
+                            actors.yDir[SKULL] = UP;
+                            temp_y -= temp_y_col % 8; --temp_y;
                         }
+                        has_corner_col = FALSE;
                         do_skull_tile_collision();
                     }
+                }
+                
+                // Check right up
+                temp_x_col = temp_x + 6;
+                temp_y_col = temp_y; ++temp_y_col;
+                if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_y % 8 < 5) {
+                        if (backup_col_type != COL_TYPE_SOFT) {
+                            actors.xDir[SKULL] = LEFT;
+                            temp_x -= temp_x_col % 8; --temp_x;
+                        }
+                        has_corner_col = FALSE;
+                        do_skull_tile_collision();
+                    }
+                } 
+                
+                if (has_corner_col) {
+                    // Check right down
+                    temp_x_col = temp_x + 6;
+                    temp_y_col = temp_y + 6;
+                    set_collision_data();
+                    // TODO? Check hit exact corner, reverse both directions...
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        if (is_beside_brick()) {
+                            actors.xDir[SKULL] = LEFT;
+                            temp_x -= temp_x_col % 8; --temp_x;
+                        } else {
+                            actors.yDir[SKULL] = UP;
+                            temp_y -= temp_y_col % 8; --temp_y;
+                        }
+                    }
+                    do_skull_tile_collision();
                 }
             } else {
-                // Going UP RIGHT
-                // Check up
-                temp_x_col = temp_x;
-                temp_y_col = temp_y;
+                // Going RIGHT UP
+                temp_x_col = temp_x + 6;
+                temp_y_col = temp_y; ++temp_y_col;
+                has_corner_col = get_collision_type();
+
+                // Check right down
+                temp_y_col = temp_y + 6;
                 if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.yDir[SKULL] = DOWN;
-                        temp_y += 8;
-                        temp_y -= temp_y % 8;
-                    }
-                    do_skull_tile_collision();
-                }
-                // Check down right
-                temp_x_col = temp_x + actors.width[SKULL];
-                temp_y_col = temp_y + actors.height[SKULL];
-                if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.xDir[SKULL] = LEFT;
-                        temp_x -= temp_x % 8;
-                    }
-                    do_skull_tile_collision();
-                } else {
-                    // Check up right
-                    temp_y_col = temp_y;
-                    if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_y % 8 > 5) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL];
-                            ++temp2;  // BBox
-                            temp2 -= temp2 % 8;
-                            if (temp == temp2) {
-                                actors.xDir[SKULL] = LEFT;
-                                temp_x = actors.x[SKULL];
-                            } else {
-                                actors.yDir[SKULL] = DOWN;
-                                temp_y = actors.y[SKULL];
-                            }
+                            actors.xDir[SKULL] = LEFT;
+                            temp_x -= temp_x_col % 8; --temp_x;
                         }
+                        has_corner_col = FALSE;
                         do_skull_tile_collision();
                     }
+                } 
+                
+                // Check left up
+                temp_x_col = temp_x; ++temp_x_col;
+                temp_y_col = temp_y; ++temp_y_col;
+                if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_x % 8 < 5) {
+                        if (backup_col_type != COL_TYPE_SOFT) {
+                            actors.yDir[SKULL] = DOWN;
+                            temp_y += 8 - (temp_y % 8);
+                        }
+                        has_corner_col = FALSE;
+                        do_skull_tile_collision();
+                    }
+                }
+
+                // Check right up
+                if (has_corner_col) {
+                    temp_x_col = temp_x + 6;
+                    temp_y_col = temp_y; ++temp_y_col;
+                    set_collision_data();
+                    // TODO? Check hit exact corner, reverse both directions...
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        if (is_beside_brick()) {
+                            actors.xDir[SKULL] = LEFT;
+                            temp_x -= temp_x_col % 8; --temp_x;
+                        } else {
+                            actors.yDir[SKULL] = DOWN;
+                            temp_y += 8 - (temp_y % 8);
+                        }
+                    }
+                    do_skull_tile_collision();
                 }
             }
         } else {
             if (actors.yDir[SKULL] == DOWN) {
-                // Going DOWN LEFT
-                // Check down
-                temp_x_col = temp_x + actors.width[SKULL];
-                temp_y_col = temp_y + actors.height[SKULL];
+                // Going LEFT DOWN
+                temp_x_col = temp_x; ++temp_x_col;
+                temp_y_col = temp_y + 6;
+                has_corner_col = get_collision_type();
+
+                // Check right down
+                temp_x_col = temp_x + 6;
                 if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.yDir[SKULL] = UP;
-                        temp_y -= temp_y % 8;
-                    }
-                    do_skull_tile_collision();
-                }
-                // Check left
-                temp_x_col = temp_x;
-                temp_y_col = temp_y;
-                if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.xDir[SKULL] = RIGHT;
-                        temp_x += 8;
-                        temp_x -= temp_x % 8;
-                    }
-                    do_skull_tile_collision();
-                } else {
-                    // Check down-left
-                    temp_x_col = temp_x;
-                    temp_y_col += actors.height[SKULL];
-                    if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_x % 8 > 5) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL] + 7;
-                            temp2 -= temp2 % 8;
-                            if (temp == temp2) {
-                                actors.xDir[SKULL] = RIGHT;
-                                temp_x = actors.x[SKULL];
-                            } else {
-                                actors.yDir[SKULL] = UP;
-                                temp_y = actors.y[SKULL];
-                            }
+                            actors.yDir[SKULL] = UP;
+                            temp_y -= temp_y_col % 8; --temp_y;
                         }
+                        has_corner_col = FALSE;
                         do_skull_tile_collision();
                     }
+                }
+
+                // Check left up
+                temp_x_col = temp_x; ++temp_x_col;
+                temp_y_col = temp_y; ++temp_y_col;
+                if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_y % 8 < 5) {
+                        if (backup_col_type != COL_TYPE_SOFT) {
+                            actors.xDir[SKULL] = RIGHT;
+                            temp_x += 8 - temp_x % 8;
+                        }
+                        has_corner_col = FALSE;
+                        do_skull_tile_collision();
+                    }
+                } 
+                
+                // Check left down
+                if (has_corner_col) {
+                    temp_x_col = temp_x; ++temp_x_col;
+                    temp_y_col = temp_y + 6;
+                    set_collision_data();
+                    // TODO? Check hit exact corner, reverse both directions...
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        if (is_beside_brick()) {
+                            actors.xDir[SKULL] = RIGHT;
+                            temp_x += 8 - temp_x % 8;
+                        } else {
+                            actors.yDir[SKULL] = UP;
+                            temp_y -= temp_y_col % 8; --temp_y;
+                        }
+                    }
+                    do_skull_tile_collision();
                 }
             } else {
-                // Going UP LEFT
-                // Check up
-                temp_x_col = temp_x + actors.width[SKULL];
-                temp_y_col = temp_y;
+                // Going LEFT UP
+                temp_x_col = temp_x; ++temp_x_col;
+                temp_y_col = temp_y; ++temp_y_col;
+                has_corner_col = get_collision_type();
+
+                // Check right up
+                temp_x_col = temp_x + 6;
                 if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.yDir[SKULL] = DOWN;
-                        temp_y += 8;
-                        temp_y -= temp_y % 8;
-                    }
-                    do_skull_tile_collision();
-                }
-                // Check left
-                temp_x_col = temp_x;
-                temp_y_col = temp_y + actors.height[SKULL];
-                if (set_collision_data()) {
-                    if (backup_col_type != COL_TYPE_SOFT) {
-                        actors.xDir[SKULL] = RIGHT;
-                        temp_x += 8;
-                        temp_x -= temp_x % 8;
-                    }
-                    do_skull_tile_collision();
-                } else {
-                    // Check up-left
-                    temp_y_col = temp_y;
-                    if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_x % 8 >= 5) {
                         if (backup_col_type != COL_TYPE_SOFT) {
-                            temp = temp_y_col - (temp_y_col % 8);
-                            temp2 = actors.y[SKULL];
-                            ++temp2;  // BBox
-                            temp2 -= temp2 % 8;
-                            if (temp == temp2) {
-                                actors.xDir[SKULL] = RIGHT;
-                                temp_x = actors.x[SKULL];
-                            } else {
-                                actors.yDir[SKULL] = DOWN;
-                                temp_y = actors.y[SKULL];
-                            }
+                            actors.yDir[SKULL] = DOWN;
+                            temp_y += 8 - (temp_y % 8);
                         }
+                        has_corner_col = FALSE;
                         do_skull_tile_collision();
                     }
+                }
+
+                // Check left down
+                temp_x_col = temp_x; ++temp_x_col;
+                temp_y_col = temp_y + 6;
+                if (set_collision_data()) {
+                    if (has_corner_col == FALSE || temp_y % 8 >= 5) {
+                        if (backup_col_type != COL_TYPE_SOFT) {
+                            actors.xDir[SKULL] = RIGHT;
+                            temp_x += 8 - (temp_x % 8);
+                        }
+                        has_corner_col = FALSE;
+                        do_skull_tile_collision();
+                    }
+                } 
+                
+                // Check left up
+                if (has_corner_col) {
+                    temp_x_col = temp_x; ++temp_x_col;
+                    temp_y_col = temp_y; ++temp_y_col;
+                    set_collision_data();
+                    // TODO? Check hit exact corner, reverse both directions...
+                    if (backup_col_type != COL_TYPE_SOFT) {
+                        if (is_beside_brick()) {
+                            actors.xDir[SKULL] = RIGHT;
+                            temp_x += 8 - (temp_x % 8);
+                        } else {
+                            actors.yDir[SKULL] = DOWN;
+                            temp_y += 8 - (temp_y % 8);
+                        }
+                    }
+                    do_skull_tile_collision();
                 }
             }
         }
@@ -393,14 +433,13 @@ void update_skull() {
 
         check_enemy_collision();
 
-        // We decrement because Skull bbox is 1
-        --temp_x;
-        --temp_y;
     } else {
         // Skull not launched, follow the paddle
         temp_x = actors.x[PADDLE] + (actors.width[PADDLE] >> 1) - (actors.width[SKULL] >> 1);
         temp_y = actors.y[PADDLE] + actors.bbox_y[PADDLE] - actors.height[SKULL] - actors.bbox_x[SKULL];
     }
+
+    debug_show_byte(temp_x);
 
     // All is fine, we can update x and y
     actors.x[SKULL] = temp_x;
@@ -755,6 +794,13 @@ char has_collision() {
 unsigned char get_collision_type() {
     collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
     return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
+}
+
+unsigned char set_collision_data() {
+    backup_nt_index = NTADR_A((temp_x_col >> 3), (temp_y_col >> 3));
+    backup_col_type = get_collision_type();
+    backup_col_index = collision_index;
+    return backup_col_type;
 }
 
 #endif // _BANK4_H

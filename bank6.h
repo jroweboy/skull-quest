@@ -120,7 +120,7 @@ void init_level_specifics() {
             CROW = 6;
             set_crow(207, 117);
 
-            // Skeleton index 6 & 7
+            // Skeleton index
             SKELETON1 = 7;
             SKELETON2 = 8;
             set_skeleton(SKELETON1, 40, 72);
@@ -472,8 +472,8 @@ void init_level_specifics() {
             actors.height[TRIGGER2] = 3 * 8;
             break;
         case LVL_TEST:
-            current_nametable = bombable;
-            current_collision_map = bombable_test;
+            current_nametable = many_corners;
+            current_collision_map = test_collision;
             current_background_palette = pal_temple_bg;
             current_sprite_palette = pal_temple_spr;
 

@@ -44,6 +44,7 @@ void __fastcall__ sample_play(unsigned char sample);
 // These two methods are likely to be called during NMI and should not use the main thread trampoline
 // Init
 void __fastcall__ music_init(unsigned char platform, const void* music_data);
+void __fastcall__ sfx_init(unsigned char platform, const void* music_data);
 
 // Update
 void __fastcall__ music_update(void);
