@@ -607,7 +607,7 @@ void move() {
                     for (j = 0; j < 3; j += 8) {
                         temp_x_col += i;
                         temp_y_col += j;
-                        get_collision_type()
+                        get_collision_type();
                         if (backup_col_type == COL_TYPE_BOMBABLE) {
                             do_skull_tile_collision();
                         }
