@@ -472,10 +472,14 @@ void set_projectile_dir_speed() {
     }
 }
 
+unsigned char get_collision_type2() {
+    collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
+    return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
+}
+
 void move() {
     switch (actors.type[draw_index]) {
         case TYPE_SKELETON:
-            param1 = draw_index;  // actor index for get_x_speed()
             if (actors.state[draw_index] == DEAD) {
                 if (game_state != STORY && actors.counter[draw_index] == 254) {
                     // LIFE AFTER DEATH!
@@ -484,12 +488,13 @@ void move() {
                     actors.animation_delay[draw_index] = 16;
                 }
             } else if (actors.state[draw_index] != DYING && actors.state[draw_index] != RISING) {
+                param1 = draw_index;  // actor index for get_x_speed()
                 temp_x = actors.x[draw_index] + get_x_speed();
-                // Collision detection at the feet of the skeleton:
                 temp_x_col = temp_x;
                 if (actors.xDir[draw_index] == RIGHT) {
                     temp_x_col += actors.width[draw_index];
                 }
+                // Collision detection at the feet of the skeleton:
                 temp_y_col = actors.y[draw_index] + actors.height[draw_index];
                
                 if (get_collision_type()) {
@@ -1367,7 +1372,7 @@ void main() {
                     scroll_index_y = NULL;
 
                     // DEBUG
-                    // debug_start(LVL_TEST);
+                    debug_start(LVL_CEMETERY);
                 }
                 break;
             case GAME_OVER:

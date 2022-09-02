@@ -94,6 +94,9 @@ AUGUST
     x Bank switching
     x Music
     x FamiStudio integration
+    x Fix collision glitch
+
+SEPTEMBER
     - Exit / Enter levels
     - Mana Power Meter
     - Bombable wall (in temple)...
@@ -119,13 +122,6 @@ AUGUST
         - Hearts
         - Paralysis
         - Speedup
-    - Story music
-    - Ruin music
-    - Title screen music
-    - Forest music
-    - Tower music
-    - Boss music 2
-    - Boss music 1
     - Sound fx
 
     - Title Screen Logic
@@ -145,7 +141,6 @@ AUGUST
     - Goodies
     - Burning ROMs
     - Ordering
-SEPTEMBER
 
 OCTOBER
 

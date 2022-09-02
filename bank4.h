@@ -37,6 +37,11 @@ char skull_was_above() {  // or below !!!
            actors.y[SKULL] + 7 < actors.y[pad_index] + actors.bbox_y[pad_index];
 }
 
+unsigned char get_collision_type() {
+    collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
+    return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
+}
+
 void check_main_input() {
     for (pad_index = 0; pad_index < paddle_count; ++pad_index) {
         param1 = pad_index;
@@ -439,8 +444,6 @@ void update_skull() {
         temp_y = actors.y[PADDLE] + actors.bbox_y[PADDLE] - actors.height[SKULL] - actors.bbox_x[SKULL];
     }
 
-    debug_show_byte(temp_x);
-
     // All is fine, we can update x and y
     actors.x[SKULL] = temp_x;
     actors.y[SKULL] = temp_y;
@@ -527,12 +530,13 @@ void check_enemy_collision() {
                         }
                         break;
                     case TYPE_SKELETON:
-                        // TODO Verify if skeleton already dead...
-                        actors.counter[i] = 0;
-                        actors.current_frame[i] = 0;
-                        actors.state[i] = DYING;
-                        actors.xDir[SKULL] = -actors.xDir[SKULL];
-                        actors.yDir[SKULL] = -actors.yDir[SKULL];
+                        if (actors.state[i] != DEAD && actors.state[i] != DYING) {
+                            actors.counter[i] = 0;
+                            actors.current_frame[i] = 0;
+                            actors.state[i] = DYING;
+                            actors.xDir[SKULL] = -actors.xDir[SKULL];
+                            actors.yDir[SKULL] = -actors.yDir[SKULL];
+                        }
                         break;
                     case TYPE_GLASS:
                         // Play sound
@@ -791,10 +795,8 @@ char has_collision() {
             actors.y[draw_index] + actors.bbox_y[draw_index] + actors.height[draw_index] > actors.y[pad_index] + actors.bbox_y[pad_index]);
 }
 
-unsigned char get_collision_type() {
-    collision_index = (temp_x_col >> 4) + (((temp_y_col >> 3) - 5) * 16);
-    return (temp_x_col >> 3) % 2 ? c_map[collision_index] & 0x0F : c_map[collision_index] >> 4;
-}
+
+
 
 unsigned char set_collision_data() {
     backup_nt_index = NTADR_A((temp_x_col >> 3), (temp_y_col >> 3));
