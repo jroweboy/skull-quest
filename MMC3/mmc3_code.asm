@@ -140,8 +140,11 @@ main_thread_bank_trampoline:
 		jsr code_bank_fn
 		lda mmc3_temp
 		jsr callptr4
+		sta mmc3_temp
 	pla
-	jmp code_bank_fn
+	jsr code_bank_fn
+	lda mmc3_temp
+	rts
 
 ; The following are mainthread safe CHR banking routines
 .export _set_chr_mode_0:=main_thread_set_chr_0
